@@ -121,3 +121,9 @@ jc8012p4a1v2:
   name: Guition
   model: JC8012P4A1 V2
   status: experimental
+
+waveshare5-dim:
+  file: waveshare5-dim.yaml
+  name: Waveshare
+  model: WAVESHARE5-DIM
+  status: experimental
