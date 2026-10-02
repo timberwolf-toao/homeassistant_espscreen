@@ -241,7 +241,13 @@
     "media": {
       "muted": "Muted",
       "not_playing": "Not playing",
-      "loading": "Loading"
+      "loading": "Loading",
+      "library": "Library",
+      "choose_speaker": "Choose a speaker",
+      "library_hint": "Tap a cover in the library to play",
+      "library_failed": "The library did not answer",
+      "library_empty": "Nothing here",
+      "starting_on": "Starting on {speaker}"
     },
     "timer": {
       "running": "Running",
@@ -552,7 +558,8 @@
         "map_entities": "A map shows at most {n} people and trackers, each once, beside the tile's own person.",
         "firmware_first": "Install screen firmware {version} or newer first for these tiles.",
         "entity_gone": "A chosen entity no longer exists. Look up the new entity.",
-        "ids_too_long": "These tiles' entity IDs are too long together to fit in one message to the screen; remove a few tiles."
+        "ids_too_long": "These tiles' entity IDs are too long together to fit in one message to the screen; remove a few tiles.",
+        "favorite_play": "Choose what this favourite plays."
       },
       "top_bar": {
         "invalid": "Invalid top bar; refresh the management page.",
@@ -729,6 +736,9 @@
         "unknown_board": "Feedback isn't available for this board yet.",
         "deleting": "Your shared answer is still being deleted. Answer again once that's done.",
         "storage": "Feedback is off: its saved data was written by another version of Tessera."
+      },
+      "media": {
+        "browse": "{name} did not answer with its library."
       }
     },
     "status": {
@@ -843,6 +853,9 @@
         },
         "input_button": {
           "run": "Press button"
+        },
+        "remote": {
+          "toggle": "On/off switch"
         }
       },
       "top_bar": {
@@ -1173,6 +1186,18 @@
       "map": {
         "since_time": "since {time}",
         "battery": "Battery"
+      },
+      "media": {
+        "playlist": "Playlist",
+        "album": "Album",
+        "artist": "Artist",
+        "track": "Song",
+        "podcast": "Podcast",
+        "episode": "Episode",
+        "channel": "Channel",
+        "genre": "Genre",
+        "directory": "Folder",
+        "music": "Music"
       }
     }
   },
@@ -1428,6 +1453,7 @@
         "button": "Actions",
         "script": "Scripts",
         "automation": "Automations",
+        "remote": "Remotes",
         "fan": "Fans",
         "cover": "Covers",
         "scene": "Scenes",
@@ -1468,6 +1494,7 @@
       "switch": "Switch",
       "input_boolean": "Switch",
       "automation": "Automation",
+      "remote": "Remote",
       "scene": "Scene",
       "script": "Script",
       "weather": "Weather",
@@ -1499,7 +1526,8 @@
       "sunpath": "sun path",
       "live": "live picture",
       "cover": "album cover",
-      "map": "map"
+      "map": "map",
+      "favorite": "favourite"
     },
     "sizes": {
       "single": "normal",
@@ -1545,7 +1573,10 @@
         "no_forecast": "This weather service has no daily forecast in Home Assistant. Choose another display.",
         "tall_cover_hint": "Uses the album cover as a dimmed background. Without artwork the normal tile remains visible.",
         "face_needs_firmware": "This clock needs firmware 0.3.6 or newer: press Update on the screen after saving. Until then the screen shows the digital clock.",
-        "map_tile_needs_firmware": "The map tile needs firmware 0.21.0 or newer: press Update on the screen after saving."
+        "map_tile_needs_firmware": "The map tile needs firmware 0.21.0 or newer: press Update on the screen after saving.",
+        "favorite": "Favourite",
+        "favorite_hint": "One playlist, album or artist of this player, started with a tap on its speaker; a tap while it plays pauses it, holding opens the player. Where the screen draws pictures, its cover fills the tile.",
+        "favorite_needs_firmware": "A favourite needs firmware 0.24.0 or newer: press Update on the screen after saving."
       },
       "refresh": {
         "label": "Refresh",
@@ -1698,6 +1729,19 @@
         "under": "Under the bedside clock: a tile in its round form. A tap does what it does on a tile, and holding it opens its card.",
         "name_shown": "Name under the key",
         "name_shown_hint": "Off shows the circle alone."
+      },
+      "favorite": {
+        "plays": "Plays",
+        "none": "Nothing chosen yet",
+        "choose": "Choose",
+        "done": "Done",
+        "back": "Back",
+        "loading": "Loading the library…",
+        "empty": "Nothing here",
+        "open": "Open {name}",
+        "speaker": "Speaker",
+        "speaker_now": "Where it plays",
+        "speaker_hint": "Where it starts. \"Where it plays\" asks for a speaker on the screen when the player plays nowhere."
       }
     },
     "tile_card": {
@@ -2561,6 +2605,34 @@
         "page": "Page",
         "bar": "Top bar"
       }
+    },
+    "phone": {
+      "screens": "Screens",
+      "add_tile": "Add tile",
+      "add_to_cell": "Goes in place {cell} on {page}",
+      "add_to_page": "Goes in the first free place on {page}",
+      "added": "{name} added",
+      "page_of": "{n} of {total}",
+      "pages": "Pages",
+      "page_tiles": "{n} tile | {n} tiles",
+      "pages_order": "Pages and order",
+      "hint": "Tap a tile to change it.",
+      "hint_pages": "Tap a tile to change it. Swipe for the next page.",
+      "on_screen": "Everything is on the screen",
+      "not_sent": "Changed, not sent yet",
+      "more_settings": "More settings",
+      "more_settings_hint": "Display, second line and what a tap does",
+      "move": "Move",
+      "full_editor": "Full editor",
+      "simple_editor": "Simple view"
+    },
+    "donate": {
+      "title": "Made by one person",
+      "body": "Tessera is free and has no subscription. I build it in my spare time. If your screens make your home a little nicer, a coffee helps me keep going.",
+      "buy": "Buy Max a coffee",
+      "later": "Maybe later",
+      "donated": "I already donated",
+      "thanks": "Thank you! This won't ask again."
     }
   }
 }

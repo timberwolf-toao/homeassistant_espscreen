@@ -1,6 +1,6 @@
 // The top bar rules: the same wording and arithmetic as header_bar.h in the firmware.
 import { describe, expect, it } from "vitest";
-import { agoText, LOOK_BARS, barGaps, barLayout, clockText, dateText, dotted, itemKey } from "../src/model/topbar";
+import { agoText, LOOK_BARS, barGaps, barLayout, barMetricsFor, clockText, dateText, dotted, itemKey } from "../src/model/topbar";
 import type { HeaderItem } from "../src/types";
 
 describe("words for the time since a change", () => {
@@ -75,5 +75,13 @@ describe("the bar's geometry", () => {
   it("keys an item by what it shows, never by its id (app 0.4.1)", () => {
     expect(itemKey({ id: "x", type: "entity", entity: "a", content: "state" })).toBe(itemKey({ type: "entity", entity: "a" }));
     expect(itemKey({ type: "entity", entity: "a", show: "active" })).not.toBe(itemKey({ type: "entity", entity: "a" }));
+  });
+  it("takes a board's own fonts and margin where the add-on gives them (boards.json)", () => {
+    // The Waveshare 7B sets its home key to 26 by hand: its mark is 18, not the 24 its density would give.
+    const shape = { width: 1024, dpi: 170, look: "standard", fonts: { headline: 27, sublabel_big: 21, icon_mini: 26, icon_home: 26 }, spacing: { margin: 16 } };
+    expect(barMetricsFor(shape)).toMatchObject({ width: 992, name: 27, text: 21, icon: 26, inset: 16, mark: 18 });
+    // A half rounds to the even neighbour, as ESPHome's substitutions round.
+    expect(barMetricsFor({ ...shape, fonts: { icon_home: 12 } }).mark).toBe(8);
+    expect(barMetricsFor({ width: 480, dpi: 170, look: "standard" })).toMatchObject({ name: 27, inset: 16, mark: 24 });
   });
 });

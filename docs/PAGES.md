@@ -43,19 +43,23 @@ An excluded page is a detail page:
 
 A single-page layout retains the existing absence of a bottom strip. Device grid dimensions and tile capacity remain authoritative. They cannot be overridden per page.
 
-## Taller tiles, 0.3.1
+## Tile sizes
 
-The tile inspector offers **1 × 2** and **2 × 2**, expressed as width × height in grid cells, when the connected firmware reports support.
+A tile has one of the named sizes in `catalogue/_tile.yaml`: `single` (one cell), `wide` (two cells side by side),
+`tall` (two cells stacked), `square` (two by two) and `full` (the whole page). Any other rectangle smaller than the
+grid is a span such as `3x2` (columns × rows, app 0.4.32, firmware 0.19.0+). A screen names the spans its grid takes in
+its hello (`tile_sizes`), and the add-on never sends a size the screen did not name (`core.TILE_SIZES_ON_SCREEN`,
+`core.span_offered`).
 
-Each size reserves two rows, including their normal gap. Tiles cannot overlap or extend beyond a page, and the screen's tile capacity does not change. If there is no free rectangle during resizing, the previous size and position stay intact.
+A tall or square tile reserves two rows, including their normal gap. Tiles cannot overlap or extend beyond a page, and the screen's tile capacity does not change. If there is no free rectangle during resizing, the previous size and position stay intact.
 
 Hover over a tile or focus its edge handle to resize it. The right handle changes width; the bottom handle changes height. Handles offer only supported sizes that fit at the current position without moving neighbours. Drag to preview, release to apply, or press Escape to cancel. Arrow keys work on a focused handle. Each completed resize is one undo step. Full-page cards retain their existing inspector setting and do not have edge handles.
 
-Most kinds reuse existing designs. A 1 × 2 tile keeps the single-column design, including its optional slider or graph. A 2 × 2 tile keeps the double-width design and its direct controls. Some kinds use the height (app 0.3.8, firmware 0.3.3): a weather tile of two rows lists the days under each other with a low-to-high bar, and a thermostat shows its temperature between − and + with a mode bar under it. A **Live picture** fills its tile on every size (app 0.3.13, firmware 0.3.7). Extra height does not force a full-page design. Moving, copying, exporting and undoing keep the rectangular footprint with the tile.
+Most kinds reuse existing designs. A tall tile (1 × 2) keeps the single-column design, including its optional slider or graph. A square tile (2 × 2) keeps the double-width design and its direct controls. Some kinds use the height (app 0.3.8, firmware 0.3.3): a weather tile of two rows lists the days under each other with a low-to-high bar, and a thermostat shows its temperature between − and + with a mode bar under it. A **Live picture** fills its tile on every size (app 0.3.13, firmware 0.3.7). Extra height does not force a full-page design. Moving, copying, exporting and undoing keep the rectangular footprint with the tile.
 
 Taller standard tiles extend the existing header. Media uses the selected playback or volume controls below track information. Selecting **Album cover** uses the artwork as a dimmed background on boards that support pictures; on a Normal tile the cover sits in the icon's place. A thermostat of two rows shows its temperature between − and + and a bar with one segment per mode (the active one filled; an airco shows heat and cool first, the rest behind "…"). Off is not on the bar: a tap on the tile's circle turns the thermostat on or off (firmware 0.3.3). Light brightness and other sliders reuse the existing large controls. Unavailable entities keep their unavailable state and their detail action.
 
-Controls remain an explicit choice in the tile inspector. Increasing height preserves a previously selected group and does not enable a default group on a previously unconfigured tile. There is one selected group per tile, and additional height alone does not combine playback with volume. Two choices are combined groups on purpose: climate's **Temperature − / + and mode keys** (1 × 2, 2 × 2 and Full page only) and a cover's position or buttons with **Slat tilt**. All single-row tiles and existing full-page designs keep their original renderer.
+Controls remain an explicit choice in the tile inspector. Increasing height preserves a previously selected group and does not enable a default group on a previously unconfigured tile. There is one selected group per tile, and additional height alone does not combine playback with volume. Two choices are combined groups on purpose: climate's **Temperature − / + and mode keys** (on a tile of two rows or more) and a cover's position or buttons with **Slat tilt**. All single-row tiles and existing full-page designs keep their original renderer.
 
 The layout measures the available content rectangle, active fonts and physical touch sizes. Optional text gives way before touch targets. A control group that cannot fit an unusually dense custom grid is left in the detail view instead of drawing overlapping buttons. Source artwork is cropped, dimmed and rounded by the add-on, then decoded into the screen's existing shared image buffer. It does not allocate an additional image per tile. The atlas is bounded by the reported screen canvas; a missing or changed picture returns to the normal tile palette. The editor fetches prepared pixels through its relative Ingress API, never a Home Assistant token or source URL.
 
@@ -130,9 +134,20 @@ The firmware keeps one active configuration. A structural replacement checks its
 
 Editor placement helpers use a document-owned `createLayout` instance. They read the current document grid synchronously, without a shared mutable grid or watcher. The slot view remains a rendering and drag adapter; an arrangement must include every existing tile ID.
 
-Tile placement has row, column, row span and column span, separated from content, appearance and interaction. Version 0.3.1 adds 1×2 and 2×2 to the permitted sizes. A future 2×3 climate design can extend the negotiated rendering capability without replacing the page model. A full-page card still means the whole current grid, even when its dimensions match another presentation.
+Tile placement has row, column, row span and column span, separated from content, appearance and interaction. A new size extends the negotiated `tile_sizes` capability without replacing the page model. A full-page card still means the whole current grid, even when its dimensions match another presentation.
+
+Three rules hold for every message between the add-on and a screen:
+
+- **4096 bytes at most.** `core.encode` refuses a larger message and `page_receiver.cpp` answers "message too large".
+  A new message or extra that can grow caps its own size or sends pages, as the light group's lamps and the effects
+  page's options do.
+- **A screen asks with an event, never an action.** Requests (`esphome.screen_options`, the history request and the
+  others) are fired as `esphome.` events (`is_event = true` in `runtime_tiles.h`). Home Assistant's ESPHome
+  integration fires such events without the "perform Home Assistant actions" permission, so a request works on a
+  screen that may not run actions.
+- **The add-on answers about the screen's own layout only.** A request for history, options, a camera or a live
+  picture is answered only for an entity on that screen's layout (or a camera in one of its recent alerts) and only
+  for a screen that is online (`server.py`, `answer_options` and its neighbours), so a screen can never read an
+  arbitrary Home Assistant entity. A new kind of request makes the same check.
 
 Historical readers and the older wire adapter are separate add-on concerns. They can be retired independently after documenting a minimum supported source version and an intermediate upgrade or offline conversion route. Removing them never requires keeping migration machinery in firmware or changing current documents.
-
-See the [page-owned layout test results](TEST_RESULTS_030.md) (the internal 0.3.0 round) for upgrade checks, board builds, measured memory use and the limits of physical validation.
-The [0.3.1 test results](TEST_RESULTS_031.md) cover taller tiles, their responsive controls and the tests on real screens.

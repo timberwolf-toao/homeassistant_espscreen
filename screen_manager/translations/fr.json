@@ -241,7 +241,13 @@
     "media": {
       "muted": "Muet",
       "not_playing": "Aucune lecture",
-      "loading": "Chargement"
+      "loading": "Chargement",
+      "library": "Bibliothèque",
+      "choose_speaker": "Choisir une enceinte",
+      "library_hint": "Touchez une pochette de la bibliothèque",
+      "library_failed": "La bibliothèque ne répond pas",
+      "library_empty": "Rien ici",
+      "starting_on": "Démarre sur {speaker}"
     },
     "timer": {
       "running": "En cours",
@@ -552,7 +558,8 @@
         "map_entities": "Une carte montre au plus {n} personnes et traceurs, chacun une fois, à côté de la personne de la tuile.",
         "firmware_first": "Pour ces tuiles, installez d'abord le firmware {version} ou plus récent sur l'écran.",
         "entity_gone": "Une entité choisie n'existe plus. Cherchez la nouvelle entité.",
-        "ids_too_long": "Ensemble, les ID d'entité de ces tuiles sont trop longs pour tenir dans un seul message à l'écran ; retirez quelques tuiles."
+        "ids_too_long": "Ensemble, les ID d'entité de ces tuiles sont trop longs pour tenir dans un seul message à l'écran ; retirez quelques tuiles.",
+        "favorite_play": "Choisissez ce que ce favori lit."
       },
       "top_bar": {
         "invalid": "Barre supérieure non valide ; actualisez la page de gestion.",
@@ -729,6 +736,9 @@
         "unknown_board": "Les retours ne sont pas encore disponibles pour cette carte.",
         "deleting": "Votre réponse partagée est encore en cours de suppression. Répondez à nouveau une fois terminé.",
         "storage": "Les retours sont désactivés : leurs données ont été écrites par une autre version d'Tessera."
+      },
+      "media": {
+        "browse": "{name} n’a pas répondu avec sa bibliothèque."
       }
     },
     "status": {
@@ -843,6 +853,9 @@
         },
         "input_button": {
           "run": "Bouton Appuyer"
+        },
+        "remote": {
+          "toggle": "Interrupteur marche/arrêt"
         }
       },
       "top_bar": {
@@ -1173,6 +1186,18 @@
       "map": {
         "since_time": "depuis {time}",
         "battery": "Batterie"
+      },
+      "media": {
+        "playlist": "Playlist",
+        "album": "Album",
+        "artist": "Artiste",
+        "track": "Titre",
+        "podcast": "Podcast",
+        "episode": "Épisode",
+        "channel": "Chaîne",
+        "genre": "Genre",
+        "directory": "Dossier",
+        "music": "Musique"
       }
     }
   },
@@ -1428,6 +1453,7 @@
         "button": "Actions",
         "script": "Scripts",
         "automation": "Automatisations",
+        "remote": "Télécommandes",
         "fan": "Ventilateurs",
         "cover": "Ouvertures",
         "scene": "Scènes",
@@ -1468,6 +1494,7 @@
       "switch": "Interrupteur",
       "input_boolean": "Interrupteur",
       "automation": "Automatisation",
+      "remote": "Télécommande",
       "scene": "Scène",
       "script": "Script",
       "weather": "Météo",
@@ -1499,7 +1526,8 @@
       "sunpath": "course du soleil",
       "live": "image en direct",
       "cover": "pochette",
-      "map": "carte"
+      "map": "carte",
+      "favorite": "favori"
     },
     "sizes": {
       "single": "normale",
@@ -1545,7 +1573,10 @@
         "no_forecast": "Ce service météo n'a pas de prévisions journalières dans Home Assistant. Choisissez un autre affichage.",
         "tall_cover_hint": "",
         "face_needs_firmware": "Cette horloge demande le firmware 0.3.6 ou plus récent : appuyez sur Mettre à jour pour l'écran après l'enregistrement. D'ici là, l'écran affiche l'horloge numérique.",
-        "map_tile_needs_firmware": "La tuile carte nécessite le firmware 0.21.0 ou plus récent : appuyez sur Mettre à jour sur l'écran après l'enregistrement."
+        "map_tile_needs_firmware": "La tuile carte nécessite le firmware 0.21.0 ou plus récent : appuyez sur Mettre à jour sur l'écran après l'enregistrement.",
+        "favorite": "Favori",
+        "favorite_hint": "Une playlist, un album ou un artiste de ce lecteur, lancé d’un toucher sur son enceinte ; un toucher pendant la lecture la met en pause, un appui long ouvre le lecteur. Là où l’écran affiche des images, la pochette remplit la tuile.",
+        "favorite_needs_firmware": "Un favori nécessite le firmware 0.24.0 ou plus récent : appuyez sur Mettre à jour pour l’écran après l’enregistrement."
       },
       "refresh": {
         "label": "Rafraîchir",
@@ -1698,6 +1729,19 @@
         "under": "Sous l'horloge de chevet : une tuile sous sa forme ronde. Un appui fait ce qu'il fait sur une tuile, et un appui long ouvre sa carte.",
         "name_shown": "Nom sous la touche",
         "name_shown_hint": "Désactivé, seul le cercle reste."
+      },
+      "favorite": {
+        "plays": "Lit",
+        "none": "Rien de choisi",
+        "choose": "Choisir",
+        "done": "Terminé",
+        "back": "Retour",
+        "loading": "Chargement de la bibliothèque…",
+        "empty": "Rien ici",
+        "open": "Ouvrir {name}",
+        "speaker": "Enceinte",
+        "speaker_now": "Là où il joue",
+        "speaker_hint": "Où il démarre. « Là où il joue » demande une enceinte sur l’écran quand le lecteur ne joue nulle part."
       }
     },
     "tile_card": {
@@ -2561,6 +2605,34 @@
         "page": "Page",
         "bar": "Barre supérieure"
       }
+    },
+    "phone": {
+      "screens": "Écrans",
+      "add_tile": "Ajouter une tuile",
+      "add_to_cell": "Va à la place {cell} de {page}",
+      "add_to_page": "Va à la première place libre de {page}",
+      "added": "{name} ajouté",
+      "page_of": "{n} sur {total}",
+      "pages": "Pages",
+      "page_tiles": "{n} tuile | {n} tuiles",
+      "pages_order": "Pages et ordre",
+      "hint": "Touchez une tuile pour la modifier.",
+      "hint_pages": "Touchez une tuile pour la modifier. Balayez pour la page suivante.",
+      "on_screen": "Tout est sur l’écran",
+      "not_sent": "Modifié, pas encore envoyé",
+      "more_settings": "Plus de réglages",
+      "more_settings_hint": "Affichage, deuxième ligne et effet d’un toucher",
+      "move": "Déplacer",
+      "full_editor": "Éditeur complet",
+      "simple_editor": "Vue simple"
+    },
+    "donate": {
+      "title": "Fait par une seule personne",
+      "body": "Tessera est gratuit et sans abonnement. Je le développe sur mon temps libre. Si vos écrans rendent votre maison un peu plus agréable, un café m'aide à continuer.",
+      "buy": "Offrir un café à Max",
+      "later": "Plus tard",
+      "donated": "J'ai déjà fait un don",
+      "thanks": "Merci ! Ce message ne reviendra plus."
     }
   }
 }

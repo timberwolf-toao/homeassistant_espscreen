@@ -238,9 +238,12 @@ export function createLayout(shape: () => PageGrid, pageLimit: () => number | un
   return { grid, dimensions: tileDimensions, pageStart, rowStart, pageOf, spanOf, cellsOf, startOf, packSlots, hasGaps, normalize, occupied, fits, firstFree, nearestFree, arrange, reorderPages, pageCount, strandedPages, tileLimit };
 }
 
-// New tiles start with the card that shows the entity best.
-export function defaultOptions(id: string): Partial<Tile> {
+// New tiles start with the card that shows the entity best. `covers`: the screen draws an album cover on a tile (a board
+// that draws pictures, firmware 0.2.78+), where a new media tile starts with it (app 0.4.42); a screen without pictures
+// keeps the name and status, as does every tile that was already there.
+export function defaultOptions(id: string, covers = false): Partial<Tile> {
   const domain = id.split(".")[0];
+  if (domain === "media_player" && covers) return { options: { display: "cover" } };
   if (domain === "sun") return { options: { display: "sunpath", size: "wide" } };
   if (domain === "weather") return { options: { display: "forecast", size: "wide" } };
   if (pageTarget(id)) return {};
@@ -253,7 +256,7 @@ export function defaultOptions(id: string): Partial<Tile> {
   if (id === "screen.map") return { options: { display: "map", size: "wide" } };
   return {};
 }
-export const newTile = (id: string): Tile => ({ entity: id, name: "", slot: -1, ...defaultOptions(id) } as Tile);
+export const newTile = (id: string, covers = false): Tile => ({ entity: id, name: "", slot: -1, ...defaultOptions(id, covers) } as Tile);
 
 // Same rule as the add-on: only a wide or full card in the standard layout shows direct controls;
 // without a choice the domain's first control set applies to a wide card, none to a full one.
@@ -311,6 +314,7 @@ export const domains: Record<string, [string, string, string]> = {
   switch: ["⏻", "#ad7600", "#fff3d3"],
   input_boolean: ["⏻", "#ad7600", "#fff3d3"],
   automation: ["⚙", "#ad7600", "#fff3d3"],
+  remote: ["⌘", "#ad7600", "#fff3d3"],
   scene: ["✦", "#8053af", "#eee5f8"],
   script: ["▷", "#8053af", "#eee5f8"],
   weather: ["☁", "#007cad", "#def2fc"],

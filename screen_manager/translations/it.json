@@ -241,7 +241,13 @@
     "media": {
       "muted": "Muto",
       "not_playing": "Inattivo",
-      "loading": "Caricamento"
+      "loading": "Caricamento",
+      "library": "Libreria",
+      "choose_speaker": "Scegli un altoparlante",
+      "library_hint": "Tocca una copertina nella libreria",
+      "library_failed": "La libreria non risponde",
+      "library_empty": "Niente qui",
+      "starting_on": "Avvio su {speaker}"
     },
     "timer": {
       "running": "In corso",
@@ -552,7 +558,8 @@
         "map_entities": "Una mappa mostra al massimo {n} persone e tracker, ognuno una volta, accanto alla persona del riquadro.",
         "firmware_first": "Per questi riquadri installa prima sullo schermo il firmware {version} o più recente.",
         "entity_gone": "Un'entità scelta non esiste più. Cerca la nuova entità.",
-        "ids_too_long": "Insieme, gli ID entità di questi riquadri sono troppo lunghi per stare in un solo messaggio allo schermo; rimuovi qualche riquadro."
+        "ids_too_long": "Insieme, gli ID entità di questi riquadri sono troppo lunghi per stare in un solo messaggio allo schermo; rimuovi qualche riquadro.",
+        "favorite_play": "Scegli cosa riproduce questo preferito."
       },
       "top_bar": {
         "invalid": "Barra superiore non valida; ricarica la pagina di gestione.",
@@ -729,6 +736,9 @@
         "unknown_board": "Il feedback non è ancora disponibile per questa scheda.",
         "deleting": "La tua risposta condivisa è ancora in fase di eliminazione. Rispondi di nuovo quando ha finito.",
         "storage": "Il feedback è disattivato: i dati salvati sono stati scritti da un'altra versione di Tessera."
+      },
+      "media": {
+        "browse": "{name} non ha risposto con la sua libreria."
       }
     },
     "status": {
@@ -843,6 +853,9 @@
         },
         "input_button": {
           "run": "Pulsante Premi"
+        },
+        "remote": {
+          "toggle": "Interruttore acceso/spento"
         }
       },
       "top_bar": {
@@ -1173,6 +1186,18 @@
       "map": {
         "since_time": "dalle {time}",
         "battery": "Batteria"
+      },
+      "media": {
+        "playlist": "Playlist",
+        "album": "Album",
+        "artist": "Artista",
+        "track": "Brano",
+        "podcast": "Podcast",
+        "episode": "Episodio",
+        "channel": "Canale",
+        "genre": "Genere",
+        "directory": "Cartella",
+        "music": "Musica"
       }
     }
   },
@@ -1428,6 +1453,7 @@
         "button": "Azioni",
         "script": "Script",
         "automation": "Automazioni",
+        "remote": "Telecomandi",
         "fan": "Ventilatori",
         "cover": "Coperture",
         "scene": "Scene",
@@ -1468,6 +1494,7 @@
       "switch": "Interruttore",
       "input_boolean": "Interruttore",
       "automation": "Automazione",
+      "remote": "Telecomando",
       "scene": "Scena",
       "script": "Script",
       "weather": "Meteo",
@@ -1499,7 +1526,8 @@
       "sunpath": "percorso del sole",
       "live": "immagine dal vivo",
       "cover": "copertina",
-      "map": "mappa"
+      "map": "mappa",
+      "favorite": "preferito"
     },
     "sizes": {
       "single": "normale",
@@ -1545,7 +1573,10 @@
         "no_forecast": "Questo servizio meteo non ha previsioni giornaliere in Home Assistant. Scegli un'altra visualizzazione.",
         "tall_cover_hint": "",
         "face_needs_firmware": "Questo orologio richiede il firmware 0.3.6 o successivo: premi Aggiorna sullo schermo dopo aver salvato. Fino ad allora lo schermo mostra l'orologio digitale.",
-        "map_tile_needs_firmware": "Il riquadro mappa richiede il firmware 0.21.0 o successivo: premi Aggiorna sullo schermo dopo aver salvato."
+        "map_tile_needs_firmware": "Il riquadro mappa richiede il firmware 0.21.0 o successivo: premi Aggiorna sullo schermo dopo aver salvato.",
+        "favorite": "Preferito",
+        "favorite_hint": "Una playlist, un album o un artista di questo lettore, avviato con un tocco sul suo altoparlante; un tocco durante la riproduzione mette in pausa, tenendo premuto si apre il lettore. Dove lo schermo mostra immagini, la copertina riempie il riquadro.",
+        "favorite_needs_firmware": "Un preferito richiede il firmware 0.24.0 o successivo: premi Aggiorna sullo schermo dopo aver salvato."
       },
       "refresh": {
         "label": "Aggiorna",
@@ -1698,6 +1729,19 @@
         "under": "Sotto l'orologio da comodino: un riquadro nella sua forma rotonda. Un tocco fa ciò che fa su un riquadro, e tenerlo premuto apre la sua scheda.",
         "name_shown": "Nome sotto il tasto",
         "name_shown_hint": "Spento mostra solo il cerchio."
+      },
+      "favorite": {
+        "plays": "Riproduce",
+        "none": "Ancora niente scelto",
+        "choose": "Scegli",
+        "done": "Fatto",
+        "back": "Indietro",
+        "loading": "Caricamento della libreria…",
+        "empty": "Niente qui",
+        "open": "Apri {name}",
+        "speaker": "Altoparlante",
+        "speaker_now": "Dove suona",
+        "speaker_hint": "Dove inizia. «Dove suona» chiede un altoparlante sullo schermo quando il lettore non suona da nessuna parte."
       }
     },
     "tile_card": {
@@ -2561,6 +2605,34 @@
         "page": "Pagina",
         "bar": "Barra superiore"
       }
+    },
+    "phone": {
+      "screens": "Schermi",
+      "add_tile": "Aggiungi riquadro",
+      "add_to_cell": "Va al posto {cell} di {page}",
+      "add_to_page": "Va al primo posto libero di {page}",
+      "added": "{name} aggiunto",
+      "page_of": "{n} di {total}",
+      "pages": "Pagine",
+      "page_tiles": "{n} riquadro | {n} riquadri",
+      "pages_order": "Pagine e ordine",
+      "hint": "Tocca un riquadro per modificarlo.",
+      "hint_pages": "Tocca un riquadro per modificarlo. Scorri per la pagina successiva.",
+      "on_screen": "È tutto sullo schermo",
+      "not_sent": "Modificato, non ancora inviato",
+      "more_settings": "Altre impostazioni",
+      "more_settings_hint": "Vista, seconda riga e cosa fa un tocco",
+      "move": "Sposta",
+      "full_editor": "Editor completo",
+      "simple_editor": "Vista semplice"
+    },
+    "donate": {
+      "title": "Fatto da una sola persona",
+      "body": "Tessera è gratuito e senza abbonamento. Lo sviluppo nel mio tempo libero. Se i tuoi schermi rendono la tua casa un po' più piacevole, un caffè mi aiuta ad andare avanti.",
+      "buy": "Offri un caffè a Max",
+      "later": "Forse più tardi",
+      "donated": "Ho già donato",
+      "thanks": "Grazie! Questo messaggio non tornerà più."
     }
   }
 }

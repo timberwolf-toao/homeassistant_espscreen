@@ -98,7 +98,7 @@ REF = 'main'
 # The shared firmware of this app release: packages/core.yaml's SCREEN_FIRMWARE_VERSION, what every board builds
 # unless its own board file went ahead with a fix for that board alone (firmware_target, docs/BOARD_RELEASES.md). The
 # middle number is the core: the feature gates below name a shared X.Y.0, so a feature always ships with a new core.
-FIRMWARE_VERSION = '0.21.0'
+FIRMWARE_VERSION = '0.28.0'
 # The Auto standby switch a screen offers Home Assistant automations.
 AUTO_STANDBY_MIN_FIRMWARE = '0.2.41'
 # The settings page the screen opens itself, and the screen.settings tile that opens it.
@@ -127,7 +127,7 @@ LOCK_GUARDS = tuple(catalogue.of_type('lock')['guards'])
 # An automation as a tile (GitHub #62): a tap switches it on or off and holding runs its actions, or with the tap option
 # `run` the other way round. Older firmware refuses the domain, so a layout with one waits for the update.
 AUTOMATION_MIN_FIRMWARE = catalogue.parse_version(catalogue.of_type('automation')['firmware'])
-ATTRS = frozenset('brightness percentage current_position current_tilt_position current_temperature temperature target_temp_low target_temp_high current_humidity min_temp max_temp target_temp_step supported_color_modes hvac_modes hvac_action hs_color color_temp_kelvin min_color_temp_kelvin max_color_temp_kelvin fan_speed_list unit_of_measurement battery_level fan_speed volume_level is_volume_muted media_title options min max step temperature_unit supported_features device_class next_rising next_setting finishes_at duration remaining humidity wind_speed wind_speed_unit apparent_temperature fan_modes swing_modes fan_mode swing_mode effect code_format code_arm_required changed_by assumed_state'.split())
+ATTRS = frozenset('brightness percentage current_position current_tilt_position current_temperature temperature target_temp_low target_temp_high current_humidity min_temp max_temp target_temp_step supported_color_modes hvac_modes hvac_action hs_color color_temp_kelvin min_color_temp_kelvin max_color_temp_kelvin fan_speed_list unit_of_measurement battery_level fan_speed volume_level is_volume_muted media_title options min max step temperature_unit supported_features device_class next_rising next_setting finishes_at duration remaining humidity wind_speed wind_speed_unit apparent_temperature fan_modes swing_modes fan_mode swing_mode effect code_format code_arm_required changed_by assumed_state activity_list current_activity'.split())
 # Attributes whose boolean value the screen needs; every other bool stays behind.
 BOOL_ATTRS = frozenset(['is_volume_muted', 'code_arm_required', 'assumed_state'])
 
@@ -1030,7 +1030,9 @@ TILE_EVENT_OPTIONS = {'size': 'size', 'controls': 'controls', 'display': 'displa
                       'color': 'background', 'background': 'background', 'tap': 'tap', 'inline': 'inline',
                       'history_hours': 'history_hours', 'refresh': 'refresh', 'fit': 'fit', 'overlay': 'overlay',
                       # How a map frames its people (app 0.4.33); who is on it is the editor's.
-                      'framing': 'framing', 'distance': 'distance'}
+                      'framing': 'framing', 'distance': 'distance',
+                      # A favourite (app 0.4.42): what it plays, as Home Assistant's library names it, and on which speaker.
+                      'play': 'play', 'speaker': 'speaker'}
 TILE_SIZES = {'full': 'full', 'fullscreen': 'full', 'full screen': 'full', 'full-screen': 'full', 'page': 'full', 'whole page': 'full',
               'wide': 'wide', 'double': 'wide', 'large': 'wide', 'big': 'wide',
               'single': 'single', 'small': 'single', 'normal': 'single', 'tall': 'tall', 'high': 'tall', 'square': 'square'}
@@ -1118,6 +1120,9 @@ def tile_options(data, current=None):
             options[name] = int(value) if str(value).isdigit() else value
         elif name == 'size':
             options[name] = TILE_SIZES.get(loose(value), str(value))
+        elif name == 'play':
+            # What a favourite plays is an object, as the editor stores it (validate_favorite checks it).
+            options[name] = value
         else:
             options[name] = str(value).strip()
     # Perform action (app 0.2.67): `action` names Home Assistant's action and `data` its fields; the tap follows.
@@ -1442,6 +1447,28 @@ def action_for_screen(value):
         act['t'] = templates
     return act
 
+# A favourite's own options (app 0.4.42): what it plays, as Home Assistant's library names it, and on which speaker.
+FAVORITE_OWN = ('play', 'speaker')
+FAVORITE_KINDS = ('playlist', 'album', 'artist', 'track', 'podcast', 'episode', 'channel', 'genre', 'directory', 'music')
+
+def validate_favorite(value):
+    """What a favourite plays as it is stored: Home Assistant's content id and type, the title and picture its library
+    gave, and the class of thing it is. ValueError when it is not one."""
+    if not isinstance(value, dict) or set(value) - {'id', 'type', 'title', 'thumb', 'class'}:
+        raise ValueError(t('addon.errors.layout.invalid_setting', setting='play'))
+    clean = {}
+    for key, limit, needed in (('id', 400, True), ('type', 64, True), ('title', 80, True), ('thumb', 600, False), ('class', 32, False)):
+        item = value.get(key)
+        if item is None and not needed:
+            continue
+        if not isinstance(item, str) or not item.strip() or len(item.encode()) > limit:
+            raise ValueError(t('addon.errors.layout.invalid_setting', setting='play'))
+        clean[key] = item
+    thumb = clean.get('thumb')
+    if thumb and not (thumb.startswith('https://') or thumb.startswith('http://') or thumb.startswith('/api/media_player_proxy/')):
+        raise ValueError(t('addon.errors.layout.invalid_setting', setting='play'))
+    return clean
+
 def validate_tap_action(value):
     """The stored form of a tap's own action; ValueError with what to change."""
     if not isinstance(value, dict) or set(value) - {'action', 'data'}:
@@ -1509,7 +1536,7 @@ def validate_layout(data, stored=False, grid=DEFAULT_GRID):
                 continue
         if 'options' in tile:
             options = tile['options']
-            if not isinstance(options, dict) or set(options) - {'tap', 'display', 'inline', 'history_hours', 'background', 'size', 'icon', 'controls', 'action', 'refresh', 'sub', 'fit', 'overlay', 'guard', *MAP_OWN}:
+            if not isinstance(options, dict) or set(options) - {'tap', 'display', 'inline', 'history_hours', 'background', 'size', 'icon', 'controls', 'action', 'refresh', 'sub', 'fit', 'overlay', 'guard', *MAP_OWN, *FAVORITE_OWN}:
                 raise ValueError(t('addon.errors.layout.unknown_settings'))
             # A navigation tile (screen.page_<n>, firmware 0.2.62+) has a name, an icon, a colour and a width; never the page.
             if page_target(tile['entity']):
@@ -1615,6 +1642,18 @@ def validate_layout(data, stored=False, grid=DEFAULT_GRID):
                            not (key in allowed and value == allowed[key][0]) and not (key == 'map' and not value)}
             elif set(options) & {'refresh', *PICTURE_OPTIONS, *MAP_OWN}:
                 options = {key: value for key, value in options.items() if key not in ('refresh', *PICTURE_OPTIONS, *MAP_OWN)}
+            # A favourite (app 0.4.42, firmware 0.24.0) keeps what it plays and on which speaker; another display leaves
+            # them behind. It plays on a tap, so it has no small slider and no other tap of its own.
+            if options.get('display') == 'favorite':
+                if 'play' in options:
+                    options = {**options, 'play': validate_favorite(options['play'])}
+                elif not stored:
+                    raise ValueError(t('addon.errors.layout.favorite_play'))
+                if 'speaker' in options and (not isinstance(options['speaker'], str) or not options['speaker'].strip() or len(options['speaker'].encode()) > 48):
+                    raise ValueError(t('addon.errors.layout.invalid_setting', setting='speaker'))
+                options = {k: v for k, v in options.items() if k not in ('inline', 'controls', 'action') and not (k == 'tap' and v == 'action')}
+            elif set(options) & set(FAVORITE_OWN):
+                options = {k: v for k, v in options.items() if k not in FAVORITE_OWN}
             if options.get('display') == 'watch' and options.get('inline') == 'slider':
                 raise ValueError(t('addon.errors.layout.watch_or_slider'))
             if 'controls' in options:
@@ -1709,14 +1748,17 @@ def local_clock(value, tz):
         moment = moment.replace(tzinfo=timezone.utc)
     return moment.astimezone(tz or timezone.utc).strftime('%H:%M')
 
+# The forecasts a weather card asks for, each with Home Assistant's feature bit for it (catalogue/_ha.json).
+FORECAST_BITS = (('daily', catalogue.bits('weather', 'FORECAST_DAILY')), ('hourly', catalogue.bits('weather', 'FORECAST_HOURLY')))
+
 def forecast_kinds(attributes):
-    """The forecasts a weather entity offers, from its supported_features (WeatherEntityFeature: 1 daily,
-    2 hourly). Asking for one it lacks makes Home Assistant log an error; an entity that reports no features
-    (unavailable) is asked for both, as before."""
+    """The forecasts a weather entity offers, from its supported_features (WeatherEntityFeature FORECAST_DAILY and
+    FORECAST_HOURLY, through the tile catalogue). Asking for one it lacks makes Home Assistant log an error; an entity
+    that reports no features (unavailable) is asked for both, as before."""
     features = (attributes or {}).get('supported_features')
     if not isinstance(features, int) or isinstance(features, bool):
         return frozenset(('daily', 'hourly'))
-    return frozenset(kind for kind, bit in (('daily', 1), ('hourly', 2)) if features & bit)
+    return frozenset(kind for kind, bit in FORECAST_BITS if features & bit)
 
 def forecast_number(entry, name):
     value = entry.get(name)
@@ -2028,7 +2070,8 @@ def screen_options(tile, attrs, state=None, entry=None):
     """Stored options on the wire; `icon` travels as the resolved codepoint (firmware 0.2.18+, ignored before)
     and `controls` only as the set the card really shows (firmware 0.2.19+, ignored before)."""
     # A map's own choices stay in the app: who is on it and how it frames them say where people are (app 0.4.33).
-    options = {k: v for k, v in tile.get('options', {}).items() if k not in ('icon', 'controls', 'action', *MAP_OWN)}
+    # So do a favourite's own (app 0.4.42): the screen asks to play its tile, never an id.
+    options = {k: v for k, v in tile.get('options', {}).items() if k not in ('icon', 'controls', 'action', *MAP_OWN, *FAVORITE_OWN)}
     icon = tile_icon(tile, attrs, state, entry)
     if icon:
         options['icon'] = icon
@@ -2123,7 +2166,8 @@ def state_message(index, tile, states, extra=None, precision=None, entry=None, u
         elif isinstance(value, list):
             # Attribute lists have bounded lengths, strings and numeric ranges.
             # A select's options run to sixteen (firmware 0.3.3 pages through them; older firmware keeps the first eight).
-            limit = 2 if key == 'hs_color' else 4 if key == 'fan_speed_list' else 16 if key == 'options' else 8
+            # A remote's activities (firmware 0.22.0+) are a select's options on its card, so they run to sixteen too.
+            limit = 2 if key == 'hs_color' else 4 if key == 'fan_speed_list' else 16 if key in ('options', 'activity_list') else 8
             bounded[key] = [short(v, 48) if isinstance(v, str) else v for v in value[:limit]
                             if isinstance(v, str) or isinstance(v, (float, int)) and math.isfinite(v) and abs(v) <= 1000000]
     # A thermostat without a step of its own steps as Home Assistant's own controls step it: 1 degree in Fahrenheit,
@@ -2534,7 +2578,7 @@ def installation_yaml(data):
         raise ValueError(t('addon.errors.firmware.choice'))
     choice_lines = ''.join(f'  {key}: {quote(chosen[key])}\n' for key in offered if chosen.get(key, offered[key][0]) != offered[key][0])
     # An OTA password, not yet `ota: encryption:` with the api key: ESPHome before 2026.9 refuses that, and the owner's
-    # ESPHome Device Builder may still be older (docs/RELEASING.md, Compatibility 0.2.89).
+    # ESPHome Device Builder may still be older (docs/RELEASING.md, "ESPHome versions").
     key, ota = base64.b64encode(secrets.token_bytes(32)).decode(), secrets.token_urlsafe(24)
     # The Wi-Fi fallback hotspot and its captive portal, where the board has room for them (boards.json `hotspot`,
     # app 0.4.5+): a board with 4 MB of flash leaves both out, some 90 KB of its 1.75 MB update slot. A screen whose

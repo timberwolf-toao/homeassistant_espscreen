@@ -11,8 +11,10 @@ picker is closed and always shows what Home Assistant has at that moment.
 """
 import json
 
-# LightEntityFeature.EFFECT
-EFFECT_FEATURE = 4
+import catalogue
+
+# LightEntityFeature.EFFECT, from Home Assistant's source through the tile catalogue (catalogue/_ha.json).
+EFFECT = catalogue.bits('light', 'EFFECT')
 # Rows the effects page has room for: the effect plus three selects, and two numbers (a Guition shows them all).
 SELECT_ROWS = 3
 NUMBER_ROWS = 2
@@ -29,7 +31,7 @@ OPTIONS_EVENT = 'esphome.screen_options'
 def supports_effects(attrs):
     """Whether the light offers effects: Home Assistant's EFFECT feature and a list to choose from."""
     features = (attrs or {}).get('supported_features')
-    return isinstance(features, int) and bool(features & EFFECT_FEATURE) and isinstance((attrs or {}).get('effect_list'), list)
+    return isinstance(features, int) and bool(features & EFFECT) and isinstance((attrs or {}).get('effect_list'), list)
 
 
 def effect_options(attrs):

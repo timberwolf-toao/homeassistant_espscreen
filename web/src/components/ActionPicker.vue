@@ -8,6 +8,7 @@ import type { EntityAction, Tile } from "../types";
 import Segmented from "./Segmented.vue";
 import Icon from "./ui/Icon.vue";
 import UiSelect from "./ui/UiSelect.vue";
+import UiSuggest from "./ui/UiSuggest.vue";
 
 const props = defineProps<{ tile: Tile }>();
 const list = computed(() => state.entityActions[props.tile.entity]);
@@ -106,6 +107,10 @@ const unitOf = (field: Field) => configOf(field).unit_of_measurement || (kindOf(
               :value="chosen?.data?.[field.key] ?? ''" :placeholder="exampleOf(field)" @input="onNumber(field, ($event.target as HTMLInputElement).value)" />
             <span v-if="unitOf(field)">{{ unitOf(field) }}</span>
           </div>
+          <!-- A remote's commands as its integration takes them (GitHub #117): pick one or type your own. -->
+          <UiSuggest v-else-if="field.suggestions?.length" :aria-label="field.name" :model-value="textValue(chosen?.data?.[field.key])" :suggestions="field.suggestions"
+            :placeholder="exampleOf(field)" @update:model-value="(raw) => onText(field, raw)" @pick="(value) => setField(field.key, value)"
+            @focus="beginFieldEdit(`action:${tile.id}:${field.key}`)" @blur="endFieldEdit()" />
           <input v-else type="text" :aria-label="field.name" @focus="beginFieldEdit(`action:${tile.id}:${field.key}`)" @blur="endFieldEdit()" :value="textValue(chosen?.data?.[field.key])" :placeholder="exampleOf(field)" @input="onText(field, ($event.target as HTMLInputElement).value)" />
           <small v-if="field.description" class="help">{{ field.description }}</small>
         </div>

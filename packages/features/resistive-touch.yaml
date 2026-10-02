@@ -4,7 +4,8 @@
 # The board file names the controller, its bus and its pins as `touchscreen:` with `id: ts_touch`, the pressure that
 # counts as a touch (`threshold:`), and the calibration it measured (TOUCH_CAL_*). This file adds what the firmware
 # does with a touch on such glass: a tap may drift a little and must last a moment, pages change with LVGL's swipe
-# gesture anywhere over the tiles, and the calibration wizard runs on the first start and from the settings page
+# gesture anywhere over the tiles, a swipe from the top or the bottom edge opens the settings page or goes home, and
+# the calibration wizard runs on the first start and from the settings page
 # (docs/CALIBRATING.md). A capacitive panel reads its touches another way (features/capacitive-touch.yaml).
 substitutions:
   # A tap survives a finger that drifts up to this far (56 px at 143 dpi: 1 cm); further is a swipe.
@@ -18,6 +19,11 @@ substitutions:
   # Holding the top bar opens the settings page (0.2.44+). The whole strip counts on such glass;
   # a finger that travels further than the drift limit of a tap is swiping, not holding.
   SETTINGS_HOLD_X: "0"
+  # Up from the bottom edge goes home and down from the top edge opens the settings page, over every card too
+  # (firmware 0.28.0+): a touch that starts in this band along the top or the bottom (about 5 mm) and travels this far
+  # (about 6 mm). The side edges have no band here, a flick anywhere turns the page (BOOT_PAGE_GESTURE).
+  EDGE_SWIPE_BAND_PX: ${ (32 * ((DISPLAY_DPI | float) / 170)) | round | int }
+  EDGE_SWIPE_TRAVEL_PX: ${ (40 * ((DISPLAY_DPI | float) / 170)) | round | int }
   # The correction the calibration wizard measures and saves on the screen; neutral until it has (tools/calibrate.py
   # writes a measured one into a screen's own YAML).
   TOUCH_AFFINE_XX: "1.000000000"
@@ -38,6 +44,8 @@ substitutions:
     // Per-panel affine correction; shared defaults are neutral.
     id(ts_touch).set_raw_correction(${TOUCH_AFFINE_XX}f, ${TOUCH_AFFINE_XY}f, ${TOUCH_AFFINE_XC}f, ${TOUCH_AFFINE_YX}f, ${TOUCH_AFFINE_YY}f, ${TOUCH_AFFINE_YC}f);
     screen_input::touch_guard.configure(${TOUCH_MOVE_LIMIT_PX}, ${TOUCH_MIN_PRESS_MS});
+    screen_input::edge_swipe.configure(${EDGE_SWIPE_BAND_PX}, ${EDGE_SWIPE_TRAVEL_PX});
+    screen_input::edge_swipe.without_sides();
     screen_input::edge_snap_band = ${SLIDER_EDGE_SNAP_PX};
     id(last_touch_ms) = millis();
     id(last_use_ms) = millis();
@@ -117,6 +125,7 @@ touchscreen:
           int screen_x = touch.x, screen_y = touch.y;
           if (runtime_tiles::touch_input::to_screen) runtime_tiles::touch_input::to_screen(screen_x, screen_y);
           screen_calibration::press(touch.id, screen_x, screen_y, id(ts_touch).filtered_raw_x(), id(ts_touch).filtered_raw_y());
+          runtime_tiles::touch_input::edge_press(touch.x, touch.y);
           ESP_LOGI("touch", "press native=%u,%u screen=%d,%d raw=%d,%d pressure=%d calibration=%d", touch.x, touch.y, screen_x, screen_y, id(ts_touch).filtered_raw_x(), id(ts_touch).filtered_raw_y(), touch.z_raw, id(calibration_active));
     on_update:
       - lambda: |-
@@ -130,6 +139,7 @@ touchscreen:
             int screen_x = point.x, screen_y = point.y;
             if (runtime_tiles::touch_input::to_screen) runtime_tiles::touch_input::to_screen(screen_x, screen_y);
             screen_calibration::hold(point.id, screen_x, screen_y, id(ts_touch).filtered_raw_x(), id(ts_touch).filtered_raw_y());
+            if (point.id == screen_input::touch_guard.contact()) runtime_tiles::touch_input::edge_move(point.x, point.y);
           }
     on_release:
       - lambda: |-
@@ -137,3 +147,4 @@ touchscreen:
           id(last_use_ms) = millis();
           id(touch_down) = false;
           screen_calibration::release();
+          runtime_tiles::touch_input::edge_release();

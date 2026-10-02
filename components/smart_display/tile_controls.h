@@ -19,7 +19,6 @@
 #include <vector>
 
 namespace tile_controls {
-// Home Assistant supported_features bits.
 // Home Assistant's feature bits by the names this code knew them by, their values from Home Assistant's source through the
 // tile catalogue (tile_catalogue.h, catalogue/_ha.json): none is counted by hand here.
 namespace feature {
@@ -30,6 +29,9 @@ constexpr uint32_t COVER_OPEN_TILT = ha::cover::OPEN_TILT, COVER_CLOSE_TILT = ha
 constexpr uint32_t MEDIA_PAUSE = ha::media_player::PAUSE, MEDIA_VOLUME_SET = ha::media_player::VOLUME_SET, MEDIA_VOLUME_MUTE = ha::media_player::VOLUME_MUTE,
                    MEDIA_PREVIOUS = ha::media_player::PREVIOUS_TRACK, MEDIA_NEXT = ha::media_player::NEXT_TRACK, MEDIA_TURN_ON = ha::media_player::TURN_ON,
                    MEDIA_PLAY = ha::media_player::PLAY;
+// The media card's seek, shuffle and repeat, and what a library start takes (firmware 0.24.0+).
+constexpr uint32_t MEDIA_SEEK = ha::media_player::SEEK, MEDIA_SHUFFLE = ha::media_player::SHUFFLE_SET, MEDIA_REPEAT = ha::media_player::REPEAT_SET,
+                   MEDIA_PLAY_MEDIA = ha::media_player::PLAY_MEDIA, MEDIA_SELECT_SOURCE = ha::media_player::SELECT_SOURCE;
 constexpr uint32_t VACUUM_TURN_ON = ha::vacuum::TURN_ON, VACUUM_TURN_OFF = ha::vacuum::TURN_OFF, VACUUM_PAUSE = ha::vacuum::PAUSE, VACUUM_STOP = ha::vacuum::STOP,
                    VACUUM_RETURN = ha::vacuum::RETURN_HOME, VACUUM_START = ha::vacuum::START, VACUUM_LOCATE = ha::vacuum::LOCATE;
 constexpr uint32_t CLIMATE_TEMPERATURE = ha::climate::TARGET_TEMPERATURE, CLIMATE_RANGE = ha::climate::TARGET_TEMPERATURE_RANGE;
@@ -166,8 +168,9 @@ inline uint32_t accent(const Tile &t) {
   using namespace theme::ha;
   const auto d = t.domain();
   if (d == "binary_sensor") return alarm_class(t.device_class) ? RED : AMBER;
-  // An automation has no colour of its own in Home Assistant: on (or running, when a tap runs it) is --state-active-color.
-  if (d == "light" || d == "switch" || d == "input_boolean" || d == "script" || d == "automation" || d == "timer" || d == "camera") return AMBER;
+  // An automation and a remote have no colour of their own in Home Assistant: on (or running, when a tap runs an
+  // automation) is --state-active-color.
+  if (d == "light" || d == "switch" || d == "input_boolean" || d == "script" || d == "automation" || d == "remote" || d == "timer" || d == "camera") return AMBER;
   if (d == "climate") { const uint32_t c = mode_color(t.state); return c == GREY ? AMBER : c; }
   if (d == "vacuum") return t.state == "error" ? RED : TEAL;
   if (d == "fan") return CYAN;
@@ -576,9 +579,12 @@ inline unsigned keys_for(const Tile &t, std::array<Key, 3> &out, uint32_t now = 
     add(active ? glyph::PAUSE : glyph::PLAY, active ? TIMER_PAUSE : TIMER_START);
     add(glyph::CLOSE, TIMER_CANCEL);
   } else if (c == "playback") {
-    if (t.supported & feature::MEDIA_PREVIOUS) add(glyph::PREVIOUS, MEDIA_PREVIOUS);
-    if (t.supported & (feature::MEDIA_PLAY | feature::MEDIA_PAUSE)) add(t.state == "playing" ? glyph::PAUSE : glyph::PLAY, MEDIA_PLAY_PAUSE, !(t.supported & (t.state == "playing" ? feature::MEDIA_PAUSE : feature::MEDIA_PLAY)));
-    if (t.supported & feature::MEDIA_NEXT) add(glyph::NEXT, MEDIA_NEXT);
+    // A player at rest keeps the keys it had while it played (firmware 0.24.0+, GitHub #88): Spotify reports none of
+    // them while it plays nowhere. They stand where they were, faded until the player reports them again.
+    const uint32_t had = t.supported | t.extra().media_features;
+    if (had & feature::MEDIA_PREVIOUS) add(glyph::PREVIOUS, MEDIA_PREVIOUS, !(t.supported & feature::MEDIA_PREVIOUS));
+    if (had & (feature::MEDIA_PLAY | feature::MEDIA_PAUSE)) add(t.state == "playing" ? glyph::PAUSE : glyph::PLAY, MEDIA_PLAY_PAUSE, !(t.supported & (t.state == "playing" ? feature::MEDIA_PAUSE : feature::MEDIA_PLAY)));
+    if (had & feature::MEDIA_NEXT) add(glyph::NEXT, MEDIA_NEXT, !(t.supported & feature::MEDIA_NEXT));
   } else if (c == "chevrons") {
     // Nothing to step through is not a state that can lag: without two options there is no next one.
     add(glyph::LEFT, SELECT_PREVIOUS, t.extra().options.size() < 2);
@@ -638,7 +644,7 @@ inline Action key_action(const Tile &t, int command, const std::string &arg = ""
       if (d == "automation") return {"automation.trigger", "", ""};
       return {};
     case TOGGLE:
-      if (d == "light" || d == "switch" || d == "input_boolean" || d == "fan" || d == "automation") return {d + (t.state == "on" ? ".turn_off" : ".turn_on"), "", ""};
+      if (d == "light" || d == "switch" || d == "input_boolean" || d == "fan" || d == "automation" || d == "remote") return {d + (t.state == "on" ? ".turn_off" : ".turn_on"), "", ""};
       return {};
     default: return {};
   }
@@ -760,7 +766,10 @@ struct Tap { TapRoute route = TapRoute::NONE; std::string service; bool busy = f
 inline bool runtime_card_domain(const std::string &d) {
   return d == "sensor" || d == "binary_sensor" || d == "weather" || d == "number" || d == "input_number" || d == "select" ||
          d == "input_select" || d == "media_player" || d == "vacuum" || d == "cover" || d == "sun" || d == "person" ||
-         d == "timer" || d == "climate" || d == "alarm_control_panel";
+         d == "timer" || d == "climate" || d == "alarm_control_panel" ||
+         // A remote opens its card, as Home Assistant's tile card opens its dialog: the power key and its activities
+         // (firmware 0.22.0+). The tap option `toggle` switches it instead.
+         d == "remote";
 }
 // Whether a light offers a colour or a colour temperature, and so opens the colour card instead of the card
 // with the brightness slider. The modes come from Home Assistant as one string (`supported_color_modes`) and
@@ -798,7 +807,7 @@ inline bool panel_available(const Tile &t) {
   if(mode=="volume")return domain=="media_player"&&(t.supported&(feature::MEDIA_VOLUME_SET|feature::MEDIA_VOLUME_MUTE));
   if(mode=="setpoint")return domain=="climate"&&(t.supported&(feature::CLIMATE_TEMPERATURE|feature::CLIMATE_RANGE)); // one or a range (firmware 0.19.0)
   if(mode=="slider"||mode=="stepper")return domain=="number"||domain=="input_number";
-  if(mode=="toggle")return domain=="light"||domain=="switch"||domain=="input_boolean"||domain=="fan"||domain=="automation";
+  if(mode=="toggle")return domain=="light"||domain=="switch"||domain=="input_boolean"||domain=="fan"||domain=="automation"||domain=="remote";
   if(mode=="run")return domain=="scene"||domain=="script"||domain=="button"||domain=="input_button"||domain=="automation";
   return false;
 }

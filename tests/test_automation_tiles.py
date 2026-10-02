@@ -93,8 +93,8 @@ class HomeAssistantsWay(unittest.TestCase):
 
     def test_colours(self):
         # state_color.ts: automation has no colour variable of its own, so on is --state-active-color (amber).
-        self.assertIn('d == "script" || d == "automation" || d == "timer"', CONTROLS)
-        self.assertIn('"script", "automation", "timer", "camera"].includes(domain)) return c.AMBER', PALETTE)
+        self.assertIn('d == "script" || d == "automation" || d == "remote" || d == "timer"', CONTROLS)
+        self.assertIn('"script", "automation", "remote", "timer", "camera"].includes(domain)) return c.AMBER', PALETTE)
         # A run button is coloured only while its actions run, in the firmware and in the editor's preview.
         self.assertIn('if (runs()) return running;', MODEL)
         self.assertIn('if (runs && domain === "automation") return Number(value?.a?.current) > 0;', PALETTE)

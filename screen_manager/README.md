@@ -22,4 +22,4 @@ The app uses Home Assistant Ingress and needs no login or token of its own.
 - [Website](https://tessera-maxgramser.on-forge.com): what Tessera is, screenshots, and which screens work.
 - [Quick start](https://tessera-maxgramser.on-forge.com/docs/quick-start) and [Supported screens](https://tessera-maxgramser.on-forge.com/screens).
 - [Community](https://tessera-maxgramser.on-forge.com/community): tell others which screen you have and what works.
-- [Source on GitHub](https://github.com/MaxGramser/homeassistant_espscreen): open source, MIT licensed, no subscription.
+- [Source on GitHub](https://github.com/MaxGramser/homeassistant_espscreen): open source (AGPL-3.0), no subscription.

@@ -66,17 +66,23 @@ export const LOOK_BARS: Record<Look, BarMetrics & { dpi: number }> = {
   standard: { width: 448, top: 36, name: 27, text: 21, icon: 26, inset: 16, mark: 24, dpi: 170 },
   compact: { width: 302, top: 24, name: 18, text: 14, icon: 18, inset: 9, mark: 18, dpi: 143 },
 };
-export type ShapeLike = { width: number; look?: string; dpi?: number };
-// The bar for a screen of this shape: the look's sizes scaled to the screen's density, the way the firmware scales
-// every size (ui::px), across the screen's own width. The margin is the tiles' own (HEADER_INSET is GRID_MARGIN, firmware
-// 0.14.0+): scaled, but never more pixels than the look's own. The two first boards come out exactly as they are.
+export type ShapeLike = { width: number; look?: string; dpi?: number; fonts?: { headline?: number; sublabel_big?: number; icon_mini?: number; icon_home?: number };
+  spacing?: { margin: number } };
+// Python's round(), which ESPHome's substitutions round with: a half goes to the even neighbour.
+const roundHalfEven = (x: number) => { const f = Math.floor(x), d = x - f; return d > 0.5 || (d === 0.5 && f % 2 !== 0) ? f + 1 : f; };
+// The bar for a screen of this shape. A board's own sizes where the add-on gives them (boards.json): the
+// page title, the values and the icons in the fonts its build has (FONT_HEADLINE_SIZE, FONT_SUBLABEL_BIG_SIZE,
+// FONT_ICON_MINI_SIZE; a board may set one by hand), the margin of its tiles (HEADER_INSET is GRID_MARGIN, firmware
+// 0.14.0+) and the Tessera mark at 17 of the 24 units of FONT_ICON_HOME_SIZE (packages/core.yaml). Without them the
+// look's sizes scaled to the screen's density, the way the build scales them, across the screen's own width; the
+// margin scaled, but never more pixels than the look's own.
 export function barMetricsFor(shape: ShapeLike): BarMetrics {
   const base = LOOK_BARS[shape.look === "compact" || (!shape.look && shape.width < 400) ? "compact" : "standard"];
   const f = (shape.dpi && shape.dpi > 0 ? shape.dpi : base.dpi) / base.dpi;
-  const px = (n: number) => Math.round(n * f);
-  const inset = Math.min(px(base.inset), base.inset);
-  return { width: shape.width - 2 * inset, top: px(base.top), name: px(base.name), text: px(base.text),
-           icon: px(base.icon), inset, mark: px(base.mark) };
+  const px = (n: number) => Math.round(n * f), fonts = shape.fonts ?? {};
+  const inset = shape.spacing?.margin ?? Math.min(px(base.inset), base.inset);
+  return { width: shape.width - 2 * inset, top: px(base.top), name: fonts.headline ?? px(base.name), text: fonts.sublabel_big ?? px(base.text),
+           icon: fonts.icon_mini ?? px(base.icon), inset, mark: fonts.icon_home ? roundHalfEven((fonts.icon_home * 17) / 24) : px(base.mark) };
 }
 export type ItemView = { icon?: string | null; text?: string; color?: string | null; shown: boolean; analog?: boolean; loading?: boolean };
 type Ink = { left: number; right: number; top: number; bottom: number; advance: number };

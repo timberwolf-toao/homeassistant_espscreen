@@ -172,7 +172,12 @@ firmware update.
   `ha-words` needs a Home Assistant: `HA_URL` and `HA_TOKEN` in the environment. When Home Assistant adds a language,
   add its code to `HA_LANGUAGES` in `tools/i18n.py` and run `cldr --write` for its clock and numbers.
 - **What stays English everywhere:**
-  - the names of the screens' own entities in Home Assistant (renaming one gives it a new entity id);
+  - the names of the screens' own entities in Home Assistant (renaming one gives it a new entity id). The add-on
+    also finds a screen by the names of its diagnostic entities (`NAME_*` in `screen_manager/app/core.py`: Tile
+    settings, Screen firmware, Device name, Screen board, ...). If one must change, keep the old name in its
+    `NAME_*` pair, and for Tile settings `Manager.follow_renamed_inboxes` as well, since the stored layouts are
+    keyed by its entity id. A new unit or device class for an existing sensor needs a new entity, because Home
+    Assistant's registry keeps the old one;
   - log lines;
   - the statuses the app reads from a screen;
   - release notes;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pillMetrics, textEms, uiScale, widestSetpoint, cardContent, modeBar, wideChip } from "../src/model/ui-scale";
+import { pillMetrics, textEms, uiScale, widestSetpoint, cardContent, cellContent, modeBar, wideChip } from "../src/model/ui-scale";
 
 describe("the firmware's sizes in the mockup (app 0.4.32)", () => {
   it("scales as ui::px does, from the board's density and look", () => {
@@ -35,5 +35,13 @@ describe("a card's room as the glass works it out (app 0.4.32)", () => {
   it("draws a wide chip's number as large as it fits alone, and its icon only where that fits too (range_chip)", () => {
     expect(wideChip(guition, 2, "88°")).toEqual({ face: 38, icon: true });
     expect(wideChip(cyd, 2, "88°")).toEqual({ face: 22, icon: false });
+  });
+  it("shares the page between its columns as LVGL's grid does, and a wide card's controls the cell rounded down", () => {
+    // 1280 wide in five columns: LVGL gives 242, 242, 241, 242 and 241 pixels; cell_content_width 241 for each.
+    const big = { width: 1280, dpi: 149, look: "standard", spacing: { margin: 14, gap: 11, tile_pad: 11 } };
+    expect([0, 1, 2, 3, 4].map((start) => cardContent(big, 5, 1, start))).toEqual([218, 218, 217, 218, 217]);
+    expect(cardContent(big, 5, 5)).toBe(1280 - 28 - 24);
+    expect(cellContent(big, 5)).toBe(217);
+    expect(cellContent(guition, 2)).toBe(cardContent(guition, 2, 1));
   });
 });

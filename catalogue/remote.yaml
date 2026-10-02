@@ -1,0 +1,39 @@
+# Remote. Home Assistant: homeassistant/components/remote.
+# Home Assistant's own facts for it (flags, actions) come from its source: catalogue/_ha.json (tools/read_ha_source.py).
+# docs/CATALOGUE.md says what every key means.
+# Home Assistant offers no list of the commands a remote knows, so a key for one is a tile set to Perform action with
+# remote.send_command, a command typed by hand (GitHub #117).
+domain: remote
+firmware: 0.22.0   # the first firmware that draws this type
+displays:
+  standard: {}
+  watch: {}
+controls:
+  toggle:
+    needs: {actions: [remote.toggle]}
+# The keys of a remote's card (keypad, firmware 0.22.0): a ring of four arrows round OK, Back, Home and Play/Pause, and
+# volume where the remote has it, as every TV remote has them. Per integration the command each key sends, by the name
+# that integration takes (catalogue/_remote_commands.json, read from Home Assistant and the library it pins): the
+# generator stops on a name that list does not have, so a key Home Assistant drops never reaches a screen. A remote
+# whose integration is not here (Harmony, Broadlink) has no keypad; its keys are tiles that send commands.
+keypad:
+  androidtv_remote: {up: DPAD_UP, down: DPAD_DOWN, left: DPAD_LEFT, right: DPAD_RIGHT, ok: DPAD_CENTER, back: BACK, home: HOME,
+                     play: MEDIA_PLAY_PAUSE, volume_up: VOLUME_UP, volume_down: VOLUME_DOWN, mute: MUTE}
+  androidtv: {up: UP, down: DOWN, left: LEFT, right: RIGHT, ok: CENTER, back: BACK, home: HOME, volume_up: VOLUME_UP,
+              volume_down: VOLUME_DOWN, mute: MUTE}
+  apple_tv: {up: up, down: down, left: left, right: right, ok: select, back: menu, home: home, play: play_pause,
+             volume_up: volume_up, volume_down: volume_down}
+  roku: {up: up, down: down, left: left, right: right, ok: select, back: back, home: home, play: play, volume_up: volume_up,
+         volume_down: volume_down, mute: volume_mute}
+  sky_remote: {up: up, down: down, left: left, right: right, ok: select, back: backup, home: home, play: play}
+  directv: {up: up, down: down, left: left, right: right, ok: select, back: back, home: menu, play: play}
+  lg_netcast: {up: UP, down: DOWN, left: LEFT, right: RIGHT, ok: OK, back: BACK, home: HOME_MENU, play: PLAY,
+               volume_up: VOLUME_UP, volume_down: VOLUME_DOWN, mute: MUTE_TOGGLE}
+  panasonic_viera: {up: UP, down: DOWN, left: LEFT, right: RIGHT, ok: ENTER, back: RETURN_KEY, home: HOME, play: PLAY,
+                    volume_up: VOLUME_UP, volume_down: VOLUME_DOWN, mute: MUTE}
+  vizio: {up: up, down: down, left: left, right: right, ok: ok, back: back, home: smartcast, play: play, volume_up: vol_up,
+          volume_down: vol_down, mute: mute_toggle}
+  xbox: {up: Up, down: Down, left: Left, right: Right, ok: A, back: B, home: Nexus, play: Play}
+  kaleidescape: {up: up, down: down, left: left, right: right, ok: select, back: cancel, home: go_movie_covers}
+  jvc_projector: {up: up, down: down, left: left, right: right, ok: ok, back: back, home: menu}
+  lyngdorf: {up: up, down: down, left: left, right: right, ok: enter, back: back, home: menu}

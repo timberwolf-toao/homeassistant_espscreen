@@ -1,0 +1,62 @@
+<script setup lang="ts">
+// A text field with the values it usually takes in a short list under it (GitHub #117): a remote's commands, read from
+// Home Assistant and the library it pins. Typing narrows the list, the arrows and Enter pick, and anything else typed
+// still goes, so a learned code or a hub's own name keeps working. The list stays in the panel (no popover), as the
+// library's results do, and only while the field has the cursor.
+import { computed, ref, watch } from "vue";
+
+const props = defineProps<{ modelValue: string; suggestions: readonly string[]; placeholder?: string; ariaLabel?: string; max?: number }>();
+const emit = defineEmits<{ "update:modelValue": [value: string]; pick: [value: string]; focus: []; blur: [] }>();
+const open = ref(false);
+const active = ref(0);
+const id = `suggest-${Math.random().toString(36).slice(2, 8)}`;
+// What is typed narrows the list from the start of a word first, then anywhere: "vol" finds VOLUME_UP before
+// MEDIA_VOLUME; case and _ / - / space don't matter, as the integrations that fold case take it either way.
+const fold = (text: string) => text.toLocaleLowerCase().replace(/[\s_-]+/g, "");
+const shown = computed(() => {
+  const typed = fold(props.modelValue || "");
+  if (!typed) return props.suggestions.slice(0, props.max ?? 60);
+  const words = (value: string) => value.toLocaleLowerCase().split(/[\s_-]+/);
+  const first = props.suggestions.filter((value) => fold(value).startsWith(typed) || words(value).some((word) => word.startsWith(typed)));
+  const rest = props.suggestions.filter((value) => !first.includes(value) && fold(value).includes(typed));
+  return [...first, ...rest].slice(0, props.max ?? 60);
+});
+// The list hides once the field holds exactly one of its values: there is nothing left to choose.
+const visible = computed(() => open.value && shown.value.length > 0 && !(shown.value.length === 1 && shown.value[0] === props.modelValue));
+watch(() => props.modelValue, () => { active.value = 0; });
+function pick(value: string) {
+  emit("pick", value);
+  open.value = false;
+}
+function onKey(event: KeyboardEvent) {
+  if (!visible.value) {
+    if (event.key === "ArrowDown") { open.value = true; event.preventDefault(); }
+    return;
+  }
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    active.value = (active.value + (event.key === "ArrowDown" ? 1 : -1) + shown.value.length) % shown.value.length;
+    document.getElementById(`${id}-${active.value}`)?.scrollIntoView({ block: "nearest" });
+    event.preventDefault();
+  } else if (event.key === "Enter") {
+    pick(shown.value[active.value]);
+    event.preventDefault();
+  } else if (event.key === "Escape") {
+    open.value = false;
+    event.stopPropagation();
+  }
+}
+</script>
+
+<template>
+  <div class="ui-suggest">
+    <input type="text" role="combobox" autocomplete="off" spellcheck="false" :aria-label="ariaLabel" :aria-expanded="visible ? 'true' : 'false'"
+      :aria-controls="id" :aria-activedescendant="visible ? `${id}-${active}` : undefined" :value="modelValue" :placeholder="placeholder"
+      @input="emit('update:modelValue', ($event.target as HTMLInputElement).value); open = true" @focus="open = true; emit('focus')"
+      @blur="open = false; emit('blur')" @keydown="onKey" />
+    <div v-show="visible" :id="id" class="ui-suggest-list" role="listbox" :aria-label="ariaLabel">
+      <!-- mousedown.prevent: the field keeps the cursor, so its blur doesn't close the list before the click lands. -->
+      <div v-for="(value, i) in shown" :id="`${id}-${i}`" :key="value" class="ui-menu-item" role="option" :aria-selected="i === active ? 'true' : 'false'"
+        :data-highlighted="i === active ? '' : undefined" @mousedown.prevent @mouseenter="active = i" @click="pick(value)">{{ value }}</div>
+    </div>
+  </div>
+</template>

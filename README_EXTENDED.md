@@ -25,6 +25,11 @@ on the screen itself, and how updates work.
   Search by entity, device, or room, and drag to reorder. A whole page moves the same way: drag it by its
   number to another place in the row, and its tiles, its own title and the Go to page tiles that lead to it come
   along. Remove page in the page's ··· menu takes a page away with those same tiles, with Undo beside the message.
+- **On a phone** (app 0.4.40) the editor shows the screen itself, one page at a time: swipe for the next page, tap
+  its name under the screen for the list of pages. **Add tile** opens a sheet to pick one, a tap on an empty place adds
+  it right there, and a tap on a tile gives its name, icon and colour, with More settings for the rest. Everything else
+  (preview, undo, pages, the top bar, screen settings) is in the screen's ··· menu, and **Full editor** there brings back
+  the editor of a computer on that phone.
 - **Per-tile settings:** a custom name, click behavior, a small slider where
   supported, or a large value for things like temperature and power usage.
   On a double-width tile the small slider stands beside the name, in the cell
@@ -155,6 +160,19 @@ on the screen itself, and how updates work.
   skipped. For an automation you mostly run by hand, set **On tap** to **Run automation actions**: then a tap runs it and holding
   the tile turns it on or off. That tile looks like a script's button: grey at rest with when it last ran, amber while
   its actions run, and Off while nothing starts it on its own. A double-width tile carries a switch or a Run key.
+- **Remote** (firmware 0.22.0, GitHub #117): a remote, such as a Harmony hub, an Android TV or an IR blaster, is a tile
+  in Home Assistant's colours and icons, amber while on and a crossed-out remote while off. A tap opens its card, as
+  Home Assistant's dialog does: the power key in the top bar and, where the remote has activities, one row per
+  activity, which turns it on with that activity. For a remote whose integration names its keys in its source (Apple
+  TV, Android TV, Roku, Sky, LG, Panasonic, Vizio, Xbox and more) the card is a keypad instead: four arrows round OK,
+  with Back, Home, Play/Pause and the volume where that remote has them. The tile names the activity it runs. Set **On tap** to **On / off**
+  to switch it with a tap instead. Home Assistant lists no commands a remote knows, so a key is a tile of its own: set
+  **On tap** to **Perform action**, choose **Send command** and pick the command, with the **Device** a Broadlink asks
+  for, and give that tile its own name and icon. For thirteen integrations (Android TV, Apple TV, Roku, Sky, DirecTV,
+  LG, Panasonic, Vizio, Xbox and more) the command field lists the commands the remote takes, read from Home Assistant
+  and the library version it uses, so the list follows Home Assistant. For the others (Harmony, Broadlink, Samsung)
+  type the command as Home Assistant knows it; a typed command always goes. For an IR blaster "on" means it may send, not that
+  the device behind it runs: a Broadlink that is off drops every command.
 - **Direct control on double-width tiles** (firmware 0.2.19+), like the rows in
   Home Assistant: temperature − / + or mode buttons (climate), a toggle (switch,
   light, fan), start/stop/dock (vacuum), open/stop/close or a
@@ -204,6 +222,21 @@ on the screen itself, and how updates work.
   off shows a power key. A Guition fetches the cover through ESP Screens, like a camera picture
   ([docs/CAMERA.md](docs/CAMERA.md)); the CYD shows the player's icon in its place. A media tile of
   size **Full page** is the same card on the page, with the keys and the volume working on the tile.
+- **Music from the library** (app 0.4.42 / firmware 0.24.0): the media card sits on a dark ground in the colour of
+  the cover that plays, with the speaker at the top (a tap moves the music to another one), shuffle, repeat and a bar
+  you drag through the track. The library key opens what Home Assistant can browse on the player (`media_player.browse_media`),
+  folder by folder down to a page of up to 48 covers; a tap plays one. **Display → Favourite** turns a media tile into
+  one playlist, album or artist, picked in the editor from the same library, with the speaker it plays on; a tap starts
+  it and a ring marks it while it plays. A Spotify player at rest keeps its library and speakers. The library and the
+  covers need a board with camera pictures; the CYD keeps the card, the speakers and the favourites with icons.
+- **Speakers together** (app 0.4.45 / firmware 0.26.0): the speaker menu of a player that reports grouping lists the
+  players of its own integration that do too, as Home Assistant's own join dialog does. A plus joins one
+  (`media_player.join`), the tick takes it out (`media_player.unjoin`), and each speaker in the group has its own volume.
+  The Spotify tile also lists every speaker whose library holds the Spotify account (a Sonos with Spotify linked shows
+  it): a tap moves what plays there with `play_media`, and the card follows that speaker until Spotify plays on its own
+  again. A player's `source_list` is its input in Home Assistant, so a Sonos's TV input and favourites or a TV's ports
+  sit behind an input key with Home Assistant's icon for it, never among the speakers. Spotify's sources stay speakers,
+  since they are the Spotify Connect devices.
 - **Cameras** on a Guition (app 0.2.66 / firmware 0.2.57): a `camera.*` entity, or an `image.*` one such
   as a doorbell's last ring, is a tile like any other. A tap opens the picture full screen, refreshed every
   four seconds, with the round back key; standby and **Back to page 1** close it. The same camera can bring its
@@ -237,8 +270,8 @@ on the screen itself, and how updates work.
   on at bedtime (firmware 0.2.54+), and
   wake a screen or put it to sleep with its **Wake** and **Sleep** buttons (firmware 0.2.45+).
   See [Wake and sleep](#wake-and-sleep-from-an-automation).
-- **Settings on the screen itself** (firmware 0.2.44+): hold the top bar for about a
-  second and a half and the screen opens its own settings page — brightness, night,
+- **Settings on the screen itself** (firmware 0.2.44+): swipe down from the top edge (firmware 0.28.0+) or hold the
+  top bar for about a second and a half and the screen opens its own settings page: brightness, night,
   the clock, back to page 1, swiping, the page buttons, the home button, rotation, and what this screen is
   (name, IP address, firmware, whether Home Assistant is connected, and Restart). Changes show up in ESP Screens
   within a second. See [Settings on the screen](#settings-on-the-screen).
@@ -256,12 +289,12 @@ on the screen itself, and how updates work.
 
 <p align="center">
   <img src="docs/images/guition-tiles-controls.png" width="32%" alt="Double-width tiles with direct control: heating mode keys with heat selected, previous, pause and next for the Sonos, and a ceiling fan's speed slider">
-  <img src="docs/images/guition-tiles-values.png" width="32%" alt="Power and humidity as large values, a lamp and a fan with a small slider on the tile, and an all-off script and a welcome-home scene with red and green backgrounds and when they last ran">
+  <img src="docs/images/guition-tiles-values.png" width="32%" alt="Power and humidity as large values, a table lamp with its dimmer on a double-width tile, and an all-off script and a welcome-home scene in pastel pink and lilac with when they last ran">
   <img src="docs/images/guition-tiles-clock.png" width="32%" alt="A digital clock with the date, a pasta timer with pause and cancel, the outside temperature as a large value, and garden lights that are off">
 </p>
 <p align="center">
   <img src="docs/images/cyd-tiles-controls.png" width="32%" alt="The CYD with heating mode keys, playback keys for the radio and a ceiling fan's speed slider">
-  <img src="docs/images/cyd-tiles-values.png" width="32%" alt="The CYD with power and humidity as large values, a lamp and a fan with small sliders, and red and green scene tiles">
+  <img src="docs/images/cyd-tiles-values.png" width="32%" alt="The CYD with power and humidity as large values, the kitchen lamp and the fan, and an all-off script and a welcome-home scene in pastel pink and lilac">
   <img src="docs/images/cyd-tiles-choices.png" width="32%" alt="The CYD with a digital clock, previous and next for the house mode, and start, stop and dock for the robot vacuum">
 </p>
 <p align="center"><sub>What a tile can do: keys and sliders on double-width tiles, previous and next for a choice, large values, small sliders, pastel colors, a clock and a timer.</sub></p>
@@ -271,9 +304,9 @@ on the screen itself, and how updates work.
   <img src="docs/images/guition-light.png" width="32%" alt="Light control: color, color temperature and brightness">
 </p>
 <p align="center">
-  <img src="docs/images/guition-vacuum.png" width="32%" alt="Vacuum card: docked and charging, start and dock, the cleaning mode vacuum, vac and mop or mop, suction and water">
+  <img src="docs/images/guition-vacuum.png" width="32%" alt="Vacuum card: docked at 100 %, Start cleaning and Dock, and the suction from Quiet to Max">
   <img src="docs/images/guition-fan.png" width="32%" alt="Fan card: the speed as a tall slider with the fan in it">
-  <img src="docs/images/guition-page-3.png" width="32%" alt="Curtains with open, stop and close, a kitchen timer counting down, a scene and the sun path">
+  <img src="docs/images/guition-page-3.png" width="32%" alt="The Good morning page: an analog clock with the time and the date, the weather for four days, the coffee machine in orange and Sam at home">
 </p>
 <p align="center">
   <img src="docs/images/guition-blind.png" width="32%" alt="Cover card for a venetian blind: its battery, the position slider with the blind hanging from the top, the tilt slider over slats, and open, stop and close">
@@ -283,10 +316,10 @@ on the screen itself, and how updates work.
 <p align="center">
   <img src="docs/images/guition-history.png" width="32%" alt="History card for a temperature: the value now, the highest and lowest moment with their times, a line over 24 hours with an axis in degrees and clock times, and keys for 1 hour, 24 hours and 1 week">
   <img src="docs/images/guition-history-touch.png" width="32%" alt="A finger on the history graph: the top of the card shows the average of that hour and its time, the graph stays as it is">
-  <img src="docs/images/guition-history-person.png" width="32%" alt="History card for a person over a week: home, away and the zones they were in, with the time in each">
+  <img src="docs/images/guition-history-person.png" width="32%" alt="History card for a person over 24 hours: at the office, away and home, with the time in each">
 </p>
 <p align="center">
-  <img src="docs/images/cyd-vacuum.png" width="32%" alt="The vacuum card on the CYD: state, battery and charging, clean and dock, the cleaning mode, suction and water">
+  <img src="docs/images/cyd-vacuum.png" width="32%" alt="The vacuum card on the CYD: docked at 100 %, clean and dock, and the suction from Quiet to Max">
   <img src="docs/images/cyd-climate.png" width="32%" alt="The climate card on the CYD: the target temperature with big minus and plus keys and one row of mode keys">
   <img src="docs/images/cyd-blind.png" width="32%" alt="The cover card on the CYD: the position and tilt sliders with their values beside them, the battery, and open, stop and close">
 </p>
@@ -310,7 +343,7 @@ keep their icon; on the CYD, the icon and text block are vertically centered.
 
 <p align="center">
   <img src="docs/images/guition-alert.png" width="41%" alt="An alert on the Guition: someone is at the door, with a Coming button">
-  <img src="docs/images/editor-alerts.png" width="53%" alt="The Alerts cheatsheet in ESP Screens: the action name of every screen, ready to copy">
+  <img src="docs/images/editor-alerts.png" width="53%" alt="The Alerts cheatsheet in Tessera: a preview of the alert, a form to try one, and the action name of every screen, ready to copy">
 </p>
 
 Every screen has the action **`esphome.<screen>_show_alert`** (firmware 0.2.31+). It places
@@ -336,7 +369,7 @@ data:
   or `account`. `mdi:doorbell` and the hex codepoint (`F12E6`) also work, as long as the glyph
   is included in the firmware. Unknown falls back to the warning triangle.
 - **`color`**: `red`, `orange`, `yellow`, `green`, `mint`, `blue`, `purple`, `pink`, or
-  `gray` — the same pastel shades as the tiles. Empty gives the white card.
+  `gray`, the same pastel shades as the tiles. Empty gives the white card.
 - **`button_text`**: the text on the button; empty is "OK".
 - **`timeout`**: seconds after which the card disappears on its own; `0` means it waits for the button,
   however long that takes. The button always closes the card immediately, even with a timeout. Standby and
@@ -430,7 +463,7 @@ actions:
 ```
 
 <p align="center">
-  <img src="docs/images/guition-camera-tiles.png" width="41%" alt="Cameras as tiles on the Guition: the front door camera, the garden camera live, the doorbell's last ring, next to the door, the porch light and the garage door">
+  <img src="docs/images/guition-camera-tiles.png" width="41%" alt="Cameras as tiles on the Guition: the front door camera filling a tall tile with its name, a porch camera showing its whole picture, the porch light and Sam at home">
 </p>
 
 A camera or image entity also works as a **tile** on a Guition: a tap opens it full screen, refreshed
@@ -526,7 +559,7 @@ claude.ai** gives the same skill as a zip to upload in Claude under Customize �
 written until you press the button.
 
 <p align="center">
-  <img src="docs/images/editor-settings.png" width="80%" alt="Settings in ESP Screens: New screen and Firmware & USB, the firmware updates, the Alerts cheatsheet, and the Claude skill">
+  <img src="docs/images/editor-settings.png" width="80%" alt="Settings in Tessera: New screen and Firmware & USB, the firmware updates, Language & region, the Alerts cheatsheet, and the Claude skill">
 </p>
 
 ## Wake and sleep from an automation
@@ -589,8 +622,8 @@ to apply the changes.
 After the first supporting firmware update, this requires no new flash.
 
 <p align="center">
-  <img src="docs/images/editor-tile-settings.png" width="39%" alt="Tile settings of the curtains: double-width with open, stop and close on the tile, and on tap Perform action with Set cover position at 50 %">
-  <img src="docs/images/guition-page-3.png" width="57%" alt="The result on the screen: the double-width Curtains tile with open, stop and close, above a kitchen timer, a scene and the sun path">
+  <img src="docs/images/editor-tile-settings.png" width="39%" alt="Tile settings of the curtains: the position slider on the tile, and on tap Perform action with Set cover position at 50 %">
+  <img src="docs/images/guition-controls.png" width="57%" alt="The result on the screen: the Curtains tile one cell wide and two high with its position and slider, beside the heating and above a temperature graph">
 </p>
 <p align="center"><sub>The settings of the Curtains tile, and that tile on the screen: open, stop and close on the tile, and a tap on its name sets the curtains to 50 %.</sub></p>
 
@@ -620,7 +653,7 @@ to change their order; tap one to configure it:
   alarm armed green, alarm triggered red).
 
 <p align="center">
-  <img src="docs/images/editor-top-bar.png" width="31%" alt="Add to the top bar: the time, an analog clock, the date and suggestions from your own home">
+  <img src="docs/images/editor-top-bar.png" width="31%" alt="The top bar in the drawer: the outdoor temperature, people at home and the time, each with how it looks on the screen">
   <img src="docs/images/guition-home.png" width="49%" alt="The top bar on the screen: outdoor temperature, people at home and the time">
 </p>
 
@@ -636,8 +669,9 @@ Everything you would want to change while standing in front of the panel is on t
 itself (firmware 0.2.44+). Tiles, the top bar and the pages stay in ESP Screens, where you
 have a mouse.
 
-**Opening it:** hold the top bar — the strip with the screen's name and the clock — until the
-blue line along the top edge is full, about a second and a half. Letting go early cancels.
+**Opening it:** swipe down from the top edge of the glass (firmware 0.28.0+), or hold the top bar (the strip with
+the screen's name and the clock) until the blue line along the top edge is full, about a second and a half. Letting
+go early cancels.
 Rather have a button? Put the built-in **Settings** card on a page like any other tile. From
 Home Assistant, `esphome.<screen>_open_settings` opens it too (`page` 0 menu, 1 Brightness,
 2 Night, 3 Screen, 4 This screen, -1 closes it).
@@ -659,16 +693,16 @@ English is the default. [Translating ESP Screens](docs/TRANSLATING.md) says how 
 <p align="center">
   <img src="docs/images/guition-settings-menu.png" width="32%" alt="The settings menu on the Guition: Brightness, Night, Screen and This screen">
   <img src="docs/images/guition-settings.png" width="32%" alt="The Brightness page: the brightness with minus and plus, Dark mode off, Auto standby on, standby after 10 minutes and the standby brightness">
-  <img src="docs/images/guition-settings-night.png" width="32%" alt="The Night page: Night mode on, starting at 22:00 and ending at 07:00, and the night brightness">
+  <img src="docs/images/guition-settings-night.png" width="32%" alt="The Night page: Night mode on, starting at 22:00 and ending at 07:00, and the night brightness at 10 %">
 </p>
 
-Tap a toggle to flip it, `-` and `+` to change a number or a time — hold them and a time walks
-whole hours — and tap a chip like the clock to cycle it. Every change is saved on the screen,
+Tap a toggle to flip it, `-` and `+` to change a number or a time (hold them and a time walks
+whole hours), and tap a chip like the clock to cycle it. Every change is saved on the screen,
 takes effect at once, and appears in ESP Screens within a second, so both sides always show
 the same value. The **Screen settings** cards in ESP Screens have the same rows.
 
 <p align="center">
-  <img src="docs/images/editor-screen-settings.png" width="98%" alt="Screen settings in ESP Screens: Brightness with Dark mode and standby, Night with its hours and brightness, and Screen with back to page 1, swiping, the page buttons and the rotation">
+  <img src="docs/images/editor-screen-settings.png" width="98%" alt="Screen settings in Tessera: Brightness with Dark mode and standby, Night with its hours and brightness, and Screen with back to Home, swiping, the page buttons and the rotation">
 </p>
 
 **In Home Assistant** (firmware 0.2.49+), every setting is an entity on the screen's device, under
@@ -725,8 +759,8 @@ query for all screens. Older firmware still works via the text field and the
 full resend every two minutes. The diagnostic sensor `Uptime` has been
 replaced by the `Last boot` timestamp.
 
-See the [release history](screen_manager/CHANGELOG.md) and
-[releases and protocol compatibility](docs/RELEASING.md).
+See the [release history](screen_manager/CHANGELOG.md), [how a release is made](docs/RELEASING.md) and
+[updating the app and the screens at different times](docs/PAGES.md#updating-at-different-times).
 
 **If you publish your own fork:** every push to GitHub is a release. Always also
 bump the add-on version in `screen_manager/config.yaml` and log the change in
@@ -746,6 +780,7 @@ board, so the other screens are not asked to update. `tools/affected_boards.py` 
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [Instructions for developers and LLMs](AGENTS.md), with [how a screen's YAML is put together](docs/PROFILES.md),
   [settings](docs/SETTINGS.md), [colours and Dark mode](docs/THEME.md) and [releases](docs/RELEASING.md)
+- [Every document in docs/](docs/README.md): the recipes for changing the code, a page per board, and the guides
 
 Give a developer or LLM a clean copy of this repository and, for example:
 

@@ -58,8 +58,10 @@ layout without sending it back.
 
 ## What the user sees
 
-Holding the top bar of the overview for about one and a half seconds opens the page; a line in the accent colour grows
-along the top edge while you hold, and letting go before it finishes cancels. A screen can also carry a
+A swipe down from the top edge of the glass opens the page from anywhere, over a card too (firmware 0.28.0+, the edge
+swipe in `runtime_tiles::touch_input`). Holding the top bar of the overview for about one and a half seconds opens it
+as well; a line in the accent colour grows along the top edge while you hold, and letting go before it finishes
+cancels. Both follow **Swipe between pages** for the swipe and `settings_screen::may_open` for the rest. A screen can also carry a
 `screen.settings` tile, which opens the page with or without Home Assistant, and Home Assistant can open it
 with `esphome.<screen>_open_settings`.
 
@@ -106,6 +108,10 @@ settings, so a new setting never travels in the layout message.
 - Anything new is a plain value in `settings_screen.h` next to `swipe_pages`, `rotation` and `auto_home`,
   with a preference record of its own: load it in `runtime_tiles::load_settings()` and write it in
   `persist_settings()`.
+- Every preference key in use stays what it is: `0x53435231` the frozen block, and one key each for swipe,
+  Back to Home (`HomeTimeout`, two uint32), dark mode, page buttons, number format, rotation and the alarm lock
+  (`runtime_tiles.h`), and the CYD's calibration (`0x43594403`, `cyd_calibration.h`). Never reuse, renumber or
+  reshape an existing key's record without a migration; a new value gets a new key.
 
 ```cpp
 // settings_screen.h, next to the others
@@ -184,6 +190,14 @@ by a board fact rather than written into one board file: `shown` on the row, and
   `screen_manager/translations/en.json`, in the words the screen uses; then build the editor
   (`cd web && npm test && npm run build`, AGENTS.md).
 - `screen_manager/app/claude_skill.py`: a row in the table of screen entities.
+- `screen_manager/app/core.py`: a `<KEY>_MIN_FIRMWARE` constant with the first firmware that has the setting, such
+  as `HOME_BUTTON_MIN_FIRMWARE = '0.2.100'`. The skill's row prints it ("Firmware X or newer"), and the tests hold it
+  at or below `FIRMWARE_VERSION`. It gates nothing by itself: an older screen is kept from the key by `settings_view`
+  (no entity on the device, or the list of keys left out for owner `'layout'`).
+- The words in every full language under `screen_manager/translations/`, not only `en.json`:
+  `screen.settings.<key>` for the row on the screen and `editor.screen_settings.rows.<key>` for the editor.
+  `tools/i18n.py check` fails on a missing key, and `tools/i18n.py header` writes
+  `components/smart_display/screen_text_keys.h` and `tests/screen_text_en.h` from them (both generated).
 
 ### 5. Tests and proof
 
@@ -192,8 +206,16 @@ by a board fact rather than written into one board file: `shown` on the row, and
 - `tests/test_screen_owned_settings.py` checks the entities in both profiles, `SETTING_ENTITIES`, the editor
   rows (labels, steps and the duration ladder against `settings_screen.h`) and the add-on's calls;
   `tests/test_settings_view.py` and `tests/test_layout.py` cover the rest of the add-on side.
-- Render it before believing it: `.esphome/readme-render/host_build.py <board> --compile` builds the real
-  firmware for the Mac and `render_settings.py <board>` drives it over the API and saves PNGs of every
-  page, including the hold gesture, the time picker and the settings tile. The host build takes its time
-  from the Mac instead of Home Assistant, so without a connection-time sync its numbers, times and select
-  get their first value at the next whole minute.
+- Look at it before believing it: `tools/render/run.py <board>` builds the real firmware of a board as a program
+  for this computer (`tools/render/host.py`, SDL2) and drives it over its API (docs/TESTING.md). It renders the
+  tile pages, the cards and the alerts, not the settings pages, so walk every settings page on a screen as well,
+  in English and in one long language. The host build takes its time from the computer instead of Home Assistant
+  (`time: platform: host`).
+
+### 6. Release
+
+A setting is firmware, so it is a shared release (docs/BOARD_RELEASES.md, "A shared fix or feature"): the next
+shared number from `tools/affected_boards.py` in `packages/core.yaml` and `FIRMWARE_VERSION`, `screen_manager/config.yaml`
+and the CHANGELOG. `settings_screen.h` is part of the firmware preview's sources, so the preview is rebuilt
+(`sh web/wasm/build.sh`, or `.github/workflows/preview.yml` on the branch). The user docs that list the settings follow:
+the tables at the top of this page, README_EXTENDED.md and docs/EASY_SETUP.md.

@@ -9,12 +9,15 @@ import { beginFieldEdit, endFieldEdit } from '../store';
 import { ACTS_ON_TAP, domainInfo, entriesOf, holdHintKey, inlineControlKind, pageTarget, SLIDER_DOMAINS, SWITCHES_ON_TAP, TOGGLE_BEFORE } from "../model/layout";
 import { glyph } from "../model/topbar";
 import { controlOption, drawable, fits, ofType } from "../model/catalogue";
-import { currentScreen, automaticIcon, entityName, liveOf, openPage, openTile, screenBuiltinName, fullPage, loadSubtitleValues, setTileName, pictures, removeTile, retargetPageTile, setTileOption, state, supports, tileIconCp } from "../store";
+import { currentScreen, automaticIcon, entityName, liveOf, moveTileToPage, openPage, openTile, phone, screenBuiltinName, fullPage, loadSubtitleValues, setTileName, pictures, removeTile, retargetPageTile, setTileOption, state, supports, tileIconCp } from "../store";
+import { titleOf } from "../model/pages";
 import type { Tile } from "../types";
 import ActionPicker from "./ActionPicker.vue";
 import IconPicker from "./IconPicker.vue";
 import { coverPrimary, hasCoverTilt, withCoverTilt } from "../model/tall-controls";
 import ChoiceField from "./ChoiceField.vue";
+import FavoritePicker from "./FavoritePicker.vue";
+import type { FavoritePlay } from "../types";
 import PropRow from "./ui/PropRow.vue";
 import Icon from "./ui/Icon.vue";
 import InspectorHead from "./ui/InspectorHead.vue";
@@ -30,6 +33,17 @@ import { choiceOffered, offeredChoices } from "../model/tile-options";
 import { isTallSize } from "../model/sizes";
 
 const props = defineProps<{ tile: Tile }>();
+// On a phone (app 0.4.40) the sheet starts with what a tile is changed for most: its name, icon and colour, then a way
+// to move it or take it off. Everything else stands behind More settings, the same rows as on a wider page.
+const more = ref(false);
+watch(() => props.tile.id, () => { more.value = false; });
+// The tile goes to the first free cell of another page, and the sheet follows it there.
+function moveTile(page: number) {
+  const id = state.document?.pages[page]?.id;
+  if (moveTileToPage(props.tile, page) && id) state.selectedPageId = id;
+}
+const otherPages = computed(() => (state.document?.pages || []).map((page, index) => ({ index, name: titleOf(state.document!, page) || t("editor.page.label", { page: index + 1 }) }))
+  .filter((page) => page.index !== pageOf(props.tile.slot)));
 const nameDraft = textDraft(() => props.tile.name, value => setTileName(props.tile, value));
 const domain = computed(() => props.tile.entity.split(".")[0]);
 const name = computed(() => entityName(props.tile.entity));
@@ -72,6 +86,8 @@ const displays = computed(() => {
     if (key === "cover") return (pictures.value || display.value === "cover") && size.value !== "full";
     // A map (app 0.4.33) is a picture the add-on draws: only on a board that draws pictures.
     if (key === "map") return pictures.value || display.value === "map";
+    // A favourite (app 0.4.42): a player whose library Home Assistant browses; never the whole page, where the card is the player.
+    if (key === "favorite") return ((!c || c.displays.includes("favorite")) && size.value !== "full") || display.value === "favorite";
     return true;
   });
   return offer("display", keys.map((key) => [key, t(`editor.tile.display.${key}`)] as [string, string]), display.value);
@@ -83,6 +99,7 @@ const cardFilled = computed(() => supports(0, 3, 7) || (taller.value && supports
 // A hint is a warning unless the screen's firmware already does what it describes.
 const clockFace = computed(() => clock.value && ["dial", "flip"].includes(display.value));
 const displayWarns = computed(() => !(display.value === "live" && cardFilled.value) && !(display.value === "cover" && supports(0, 2, 78)) &&
+  !(display.value === "favorite" && supports(0, 24, 0)) &&
   !(display.value === "map" && supports(0, 20, 0)) && !(clockFace.value && supports(0, 3, 6)));
 // A map card (app 0.4.33, docs/MAP.md): who rides along beside the tile's own person, how it frames them and how far a
 // fixed view reaches. The choices are the catalogue's (catalogue/person.yaml), the first of each the default.
@@ -103,6 +120,21 @@ const mapChoices = (key: MapChoice) => offer(key, (MAP?.[key] ?? [])
   // Around this person is a person's map: the map tile has no person of its own.
   .filter((value) => !(key === "framing" && value === "person" && mapTile.value))
   .map((value) => [value, t(`editor.tile.map.${key}.${value}`)] as [string, string]), current(key, MAP?.[key][0]));
+// A favourite (app 0.4.42): what it plays, chosen in the player's library, and on which speaker (or where it plays).
+const favoriteCard = computed(() => display.value === "favorite" && domain.value === "media_player");
+const favoritePlay = computed(() => props.tile.options?.play as FavoritePlay | undefined);
+const choosing = ref(false);
+watch(() => props.tile.id, () => { choosing.value = false; });
+const speakers = computed(() => {
+  // The rows of the player's speaker menu (app speakers.py), or its sources from an app before them.
+  const live = liveOf(props.tile.entity)?.a;
+  const listed = ((live?.speakers ?? live?.source_list) as string[] | undefined) ?? [];
+  const chosen = props.tile.options?.speaker as string | undefined;
+  const names = chosen && !listed.includes(chosen) ? [...listed, chosen] : listed;
+  return [["", t("editor.tile.favorite.speaker_now")] as [string, string], ...names.map((name) => [name, name] as [string, string])];
+});
+function pickFavorite(play: FavoritePlay) { setTileOption(props.tile, "play", play); choosing.value = false; }
+function pickSpeaker(name: string) { setTileOption(props.tile, "speaker", name || undefined); }
 function addMapEntity(id: string) { if (id) setTileOption(props.tile, "map", [...mapWith.value, id]); }
 function removeMapEntity(id: string) { setTileOption(props.tile, "map", mapWith.value.filter((item) => item !== id)); }
 const pictureChoices = (key: "fit" | "overlay") => offer(key, rules.picture[key].map((value) => [value, t(`editor.tile.picture.${key}.${value}`)] as [string, string]), current(key, rules.picture[key][0]));
@@ -114,6 +146,7 @@ const displayHint = computed(() => {
   if (c && display.value === "forecast" && !c.displays.includes("forecast")) return t("editor.tile.display.no_forecast");
   if (display.value === "live") return t(cardFilled.value ? "editor.tile.display.live_card_hint" : supports(0, 2, 77) ? "editor.tile.display.live_card_needs_firmware" : "editor.tile.display.live_needs_firmware");
   if (display.value === "map") return t(supports(0, 20, 0) ? "editor.tile.display.map_hint" : "editor.tile.display.map_needs_firmware");
+  if (display.value === "favorite") return t(supports(0, 24, 0) ? "editor.tile.display.favorite_hint" : "editor.tile.display.favorite_needs_firmware");
   if (display.value === "cover" && taller.value) return t("editor.tile.display.tall_cover_hint");
   if (display.value === "cover") return t(supports(0, 2, 78) ? "editor.tile.display.cover_hint" : "editor.tile.display.cover_needs_firmware");
   // The calm dial and the flip clock (firmware 0.3.6): an older screen shows the digital clock until it is updated.
@@ -287,6 +320,7 @@ const backgroundName = computed(() => state.inventory.backgrounds?.[props.tile.o
     </Section>
 
     <!-- What the card shows first, then where it stands, what a finger does to it, and last its icon and colour. -->
+    <template v-if="!phone || more">
     <Section v-if="lookShown || (!bedside && !key)" :title="t('editor.tile.sections.look')">
       <PropRow v-if="lookShown && tile.entity !== 'screen.settings' && !mapTile" :label="t('editor.tile.display.label')" icon="eye-outline" :hint="displayHint && !displayWarns ? displayHint : undefined">
         <ChoiceField :choices="displays" :value="display" :tile="tile" preview-key="display" :aria-label="t('editor.tile.display.label')" @pick="(v) => setTileOption(tile, 'display', v)" />
@@ -318,6 +352,23 @@ const backgroundName = computed(() => state.inventory.backgrounds?.[props.tile.o
       </PropRow>
     </Section>
 
+
+    <!-- A favourite (app 0.4.42): what it plays, from the player's library, and on which speaker. -->
+    <Section v-if="lookShown && favoriteCard" :title="t('editor.tile.display.favorite')">
+      <PropRow :label="t('editor.tile.favorite.plays')" icon="playlist-music">
+        <div class="favorite-chosen">
+          <span v-if="favoritePlay" class="favorite-title">{{ favoritePlay.title }}</span>
+          <span v-else class="help warn">{{ t('editor.tile.favorite.none') }}</span>
+          <button type="button" class="btn quiet mini" @click="choosing = !choosing">{{ t(choosing ? 'editor.tile.favorite.done' : 'editor.tile.favorite.choose') }}</button>
+        </div>
+        <template v-if="choosing || !favoritePlay" #note>
+          <FavoritePicker :entity="tile.entity" :chosen="favoritePlay" @pick="pickFavorite" />
+        </template>
+      </PropRow>
+      <PropRow :label="t('editor.tile.favorite.speaker')" icon="speaker" :hint="t('editor.tile.favorite.speaker_hint')">
+        <UiSelect :model-value="(tile.options?.speaker as string) || ''" :options="speakers" :aria-label="t('editor.tile.favorite.speaker')" @update:model-value="pickSpeaker" />
+      </PropRow>
+    </Section>
 
     <!-- A map (app 0.4.33, the map tile and these choices 0.4.36): whom it follows, how it frames them, how it looks. -->
     <Section v-if="lookShown && mapCard" :title="t('editor.tile.display.map')">
@@ -391,8 +442,9 @@ const backgroundName = computed(() => state.inventory.backgrounds?.[props.tile.o
         <small v-if="sliderWarn" class="warn">{{ t("editor.tile.slider.nothing") }}</small>
       </SwitchRow>
     </Section>
+    </template>
 
-    <Section :title="t('editor.tile.sections.style')">
+    <Section :title="t('editor.tile.sections.style')" class="style-section">
       <IconPicker v-if="showIcon" :tile="tile" :selected="tile.options?.icon || 'auto'" :automatic="automaticIcon(tile.entity)"
         :auto-label="t(fromHA ? 'editor.tile.icon.auto_ha' : 'editor.tile.icon.auto_default')"
         :note="supports(0, 2, 18) ? '' : t('editor.tile.icon.needs_firmware')"
@@ -407,5 +459,17 @@ const backgroundName = computed(() => state.inventory.backgrounds?.[props.tile.o
         </div>
       </PropRow>
     </Section>
+    <template v-if="phone">
+      <button v-if="!more" type="button" class="phone-more" @click="more = true">
+        <span><b>{{ t("editor.phone.more_settings") }}</b><small>{{ t("editor.phone.more_settings_hint") }}</small></span><Icon name="chevron-right" />
+      </button>
+      <div class="phone-tile-actions">
+        <UiMenu v-if="!key && !bedside && otherPages.length" width="240px">
+          <template #trigger><button type="button" class="btn"><Icon name="arrow-right" />{{ t("editor.phone.move") }}</button></template>
+          <UiMenuItem v-for="page in otherPages" :key="page.index" icon="view-column-outline" @select="moveTile(page.index)">{{ page.name }}</UiMenuItem>
+        </UiMenu>
+        <button type="button" class="btn danger-soft" @click="removeTile(tile)"><Icon name="delete-outline" />{{ t("editor.common.remove") }}</button>
+      </div>
+    </template>
   </div>
 </template>

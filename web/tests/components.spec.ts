@@ -122,6 +122,8 @@ describe("TileCard", () => {
   it("extends only taller tiles and waits for actual artwork before using white text", async () => {
     state.inventory.controls!.media_player = { default: 'playback', choices: [] };
     state.liveStates['media_player.a'] = { state: 'playing', word: 'Playing', a: { media_title: 'A track', media_artist: 'An artist', artwork_mark: 'first', supported_features: 49 } };
+    // A screen that draws pictures (app 0.4.42: a CYD's mockup draws no cover it will never show).
+    Object.assign(state.inventory.screens[0], { pictures: true });
     const card = placed({ entity: 'media_player.a', name: 'Music', slot: 0, options: { size: 'tall', display: 'cover', controls: 'playback' } });
     expect(card.classes()).toContain('tall');
     expect(card.find('.track-title').text()).toBe('A track');
@@ -142,6 +144,9 @@ describe("TileCard", () => {
     await card.setProps({ tile: { entity: 'media_player.a', name: 'Music', slot: 0, options: { size: 'wide', display: 'cover', controls: 'playback' } } });
     expect(card.classes()).not.toContain('tall');
     expect(card.find('.tall-body').exists()).toBe(false);
+    expect(card.find('img').exists()).toBe(false);
+    Object.assign(state.inventory.screens[0], { pictures: false });
+    await card.setProps({ tile: { entity: 'media_player.a', name: 'Music', slot: 0, options: { size: 'tall', display: 'cover', controls: 'playback' } } });
     expect(card.find('img').exists()).toBe(false);
   });
   it("shows the selected climate target or modes, and adds no controls to an unconfigured tall tile", () => {
@@ -598,7 +603,7 @@ describe("TileInspector: a live picture on a camera tile (app 0.2.91)", () => {
     const tile: Tile = { entity: "media_player.sonos", name: "", slot: 0, options: { size: "wide" } };
     appendTiles(tile);
     const drawer = inspector(tile);
-    expect(choices(drawer, "Display")).toEqual(["Name and status", "Large value", "Album cover"]);
+    expect(choices(drawer, "Display")).toEqual(["Name and status", "Large value", "Album cover", "Favourite"]);
     await row(drawer, "Display").findAll(".seg button")[2].trigger("click");
     expect(current(tile).options).toEqual({ size: "wide", display: "cover" });
     expect(hint(row(drawer, "Display")).text).toMatch(/icon's place/);
@@ -611,7 +616,8 @@ describe("TileInspector: a live picture on a camera tile (app 0.2.91)", () => {
     Object.assign(state.inventory.screens[0], { board: "cyd", pictures: false });
     seedTiles([{ ...current(tile), options: { size: "single" } }]);
     await drawer.vm.$nextTick();
-    expect(choices(inspector(tile), "Display")).toEqual(["Name and status", "Large value"]);
+    // A favourite plays there all the same, as an ordinary tile.
+    expect(choices(inspector(tile), "Display")).toEqual(["Name and status", "Large value", "Favourite"]);
     Object.assign(state.inventory.screens[0], { board: "guition", pictures: true });
     seedTiles([{ ...current(tile), options: { size: "full" } }]);
     expect(choices(inspector(tile), "Display")).toEqual(["Name and status", "Large value"]);

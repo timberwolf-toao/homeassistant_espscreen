@@ -41,7 +41,10 @@ class HomeAssistantsRules(unittest.TestCase):
         table = re.findall(r'\{"(\w+)", "alarm_control_panel\.(\w+)", glyph::\w+, (feature::\w+|0)\}', PANEL)
         self.assertEqual([state for state, _, _ in table], [state for state, _, _ in MODES])
         self.assertEqual([action for _, action, _ in table], [action for _, _, action in MODES])
-        bits = dict(re.findall(r'(\w+) = (\d+)', PANEL.split('namespace feature {', 1)[1].split('}', 1)[0]))
+        # The bits are Home Assistant's, by name from the tile catalogue (tile_catalogue.h), never counted here.
+        space = re.search(r'namespace feature = tile_catalogue::(\w+);', PANEL)[1]
+        catalogue = (COMPONENT / 'tile_catalogue.h').read_text()
+        bits = dict(re.findall(r'(\w+) = (\d+);', catalogue.split(f'namespace {space} {{', 1)[1].split('}', 1)[0]))
         for (state, bit, _), (_, _, feature) in zip(MODES, table):
             self.assertEqual(int(bits[feature.split('::')[1]]) if feature != '0' else 0, bit, state)
         # Trigger is a feature, never a key.

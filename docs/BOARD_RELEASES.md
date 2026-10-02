@@ -20,7 +20,8 @@ to write, and the checks to run. `--base <ref>` compares with something else, an
 `--build-keys` prints the boards a build of the change needs: the same keys, and every board when something every
 build reads changed (`tools/check.sh`, `tools/profiles.py`, `boards.yaml`, `checkout/`, the override fixtures, the CI
 workflow, the add-on's ESPHome in `screen_manager/Dockerfile`, or this tool). That is what `tools/check.sh --affected`
-and CI build. A moved file counts at both its old and its new place. Any error stops with a message and prints no
+and CI build, with one exception: when the answer is every board, they build the sample of four in `tools/profiles.py`
+(`SAMPLE`). A moved file counts at both its old and its new place. Any error stops with a message and prints no
 keys, and `tools/check.sh` then stops too instead of reading it as "nothing to build".
 
 How a path is sorted:
@@ -126,7 +127,8 @@ A new board is not a firmware release. It has no screens yet, and it builds the 
 other board.
 
 1. Follow docs/ADDING_A_BOARD.md for the board itself, and run `tools/generate_issue_templates.py` so the board
-   dropdown of the GitHub issue forms lists it (tools/check.sh fails until you do).
+   dropdown of the GitHub issue forms lists it (tools/check.sh fails until you do). Step 7 there lists what else a
+   board touches: `LINT_KEEP`, the skill's description, the firmware preview, the render host and the docs.
 2. Don't set `SCREEN_FIRMWARE_VERSION` in its board file, and don't change the shared version.
 3. Run `tools/affected_boards.py`. It should say "New board: <key>" and "No firmware change for a screen that exists".
    If it also names an existing board, you touched a shared file or another board's file on the way: that part is its
@@ -202,8 +204,8 @@ only it includes, its entry files.
    The second is CI's min_version leg: the oldest ESPHome the packages promise (`min_version` in
    `packages/core.yaml`). `tools/affected_boards.py` prints it with the version filled in.
 
-   `--affected` builds only the boards the change reaches (the same as `--board waveshare4b`). The CYD flash budget
-   only runs when the CYD is one of them. Render the board with `tools/render/run.py <key>`, and test it on the glass
+   `--affected` builds only the boards the change reaches (the same as `--board waveshare4b`). The flash budget
+   only runs for the 4 MB boards among them (docs/RELEASING.md step 2). Render the board with `tools/render/run.py <key>`, and test it on the glass
    when the fix is about something only hardware shows.
 
 ## A shared fix or feature
@@ -219,14 +221,23 @@ Anything in `packages/core.yaml`, `components/`, `fonts/` or the screen texts, o
 6. Checks:
 
    ```bash
-   tools/check.sh --all
+   tools/check.sh
    ```
 
    ```bash
-   tools/check.sh --render
+   tools/check.sh --firmware --affected
    ```
 
-   Every board compiles and the CYD flash budget applies (docs/RELEASING.md step 2).
+   ```bash
+   tools/check.sh --render --sample
+   ```
+
+   A change that reaches every board builds the sample of four in `tools/profiles.py` `SAMPLE` (the CYD and the
+   Guition always, and two that differ in chip, flash or glass), and the flash budget of every 4 MB board it builds applies (docs/RELEASING.md
+   step 2). `--affected --every-board`, or `--firmware` alone, builds every board when a change needs it; CI does that
+   every night. On the packages' `min_version` ESPHome the same `--affected` build is one board, the CYD
+   (`MIN_VERSION_SAMPLE`), plus a board for each changed file the CYD doesn't build. The renders draw `RENDER_SAMPLE`:
+   the smallest, a middle and the largest glass. They run by hand, not in CI.
 
 ## The app alone
 
@@ -260,18 +271,20 @@ version, its Screen firmware sensor and its settings page, and the CYD next to i
 
 The firmware job of CI builds only the boards that can have changed (`tools/affected_boards.py --build-keys`). A push
 compares with the last commit on main where the same build (same ESPHome) succeeded, so the commits of a run that was
-cancelled or failed are built by the next one; a pull request compares with its base. It builds every board every
-night, when started by hand, and when there is no such commit. `--build-keys` differs from `--keys` in one way: a
-change to what makes a build (the add-on's ESPHome, tools/check.sh, tools/profiles.py, boards.yaml, checkout/, the
-override fixtures, the CI workflow, the selector itself) builds every board, although no screen needs an update for it.
+cancelled or failed are built by the next one; a pull request compares with its base. When a change reaches every board,
+`tools/check.sh --firmware --affected` builds the sample of four (`SAMPLE` in tools/profiles.py) instead. It builds
+every board every night, when started by hand, and when there is no such commit. `--build-keys` differs from `--keys`
+in one way: a change to what makes a build (the add-on's ESPHome, tools/check.sh, tools/profiles.py, boards.yaml,
+checkout/, the override fixtures, the CI workflow, the selector itself) counts as reaching every board, although no
+screen needs an update for it.
 
 | Push | CI builds |
 |---|---|
 | the app alone | no firmware |
-| the build tooling (check.sh, profiles.py, boards.yaml, the CI workflow) | every board |
+| the build tooling (check.sh, profiles.py, boards.yaml, the CI workflow) | the sample |
 | a fix in one board file | that board, with both ESPHome versions |
-| a change to the core or a component | every board |
-| a new ESPHome in the add-on | every board |
+| a change to the core or a component | the sample, with both ESPHome versions |
+| a new ESPHome in the add-on | the sample |
 | every night, or by hand | every board |
 
 ## Mistakes to avoid

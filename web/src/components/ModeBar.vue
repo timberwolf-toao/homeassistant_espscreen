@@ -9,7 +9,7 @@ import { te } from "../i18n";
 import { glyph } from "../model/topbar";
 import { barKeys } from "../model/tall-controls";
 import { modeColor } from "../model/tile-palette";
-import { cardContent, modeBar, uiScale } from "../model/ui-scale";
+import { cardContent, cellContent, modeBar, uiScale } from "../model/ui-scale";
 import { deviceStyle, screenShape, screenText, state } from "../store";
 
 // `columns`: how many of the page's columns the card spans.
@@ -19,7 +19,7 @@ const glass = computed(() => Number(deviceStyle.value["--glass"]) || 1);
 // or the page (runtime_tiles layout_panel), from the board's own spacing.
 const bar = computed(() => {
   const shape = screenShape.value, across = state.documentGrid?.columns ?? shape.columns;
-  const reach = cardContent(shape, across, props.place === "row" ? 1 : props.place === "full" ? across : props.columns);
+  const reach = props.place === "row" ? cellContent(shape, across) : cardContent(shape, across, props.place === "full" ? across : props.columns);
   return modeBar(shape, props.place, reach, barKeys(props.a, props.mode, 6).length);
 });
 const keys = computed(() => barKeys(props.a, props.mode, bar.value.room));

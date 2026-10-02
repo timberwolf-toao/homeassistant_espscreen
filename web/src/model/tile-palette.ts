@@ -32,16 +32,31 @@ export function tileActive(entity: string, value: Value, runs = false) {
   if (domain === "lock") return state !== "locked";
   return true;
 }
-function accent(entity: string, value: Value) {
+/** LVGL's lv_color_hsv_to_rgb step for step (tile_controls::hsv_rgb), so a lamp's colour is the screen's to the last bit. */
+function hsvRgb(h: number, s: number, v: number) {
+  h = Math.floor((h * 255) / 360); s = Math.floor((s * 255) / 100); v = Math.floor((v * 255) / 100);
+  if (s === 0) return (v << 16) | (v << 8) | v;
+  const region = Math.floor(h / 43), remainder = (h - region * 43) * 6;
+  const p = (v * (255 - s)) >> 8, q = (v * (255 - ((s * remainder) >> 8))) >> 8, t = (v * (255 - ((s * (255 - remainder)) >> 8))) >> 8;
+  const [r, g, b] = [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v]][region] ?? [v, p, q];
+  return ((r & 255) << 16) | ((g & 255) << 8) | (b & 255);
+}
+/** A lamp's own colour through Home Assistant's contrast rule (tile_controls::lamp_color): under 10 % saturation the
+ * amber of a lamp that is on, else at least 40 %. Hue and saturation in whole degrees and percent. */
+export const lampColor = (hue: number, saturation: number) =>
+  saturation < 10 ? c.AMBER : hsvRgb(((hue % 360) + 360) % 360, Math.min(100, Math.max(40, saturation)), 100);
+/** Home Assistant's colour for the state, as tile_controls::accent gives it (and a lamp's own colour while it is on). */
+export function accent(entity: string, value: Value) {
   const domain = entity.split(".")[0], state = value?.state || "", a = value?.a || {};
   if (domain === "binary_sensor") return alarms.has(a.device_class) ? c.RED : c.AMBER;
-  if (domain === "light" && tileActive(entity, value) && Array.isArray(a.hs_color) && a.hs_color[1] >= 10) {
-    const hue = Number(a.hs_color[0]) % 360, saturation = Math.max(40, Number(a.hs_color[1])) / 100;
-    // HSV at full value, matching the firmware's minimum-saturation contrast rule.
-    const channel = (n: number) => { const k = (n + hue / 60) % 6; return Math.round(255 * (1 - saturation * Math.max(0, Math.min(k, 4 - k, 1)))); };
-    return (channel(5) << 16) | (channel(3) << 8) | channel(1);
+  // A lamp's own colour while it is on (runtime_tiles: tile_controls::lamp_color of the hue and saturation the screen
+  // rounds them to, page_receiver.cpp).
+  if (domain === "light" && tileActive(entity, value) && Array.isArray(a.hs_color)) {
+    const [hue, saturation] = a.hs_color;
+    if (typeof hue === "number" && typeof saturation === "number" && Number.isFinite(hue) && Number.isFinite(saturation))
+      return lampColor(Math.round(Math.min(360, Math.max(0, hue))), Math.round(Math.min(100, Math.max(0, saturation))));
   }
-  if (["light", "switch", "input_boolean", "script", "automation", "timer", "camera"].includes(domain)) return c.AMBER;
+  if (["light", "switch", "input_boolean", "script", "automation", "remote", "timer", "camera"].includes(domain)) return c.AMBER;
   if (domain === "climate") return modes[state] || c.AMBER;
   if (domain === "vacuum") return state === "error" ? c.RED : c.TEAL;
   if (domain === "fan") return c.CYAN;
@@ -55,7 +70,8 @@ function accent(entity: string, value: Value) {
   if (domain === "alarm_control_panel") return state === "triggered" ? c.RED : ["arming", "pending", "disarming"].includes(state) ? c.ORANGE : c.GREEN;
   if (domain === "lock") return state === "locked" ? c.GREEN : ["locking", "unlocking", "opening"].includes(state) ? c.ORANGE : c.RED;
   if (domain === "sensor") {
-    const charge = Number(state);
+    // A number to its last letter, as strtof reads it on the screen: an empty state is none.
+    const charge = /\S$/.test(state) ? Number(state) : NaN;
     if (a.device_class === "battery" && Number.isFinite(charge)) return charge >= 70 ? c.GREEN : charge >= 30 ? c.ORANGE : c.RED;
     if (a.unit_of_measurement === "lx") return c.AMBER;
     if (["°C", "°F"].includes(a.unit_of_measurement)) return c.DEEP_ORANGE;

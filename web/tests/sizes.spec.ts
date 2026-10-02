@@ -27,4 +27,9 @@ describe("tile sizes and spans", () => {
     expect([isWideSize("3x1"), isTallSize("3x1")]).toEqual([true, false]);
     expect([isWideSize("full"), isTallSize("full")]).toEqual([true, false]);
   });
+  it("names no rectangle larger than the grid, which the screen would refuse (page_protocol accepts_size)", () => {
+    expect(sizeFor(1, 2, { columns: 1, rows: 1 })).toBeNull();
+    expect(sizeFor(2, 2, { columns: 1, rows: 3 })).toBeNull();
+    expect(sizeFor(1, 2, { columns: 1, rows: 3 })).toBe("tall");
+  });
 });

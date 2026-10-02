@@ -83,6 +83,9 @@ struct Layout {
   // Glass too short for everything draws the setpoint in the card heading's font instead of the big one: a
   // smaller number, but the modes and the rows keep their place.
   bool small_number = false;
+  // A range (firmware 0.25.0): the setpoint card of a single target, and under its number the band with both ends
+  // (`caption` is that band's row, the card's width minus the keys' inset): the -/+ move the end last chosen on it.
+  bool range = false;
 };
 
 // How many mode keys fit a row `width` wide, each at least a finger.
@@ -114,8 +117,9 @@ inline int need_height(const Metrics &m, int modes, int rows) {
 // The card's parts in an area `width` wide, between `top` (under the top bar) and `bottom` (the glass, minus
 // the margin). `modes` is how many hvac modes the device supports apart from off, `rows` how many setting rows
 // it has (the fan, the swing). `columns` comes from overlay_card::columns().
-inline Layout layout(const Metrics &m, int width, int top, int bottom, int modes, int rows, int columns = 1) {
+inline Layout layout(const Metrics &m, int width, int top, int bottom, int modes, int rows, int columns = 1, bool range = false) {
   Layout l;
+  l.range = range;
   l.columns = columns >= 2 ? 2 : 1;
   l.row_count = std::clamp(rows, 0, 2);
   l.mode_gap = m.mode_gap();
@@ -148,14 +152,14 @@ inline Layout layout(const Metrics &m, int width, int top, int bottom, int modes
     if (mode_h > m.min_key()) { mode_h = std::max(m.min_key(), mode_h - over); continue; }
     if (row_h > m.min_row()) { row_h = std::max(m.min_row(), row_h - over); continue; }
     if (edge > ui::px(6)) { edge = std::max(ui::px(6), edge - over); continue; }
-    if (status) { status = false; l.caption_is_status = caption; continue; }
+    if (status) { status = false; l.caption_is_status = caption && !l.range; continue; }
     // The number itself is the last thing to give: smaller digits, but every control keeps its place.
     if (!l.small_number && m.small_number_h < m.number_h) {
       l.small_number = true;
       setpoint_h = std::max(floor_setpoint(), setpoint_h - (m.number_h - m.small_number_h));
       continue;
     }
-    if (caption) { caption = false; l.caption_is_status = false; setpoint_h = std::max(floor_setpoint(), setpoint_h - over); continue; }
+    if (caption && !l.range) { caption = false; l.caption_is_status = false; setpoint_h = std::max(floor_setpoint(), setpoint_h - over); continue; }
     break;  // the glass is smaller than a finger's worth of controls; the card keeps them anyway
   }
   // A concession frees whole pixels of a block, often more than was asked for. What is left over goes back,
@@ -193,6 +197,17 @@ inline Layout layout(const Metrics &m, int width, int top, int bottom, int modes
   const int number_x = l.minus.right(), number_w = std::max(1, l.plus.x - number_x);
   l.number = {number_x, y + (setpoint_h - block) / 2, number_w, number_height()};
   if (caption) l.caption = {number_x, l.number.bottom(), number_w, m.caption_h};
+  if (l.range) {
+    // The band runs along the card's foot; the number and its keys share what is above it.
+    const int foot = m.caption_h + m.pad();
+    const int upper = std::max(1, setpoint_h - foot);
+    const int k = key_size(m, left_w, upper - m.pad(), l.small_number);
+    l.minus = {left_x + m.key_inset(), y + m.pad() + std::max(0, (upper - m.pad() - k) / 2), k, k};
+    l.plus = {left_x + left_w - m.key_inset() - k, l.minus.y, k, k};
+    const int nx = l.minus.right(), nw = std::max(1, l.plus.x - nx);
+    l.number = {nx, l.minus.cy() - number_height() / 2, nw, number_height()};
+    l.caption = {left_x + m.key_inset(), y + setpoint_h - foot, left_w - 2 * m.key_inset(), m.caption_h};
+  }
 
   int ry = l.columns == 2 ? y : l.setpoint.bottom() + gap;
   if (l.columns == 2) {

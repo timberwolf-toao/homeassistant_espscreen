@@ -83,10 +83,10 @@ columns lying down may hold one standing up, and ESP Screens offers the owner bo
 
 Two things to weigh for the standing grid. `tools/generate_cells.py` gives a board the cards of whichever of its
 two grids is larger, so a standing grid with more cells than the lying one costs every screen of that board those
-extra cards, whichever way it hangs; the four boards that ship are all at the larger of their two, so none of them
-pays for the second way round. And a screen holds 64 tiles in all, one dirty bit each, so a page of 32 cells leaves
-room for two pages and a page of 44 for only one. That is why the 10.1-inch stands at four columns of five rather
-than the four of eleven the millimetres would allow.
+extra cards, whichever way it hangs; every board in `boards.yaml` is at the larger of its two lying down, so none of
+them pays for the second way round. And a screen holds 64 tiles in all, one dirty bit each, over at most eight pages
+(firmware 0.18.0+, `MAX_PAGES` in `page_protocol.h`): a page need not be full, but a page of many cells fills those 64
+tiles in fewer pages.
 
 State no number in the board file that follows from the canvas. The tile area, the cells, the page keys, the strip
 that opens the settings, the crosses of the touch test and the card of an alert are all measured at boot from the
@@ -101,8 +101,9 @@ runs the firmware's own self test (`ui_self_test`: every page and overlay, each 
 nothing falls outside its area), and saves every page, the alerts (a camera picture included, on a board that draws
 pictures) and Dark mode as PNGs under `.esphome/render/out/<board>/`, with a sheet of all of them. A board whose glass
 is not square is done standing up as well (`<board>-portrait`). That catches a cramped forecast, a clipped name or a
-card that falls outside its area without a board on the desk. `tools/check.sh --render` does it for every board, and
-CI does it on every push and pull request. docs/TESTING.md says what it checks and what only the glass shows.
+card that falls outside its area without a board on the desk. `tools/check.sh --render` does it for every board and
+`tools/check.sh --render --sample` for the smallest, a middle and the largest glass (`RENDER_SAMPLE` in
+`tools/profiles.py`). Renders run by hand, not in CI. docs/TESTING.md says what it checks and what only the glass shows.
 
 ## 6. Then the board itself
 
@@ -136,6 +137,23 @@ inches from its pixels and density, the touch controller from its `touchscreen:`
 start from `features/resistive-touch.yaml`), so no board is written into the editor or its translations. After a
 change to its board file, run `tools/generate_cells.py` and `tools/generate_board_shapes.py` again, and after its
 `boards.yaml` entry `tools/generate_issue_templates.py`, which lists it in the board dropdown of the GitHub issue forms.
+
+What else a new board touches (the Sunton 8048S070, the Waveshare 7B and the JC8012P4A1 V2 each did):
+
+- `tools/i18n.py` `LINT_KEEP`: the board file's `DEVICE_FRIENDLY_NAME` ("My <Name>") is English in the firmware's
+  YAML, and `tools/i18n.py lint` fails until it is listed there.
+- `screen_manager/app/claude_skill.py` `DESCRIPTION` names the boards from the catalog, and must stay at 200
+  characters or fewer (`tests/test_show_page.py`). A new manufacturer's name can push it over, and the tests that
+  quote its board list (`tests/test_show_page.py`, `tests/test_claude_skill.py`, `tests/test_alerts_reference.py`)
+  then need the new name.
+- The firmware preview builds one renderer per density and look in `boards.json` (`web/wasm/preview_profiles.py`), from
+  the first checkout entry of each pair. A board that brings a new pair, or sorts first for an existing one, changes
+  the preview: `web/wasm/generate_renderer_manifest.py --check` fails until it is rebuilt (`sh web/wasm/build.sh`, or
+  `.github/workflows/preview.yml` on the branch).
+- `tools/render/host.py` `HARDWARE_BLOCKS`, when the board brings a hardware block the host build must take out (the
+  Waveshare 7B's `waveshare_io_ch32v003`).
+- The docs: `docs/<BOARD>.md` for what is particular to it and what has been tried on glass, the board table in
+  README.md and docs/EASY_SETUP.md, and the boards and tile counts in README_EXTENDED.md.
 
 ## 8. Release it
 

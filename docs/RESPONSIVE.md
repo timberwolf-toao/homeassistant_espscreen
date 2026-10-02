@@ -72,6 +72,20 @@ writes one file per number of cells (`packages/cells/6.yaml` for a 2 x 3 board) 
 binds them, and a board includes the file for its own grid. A board therefore carries exactly the cards it can
 show: a CYD six, a 4 x 4 board sixteen. `tools/check.sh` fails when a file is out of date.
 
+## One set of fonts
+
+Every board builds the same fifteen fonts, by id (firmware 0.17.0+): four text steps and the large value (`sublabel`,
+`label`, `sublabel_big`, `headline`, `watch_value`), four digit steps (`clock_digits`, `setpoint_digits`,
+`display_digits`, `bedside_digits`), five icon sizes and the brand wordmark, all in `packages/core.yaml` with `bpp: 4`.
+Their pixel sizes are the look's (`FONT_*_SIZE` in `packages/looks/standard.yaml` and `compact.yaml`, each a design
+size times `LOOK_SCALE`, the board's density over the look's own), and the two large digit steps are worked out from
+the glass in `packages/looks/shared/digits.yaml`. A new card takes the largest step that fits (for digits
+`runtime_tiles::largest_digits`) and never brings a font or a size of its own: every font is compiled into every
+board's flash, the 4 MB boards have no room to spare, and the CYD runs close to its budget (docs/RELEASING.md).
+`tests/test_font_set.py` fails on a font that slips in with a feature, so adding one is a deliberate change to that
+set. `tools/font_metrics.py` reads a font's line height from the TrueType file, for a check that needs the height LVGL
+will get without building.
+
 ## What the firmware does with it
 
 - `ui::configure(dpi, look)` at boot (`components/smart_display/ui_scale.h`): one scale for every
@@ -83,7 +97,7 @@ show: a CYD six, a 4 x 4 board sixteen. `tools/check.sh` fails when a file is ou
   (firmware 0.18.0+) and a screen never holds more than 64 tiles over them (one dirty bit each), so a page need not
   be full; before, the pages were capped at as many as 64 tiles fill (seven of nine, four of sixteen), and a grid
   that grew lost the pages of a saved layout. `runtime_tiles::widgets` holds exactly one entry per cell. The add-on (`core.Grid`) and
-  the editor (`setGrid`) count with the same rule, so a page, a slot and a tile limit mean the same in
+  the editor (`createLayout` in `web/src/model/layout.ts`) count with the same rule, so a page, a slot and a tile limit mean the same in
   all three.
 - A card's head (the icon circle, the name and the state beside it) is one computed row on every board
   (`runtime_tiles::head_row`): centred on the cell the card really got, whether that is two rows or three on
@@ -212,7 +226,7 @@ cascade runs out, the last resort is scrolling or leaving content out, never ove
 **Does a list not fit? Then it gets a pager, the way the settings page has one.** A stack of items that
 is one too long is not a reason to squeeze the items: a row that falls under the height of its own
 letters is unreadable on every board, and one drawn over the next is worse than one a tap away. So a
-list of items that repeat — settings rows, the coming days, the effects of a light — shows as many as
+list of items that repeat (settings rows, the coming days, the effects of a light) shows as many as
 fit at their honest minimum and puts the rest on a next page, with the same chevrons-and-dots pager as
 the tile pages (`settings_screen::page_dots`, `settings_screen::fitting_rows`, `weather_card::layout`).
 Reserve the pager's room only when there is really a second page, so a list that just fits keeps its
@@ -272,8 +286,10 @@ event and the layout sensor count rows, columns and pages the same way.
   its width. The first component to rebuild that way is the tile row (circle | text column | panel); the
   forecast strip and the clock follow.
 - The light and fan card was the first of these to go: since 0.2.94 it is `light_card.h` with the standing
-  slider, and its eight sizes left every board file (with the five of the colour key it carried). The alert and
-  the touch test still take their pixels from the board file and are the two left to compute.
+  slider, and its eight sizes left every board file (with the five of the colour key it carried). The alert is
+  laid out on the glass (`screen_alert::layout`, firmware 0.2.103+), and the touch test takes its few sizes from the
+  look (`TOUCH_TEST_*` in `packages/looks/`) and places its crosses from the corners of the canvas, so neither reads
+  a pixel from the board file.
 - A card with two groups (the colour card: brightness and colour; climate: setpoint, modes, fan) could stand in
   two columns on wide glass instead of one capped column. Same components, another flex flow.
 - Which way a screen hangs is chosen when it is built (firmware 0.2.92+). ESP Screens writes one substitution
@@ -293,7 +309,7 @@ event and the layout sensor count rows, columns and pages the same way.
   made for six cells does not fit four, so that is a rebuild and not a setting. The shared tree applies the angle
   on top of the board's own `LVGL_ROTATION`, and each board's Rotation select offers the angles its glass allows.
 - The lab boards (`packages/boards/lab-*.yaml`) are generated and disposable; a real board gets a hardware
-  section checked on glass and an entry in `tools/profiles.py`.
+  section checked on glass and an entry in `boards.yaml`.
 
 
 ### Optional cover slat controls

@@ -98,7 +98,7 @@ SENSOR_ICONS = {
     'irradiance': 'solar-power', 'date': 'calendar',
 }
 DOMAIN_ICONS = {
-    'light': 'lightbulb', 'switch': 'toggle-switch', 'input_boolean': 'toggle-switch', 'automation': 'robot', 'fan': 'fan', 'cover': 'window-shutter',
+    'light': 'lightbulb', 'switch': 'toggle-switch', 'input_boolean': 'toggle-switch', 'automation': 'robot', 'remote': 'remote', 'fan': 'fan', 'cover': 'window-shutter',
     'climate': 'thermostat', 'vacuum': 'robot-vacuum', 'media_player': 'speaker', 'scene': 'palette', 'script': 'script-text',
     'button': 'gesture-tap-button', 'input_button': 'gesture-tap-button', 'person': 'account', 'device_tracker': 'map-marker',
     'zone': 'account-group', 'lock': 'lock', 'alarm_control_panel': 'shield-home', 'timer': 'timer-outline', 'counter': 'gauge',
@@ -250,7 +250,7 @@ def accent(entity, state):
     attrs = (state or {}).get('attributes') or {}
     if domain == 'binary_sensor' and raw == 'on':
         return RED if attrs.get('device_class') in ALARM_CLASSES else AMBER
-    if domain in ('light', 'switch', 'input_boolean', 'automation', 'fan') and raw == 'on':
+    if domain in ('light', 'switch', 'input_boolean', 'automation', 'remote', 'fan') and raw == 'on':
         return AMBER
     if domain in ('person', 'device_tracker') and raw == 'home':
         return GREEN

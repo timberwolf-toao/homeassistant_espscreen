@@ -140,7 +140,8 @@ inline TouchGuard touch_guard;
 // left or right edge of the screen as the user sees it and travels `travel` pixels inward, more
 // sideways than up or down, flips one page: from the right edge leftwards is "next", from the left
 // edge rightwards "previous". No speed requirement; a touch that starts in the middle never counts,
-// so tapping and dragging on tiles cannot change the page by accident.
+// so tapping and dragging on tiles cannot change the page by accident. Up from the bottom edge goes home and down
+// from the top edge opens the settings page, over every card as well as the tiles (firmware 0.28.0+).
 //
 // Every point here is already in the screen's own coordinates: `runtime_tiles::touch_input` turns a
 // touchscreen's report with ESPHome's own `LvglComponent::rotate_coordinates`, the same call that
@@ -158,36 +159,51 @@ class EdgeSwipe {
     band_ = band; travel_ = travel;
     configured_ = true;
   }
-  // What a finger asked for: another page, or the way home (firmware 0.2.100+).
-  enum class Gesture : uint8_t { none, previous, next, home };
-  // A board that never configured one has no edge swipe: the CYD turns its pages by another gesture
-  // (BOOT_PAGE_GESTURE) and a swipe along its edge must not flip a page. Without this, shared touch
-  // handling would arm this on the default 480 x 480 band and turn pages on a screen that never did.
+  // Glass that turns its pages by a flick anywhere (the resistive CYD, LVGL's gesture) keeps only the bands along
+  // the top and the bottom: a drag in from a side edge stays that flick's (firmware 0.28.0+).
+  void without_sides() { sides_ = false; }
+  // What a finger asked for: another page, the way home (firmware 0.2.100+), or the settings page (0.28.0+).
+  enum class Gesture : uint8_t { none, previous, next, home, settings };
+  // A board that never configured one has no edge swipe: a swipe along its edge must not flip a page. Without
+  // this, shared touch handling would arm this on the default 480 x 480 band and turn pages on a screen that never
+  // did.
   bool in_use() const { return configured_; }
   // `width` is the glass as the person sees it, measured now rather than stated once: a screen built standing
   // up, or turned in its settings, keeps its bands on the edges (firmware 0.2.92+). This class stays free of
   // LVGL so tests/test_screen_input.cpp can walk a whole gesture over any size of glass.
-  // `height` is the glass the same way, so the band along the bottom edge lies on the bottom edge (firmware
-  // 0.2.100+). A screen that states no height has no bottom band and behaves exactly as it did.
+  // `height` is the glass the same way, so the bands along the bottom and the top edge lie on those edges
+  // (firmware 0.2.100+). A screen that states no height has neither and behaves exactly as it did.
   void begin(int x, int y, int width, int height = 0) {
     start_x_ = x; start_y_ = y;
-    from_ = x < band_ ? 1 : x >= width - band_ ? -1 : 0;  // 1: left edge, -1: right edge
+    from_ = !sides_ ? 0 : x < band_ ? 1 : x >= width - band_ ? -1 : 0;  // 1: left edge, -1: right edge
     up_ = height > 0 && y >= height - band_;
+    down_ = height > 0 && y < band_;
     done_ = false;
     inward_ = sideways_ = 0;
   }
-  bool armed() const { return configured_ && (from_ != 0 || up_) && !done_; }
-  // The next page, the previous one, page 1, or nothing; fires at most once per touch. A finger that starts in
-  // the corner where two bands meet is judged by the way it actually travels.
+  bool armed() const { return configured_ && (from_ != 0 || up_ || down_) && !done_; }
+  // The next page, the previous one, page 1, the settings page or nothing; fires at most once per touch. A finger
+  // that starts in a corner where two bands meet is judged by the way it actually travels.
   Gesture update(int x, int y) {
     if (!armed()) return Gesture::none;
     const int dx = x - start_x_, dy = y - start_y_;
-    if (up_ && -dy >= travel_ && std::abs(dy) > std::abs(dx)) {
+    const bool upright = std::abs(dy) > std::abs(dx);
+    if (up_ && -dy >= travel_ && upright) {
       inward_ = std::max(inward_, -dy);
       done_ = true;
       return Gesture::home;
     }
-    if (from_ == 0) { inward_ = std::max(inward_, -dy); sideways_ = std::max(sideways_, std::abs(dx)); return Gesture::none; }
+    // Down from the top edge opens the settings page, as a phone pulls down its quick settings (GitHub #133).
+    if (down_ && dy >= travel_ && upright) {
+      inward_ = std::max(inward_, dy);
+      done_ = true;
+      return Gesture::settings;
+    }
+    if (from_ == 0) {
+      inward_ = std::max(inward_, std::abs(dy));
+      sideways_ = std::max(sideways_, std::abs(dx));
+      return Gesture::none;
+    }
     const int inward = from_ == 1 ? dx : -dx;
     inward_ = std::max(inward_, inward);
     sideways_ = std::max(sideways_, std::abs(dy));
@@ -202,10 +218,10 @@ class EdgeSwipe {
   int inward() const { return inward_; }
   int sideways() const { return sideways_; }
  private:
-  bool configured_{false};
+  bool configured_{false}, sides_{true};
   int band_{32}, travel_{40};
   int start_x_{0}, start_y_{0}, from_{0}, inward_{0}, sideways_{0};
-  bool done_{true}, up_{false};
+  bool done_{true}, up_{false}, down_{false};
 };
 inline EdgeSwipe edge_swipe;
 

@@ -573,6 +573,35 @@ ALARM_PROBE = '''    - action: render_alarm
                        (unsigned) alarm_lock.remaining_s(esphome::millis()));
             }
 '''
+# A player's card, its speaker menu and its library (firmware 0.24.0+): what is open, the centre of every part a finger
+# uses (back, the pill, the library key, the seek knob, the card's keys), every part of the card outside the glass, and
+# the library's own account (media_library::describe).
+MEDIA_PROBE = '''    - action: render_media
+      then:
+        - lambda: |-
+            using namespace runtime_tiles;
+            lv_obj_update_layout(lv_screen_active());
+            const bool open = detail_root && !lv_obj_has_flag(detail_root, LV_OBJ_FLAG_HIDDEN);
+            auto centre = [](lv_obj_t *o) {
+              if (!o) return std::string();
+              lv_area_t a; lv_obj_get_coords(o, &a);
+              return std::to_string((a.x1 + a.x2) / 2) + "," + std::to_string((a.y1 + a.y2) / 2);
+            };
+            const int sw = lv_display_get_horizontal_resolution(lv_display_get_default()),
+                      sh = lv_display_get_vertical_resolution(lv_display_get_default());
+            std::string keys, faults;
+            if (open) {
+              for (unsigned i = 0; i < detail_action_count; ++i) keys += centre(detail_actions[i]) + ";";
+              for (uint32_t i = 0; i < lv_obj_get_child_count(detail_root); ++i) {
+                lv_area_t a; lv_obj_get_coords(lv_obj_get_child(detail_root, i), &a);
+                if (a.x1 < 0 || a.y1 < 0 || a.x2 >= sw || a.y2 >= sh) faults += "part " + std::to_string(i) + " outside;";
+              }
+            }
+            ESP_LOGI("render", "media open=%d back=%s pill=%s libkey=%s knob=%s keys=%s faults=%s | %s", (int) open,
+                     open ? centre(lv_obj_get_child(detail_root, 0)).c_str() : "", centre(media_pill_obj).c_str(),
+                     centre(media_library_key).c_str(), centre(media_knob).c_str(), keys.c_str(), faults.c_str(),
+                     media_library::describe().c_str());
+'''
 # A board with the calibration wizard shows it on the first start; the renders skip it, as a calibrated screen does.
 SKIP_CALIBRATION = '''    - action: render_skip_calibration
       then:
@@ -622,7 +651,7 @@ class Build:
         (mirror_root / 'host-hw.yaml').write_text(host_hw(board.read_text(), chain))
         (mirror_root / 'chain.txt').write_text('\n'.join([str(f) for f in chain.files] + [''] + chain.notes) + '\n')
         chain_text = ''.join((mirror / f).read_text() for f in chain.files)
-        actions = ACTIONS + PROBES + ALARM_PROBE + (SKIP_CALIBRATION if 'screen_calibration::' in chain_text else '')
+        actions = ACTIONS + PROBES + ALARM_PROBE + MEDIA_PROBE + (SKIP_CALIBRATION if 'screen_calibration::' in chain_text else '')
         turned = f'\n  LVGL_ROTATION: "{item.rotation}"' if item.rotation else ''
         rel = f'host/{item.key}'
         return f'''# Host build of {item.key} from {tree} (tools/render/host.py): core and board chain, hardware swapped for SDL.

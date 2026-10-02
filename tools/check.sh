@@ -3,12 +3,15 @@
 # (.github/workflows/ci.yml, app 0.2.78). Runs from any folder: every path is taken from this repository.
 #
 #   tools/check.sh                   the Python tests, every tests/*.cpp, the package check, the icon generator's --check, the editor's
-#                                    tests, types and build, and whether the editor bundle in Git equals that build
-#   tools/check.sh --firmware        compiles every board profile (tools/profiles.py) and applies the CYD's flash budget
+#                                    tests, its sizes against the firmware's, types and build, and whether the editor bundle in Git
+#                                    equals that build
+#   tools/check.sh --firmware        compiles every board profile (tools/profiles.py) and applies the flash budget to every
+#                                    board with 4 MB of flash (the CYD's rule, docs/RELEASING.md step 2)
 #   --board KEY                      with --firmware: only this board (repeat for more); a fix for one board builds one
 #   --affected                       with --firmware: only the boards a build of the change needs (affected_boards.py --build-keys);
 #                                    nothing to build when it reaches none (docs/BOARD_RELEASES.md); a change that reaches
-#                                    every board builds the sample instead (app 0.4.32)
+#                                    every board builds the sample instead (app 0.4.32), and on an ESPHome older than the
+#                                    add-on's only MIN_VERSION_SAMPLE plus a board per changed file the CYD doesn't build
 #   --sample                         with --firmware: the four boards of tools/profiles.py SAMPLE (CYD and Guition always);
 #                                    with --render: the three of RENDER_SAMPLE (the smallest, a middle and the largest glass)
 #   --every-board                    with --firmware --affected: every board the change reaches, also when that is all of them
@@ -156,11 +159,14 @@ cells_current() { cd "$ROOT" && "$PYTHON" tools/generate_cells.py --check; }
 icons_current() { cd "$ROOT" && "$PYTHON" tools/generate_icons.py --check; }
 # The tile catalogue (docs/CATALOGUE.md): what each entity type can do, from catalogue/*.yaml to what the add-on, the
 # editor and the firmware read. With HA_CORE naming a home-assistant/core checkout, also Home Assistant's own facts
-# (catalogue/_ha.json) against its source; that needs Python 3.14, which Home Assistant's code is written in.
+# (catalogue/_ha.json) and a remote's commands (catalogue/_remote_commands.json) against its source; the first needs
+# Python 3.14, which Home Assistant's code is written in.
 catalogue_current() {
   cd "$ROOT" && "$PYTHON" tools/generate_catalogue.py --check || return 1
   if [[ -n ${HA_CORE:-} ]]; then
     uv run -q --no-project --python 3.14 python tools/read_ha_source.py "$HA_CORE" --check || return 1
+    # A remote's commands per integration (catalogue/_remote_commands.json), from it and the libraries it pins.
+    "$PYTHON" tools/read_remote_commands.py "$HA_CORE" --check || return 1
   fi
 }
 # What every board looks like, as the manager reads it (screen_manager/app/boards.json from the board files).
@@ -186,6 +192,9 @@ firmware_numbers_raised() {
 translations_check() { cd "$ROOT" && "$PYTHON" tools/i18n.py check > "$WORK/i18n.txt" && "$PYTHON" tools/i18n.py header --check && "$PYTHON" tools/i18n.py lint; }
 editor_install() { cd "$ROOT/web" && npm ci --no-audit --no-fund; }
 editor_tests() { cd "$ROOT/web" && npm test; }
+# The editor's mockup against the firmware's numbers (tests/test_editor_parity.py): it needs web/node_modules, which the
+# Python tests above run before, so it runs here again, where a missing piece is a failure and not a skip.
+editor_parity() { cd "$ROOT" && EDITOR_PARITY=1 "$PYTHON" -m unittest tests.test_editor_parity; }
 editor_types() { cd "$ROOT/web" && npm run check; }
 firmware_preview() {
   cd "$ROOT" || return 1
@@ -298,9 +307,9 @@ compile_board() {  # compile_board <board>
   flash_report "$board"
 }
 
-# flash_report BOARD [budget]: the image against its update slot, both read from the build, and on the CYD the growth
-# against --baseline and the budget of docs/RELEASING.md step 2. Exit 3 means over 90 %: it passes, but the release has
-# to say why.
+# flash_report BOARD [budget]: the image against its update slot, both read from the build, on the CYD the growth
+# against --baseline, and with `budget` the thresholds of docs/RELEASING.md step 2 (every board with 4 MB of flash has
+# them). Exit 3 means over 90 %: it passes, but the release has to say why.
 flash_report() {
   local board=$1 mode=${2:-} status=0 out="$WORK/flash-$1.txt" against=""
   [[ $board == cyd ]] && against=$baseline
@@ -342,7 +351,7 @@ if share > 93:
     print('93-97 %: only fixes ship.')
     sys.exit(3)
 if share > 90:
-    print('90-93 %: tight. The release states its flash delta; more than 8 KB needs a matching saving or Max\'s OK.'
+    print('90-93 %: tight. The release states its flash delta; more than 8 KB needs a matching saving or the maintainer\'s explicit OK.'
           + (f' This one grows {delta:,} B.' if delta is not None and delta > 8192 else ''))
     sys.exit(3)
 EOF
@@ -355,7 +364,23 @@ EOF
   return "$status"
 }
 
-cyd_budget() { flash_report cyd budget; }
+flash_budget() { flash_report "$1" budget; }
+# The boards with 4 MB of flash (tools/profiles.py flash_mb): two update slots of 1.75 MB, where the budget applies. The
+# CYD was the only one until cyd9342 and hosyond40 joined it; a change that reaches every board builds the sample, which
+# has the CYD only, so the nightly build of every board gates the other two (and a release near the line builds them,
+# below).
+small_flash_keys() { (cd "$ROOT/tools" && "$PYTHON" -c "import profiles; print(' '.join(b for b in profiles.BOARDS if profiles.flash_mb(b) <= 4))"); }
+# small_flash_unbuilt BOARD...: the 4 MB boards this run did not build, after a CYD image over 90 %: they share its code
+# and its look, so they sit within a few KB of it, on either side.
+small_flash_unbuilt() {
+  local share
+  share=$(sed -n '1s/.* = \([0-9.]*\) %.*/\1/p' "$WORK/flash-cyd.txt" 2>/dev/null)
+  echo "Not built: $*; the CYD image is at ${share:-?} % of its slot"
+  note "$*"
+  if [[ -n $share ]] && awk -v s="$share" 'BEGIN { exit !(s > 90) }'; then
+    warn "The CYD is over 90 % and $* share its 4 MB budget: build them before the release (tools/check.sh --firmware$(printf ' --board %s' "$@"))."
+  fi
+}
 
 # The overrides owners shared in GitHub issues (tests/fixtures/overrides/<board>-<case>.yaml), each read by ESPHome on
 # its board the way a screen's own YAML loads it: a package after the board's (core.installation_yaml, local_overrides).
@@ -411,6 +436,7 @@ if ((want_fast)); then
   run "Editor: npm ci" editor_install
   if ((last_ok)); then
     run "Editor: tests (Vitest)" editor_tests
+    run "Editor: the firmware's numbers" editor_parity
     run "Firmware preview: WASM" firmware_preview
     run "Editor: types (vue-tsc)" editor_types
     run "Editor: build" editor_build
@@ -432,9 +458,22 @@ if ((want_firmware && affected)); then
   # A change that reaches every board (a shared release) builds the sample (app 0.4.32): the same code runs on all of
   # them, and four that differ where a build breaks say as much. --every-board still builds them all.
   total=$(cd "$ROOT/tools" && "$PYTHON" -c "import profiles; print(len(profiles.CATALOG))")
-  if ((${#reached[@]} == total && !every_board)); then
-    read -r -a reached <<< "$(sample_keys SAMPLE)"
-    echo "The change reaches every board: building the sample (tools/profiles.py SAMPLE)."
+  if ((${#reached[@]} && ${#reached[@]} == total && !every_board)); then
+    pinned=$(sed -n 's|^FROM ghcr.io/esphome/esphome:||p' "$ROOT/screen_manager/Dockerfile")
+    running=$("${ESPHOME_CMD[@]}" version 2>/dev/null | sed -n 's/^Version: //p') || running=""
+    if [[ -n $running ]] && older_version "$running" "$pinned"; then
+      # On an ESPHome older than the add-on's (CI's min_version leg) the same shared code says what it refuses on one
+      # board (app 0.4.41): the CYD, plus a board for each changed file the CYD doesn't build.
+      if ! keys=$(cd "$ROOT" && "$PYTHON" tools/affected_boards.py --older-sample ${CHECK_BASE:+--base "$CHECK_BASE"}); then
+        echo "tools/affected_boards.py failed, so which boards to build is unknown: nothing was built." >&2
+        exit 2
+      fi
+      read -r -a reached <<< "$keys"
+      echo "The change reaches every board, on ESPHome $running (older than the add-on's $pinned): building ${reached[*]} (tools/profiles.py MIN_VERSION_SAMPLE)."
+    else
+      read -r -a reached <<< "$(sample_keys SAMPLE)"
+      echo "The change reaches every board: building the sample (tools/profiles.py SAMPLE)."
+    fi
   fi
   only+=(${reached[@]+"${reached[@]}"})
   choosing=1
@@ -457,6 +496,8 @@ if ((want_firmware)); then
   if ((profiles_ok)); then
     # One after the other: parallel builds race on ESPHome's shared ESP-IDF install (and on PlatformIO's, before 2026.7).
     running=$("${ESPHOME_CMD[@]}" version | sed -n 's/^Version: //p')
+    read -r -a small_flash <<< "$(small_flash_keys)"
+    built_small=()
     while read -r board _; do
       needs=$(board_needs "$board")
       if older_version "$running" "$needs"; then
@@ -464,10 +505,13 @@ if ((want_firmware)); then
         continue
       fi
       run "Firmware: $board" compile_board "$board"
-      if [[ $board == cyd ]]; then
-        if ((last_ok)); then run "CYD flash budget" cyd_budget; else skip "CYD flash budget" "no CYD build"; fi
+      if [[ " ${small_flash[*]} " == *" $board "* ]]; then
+        if ((last_ok)); then run "Flash budget: $board" flash_budget "$board"; built_small+=("$board"); else skip "Flash budget: $board" "no build"; fi
       fi
     done < <(board_entries)
+    unbuilt=()
+    for board in ${small_flash[@]+"${small_flash[@]}"}; do [[ " ${built_small[*]-} " == *" $board "* ]] || unbuilt+=("$board"); done
+    if ((${#unbuilt[@]})) && [[ " ${built_small[*]-} " == *" cyd "* ]]; then run "Flash budget: 4 MB boards not built" small_flash_unbuilt "${unbuilt[@]}"; fi
   else
     skip "Firmware builds" "ESPHome or the check profiles are missing"
   fi

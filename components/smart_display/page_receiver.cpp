@@ -305,9 +305,10 @@ std::string receive(const std::string &payload) {
       // ("cover", app 0.2.77+). Only ESP Screens' own port.
       const std::string view = string(root["t"], 8), entity = string(root["e"], view == "live" ? 400 : 120), url = string(root["u"], 240);
       // "live" (app 0.2.91+): the page's camera tiles as one strip; `e` lists them, "" for one without a picture.
-      if (view == "live" ? !valid_entity_list(entity) : !valid_entity(entity) || (view != "full" && view != "alert" && view != "cover")) return false;
+      // "lib" (app 0.4.42+, firmware 0.24.0+): the covers of a page of a player's library, one picture.
+      if (view == "live" ? !valid_entity_list(entity) : !valid_entity(entity) || (view != "full" && view != "alert" && view != "cover" && view != "lib")) return false;
       if (!url.empty() && url.rfind("http://", 0) != 0) return false;
-      const uint32_t expected_view = view == "live" ? live_view_id : view == "cover" ? cover_view_id : camera_view_id;
+      const uint32_t expected_view = view == "live" ? live_view_id : view == "cover" ? cover_view_id : view == "lib" ? library_art_view_id : camera_view_id;
       if (view != "alert" && (!root["view"].is<unsigned>() || root["view"].as<unsigned>() != expected_view)) {
         result = "Synced"; return true;
       }
@@ -447,6 +448,32 @@ std::string receive(const std::string &payload) {
         if (!text.empty()) names.push_back(std::move(text));
       }
       if (options_received) options_received(entity, root["i"] | 0u, root["n"] | 1u, std::move(names));
+      result = model.ready() ? "Synced" : "Loading tiles";
+      return true;
+    }
+    if (op == "browse") {
+      // A folder of a player's library (app 0.4.42+, firmware 0.24.0+), the answer to library_request: one page of its
+      // items, each [number, title, what it can do, icon]. Checked whole before the library takes it.
+      if (!root["view"].is<unsigned>() || root["view"].as<unsigned>() != library_view_id) { result = "Synced"; return true; }
+      media_library::Answer answer;
+      answer.entity = string(root["e"], 120);
+      if (!valid_entity(answer.entity) || !root["k"].is<JsonArray>()) return false;
+      answer.folder = root["f"] | 0u;
+      answer.title = string(root["t"], 48);
+      answer.page = root["i"] | 0u;
+      answer.pages = std::max(1u, root["n"] | 1u);
+      answer.count = std::min<unsigned>(root["c"] | 0u, media_library::LIMIT);
+      answer.failed = (root["x"] | 0) == 1;
+      for (JsonVariant item : root["k"].as<JsonArray>()) {
+        if (answer.items.size() >= media_library::LIMIT || !item.is<JsonArray>() || item.size() != 4 || !item[0].is<unsigned>()) continue;
+        media_library::Item next;
+        next.token = item[0].as<uint32_t>();
+        next.title = string(item[1], 48);
+        next.flags = static_cast<uint8_t>(item[2] | 0u);
+        next.icon = tile_icon::codepoint(string(item[3], 8));
+        if (!next.title.empty()) answer.items.push_back(std::move(next));
+      }
+      media_library::received(std::move(answer));
       result = model.ready() ? "Synced" : "Loading tiles";
       return true;
     }
@@ -594,6 +621,16 @@ std::string receive(const std::string &payload) {
     // Sixteen options at most (firmware 0.3.3, eight before): the select card pages through what it cannot show at once.
     if (a["options"].is<JsonArray>()) for(JsonVariant option:a["options"].as<JsonArray>()) {
       if(next.options.size()==16)break;next.options.push_back(string(option,48)); }
+    // A remote's activities and the one it runs (firmware 0.22.0+): Home Assistant names them only where the remote
+    // supports ACTIVITY, and the card lists them as a select's options.
+    if (a["activity_list"].is<JsonArray>()) for(JsonVariant option:a["activity_list"].as<JsonArray>()) {
+      if(next.options.size()==16)break;next.options.push_back(string(option,48)); }
+    next.activity=string(a["current_activity"],48);
+    // A remote's keypad (firmware 0.22.0+): eleven commands, an empty one for a key the remote lacks.
+    if (extra["keys"].is<JsonArray>()) {
+      for (JsonVariant key : extra["keys"].as<JsonArray>()) { if (next.keypad.size() == 11) break; next.keypad.push_back(string(key, 32)); }
+      if (next.keypad.size() != 11) next.keypad.clear();
+    }
     tile.battery=number(a["battery_level"]);tile.volume=number(a["volume_level"]);
     tile.muted=a["is_volume_muted"].is<bool>() && a["is_volume_muted"].as<bool>();
     tile.device_class=string(a["device_class"],24);next.hvac_action=string(a["hvac_action"],24);
@@ -604,6 +641,52 @@ std::string receive(const std::string &payload) {
     next.media_duration=extra["dur"].is<unsigned>()?extra["dur"].as<uint32_t>():0;
     next.media_position=extra["pos"].is<unsigned>()?extra["pos"].as<uint32_t>():0;
     next.media_position_at=extra["at"].is<unsigned>()?extra["at"].as<uint32_t>():0;
+    // More of a media player (firmware 0.24.0+, app 0.4.42+): its speaker and the ones it may play on, shuffle, repeat,
+    // the features it had at its widest, its cover's two colours and whether its library opens.
+    if (tile.domain() == "media_player") {
+      next.media_source = string(extra["so"], 48);
+      if (extra["sl"].is<JsonArray>()) for (JsonVariant source : extra["sl"].as<JsonArray>()) {
+        if (next.media_sources.size() == 16) break;
+        std::string name = string(source, 48);
+        if (!name.empty()) next.media_sources.push_back(std::move(name));
+      }
+      // Where it plays (firmware 0.26.0+): each speaker's flags and volume, its inputs and the speaker it follows.
+      if (extra["sf"].is<JsonArray>()) {
+        for (JsonVariant flags : extra["sf"].as<JsonArray>()) {
+          if (next.speaker_flags.size() == next.media_sources.size()) break;
+          next.speaker_flags.push_back(static_cast<uint8_t>(flags.as<unsigned>() & 0xFF));
+        }
+        next.speaker_flags.resize(next.media_sources.size(), 0);
+        if (extra["sv"].is<JsonArray>()) for (JsonVariant volume : extra["sv"].as<JsonArray>()) {
+          if (next.speaker_volumes.size() == next.media_sources.size()) break;
+          const int v = volume.is<int>() ? volume.as<int>() : -1;
+          next.speaker_volumes.push_back(static_cast<int8_t>(v < 0 || v > 100 ? -1 : v));
+        }
+        next.speaker_volumes.resize(next.media_sources.size(), -1);
+      }
+      if (extra["in"].is<JsonArray>()) for (JsonVariant input : extra["in"].as<JsonArray>()) {
+        if (next.media_inputs.size() == 16) break;
+        std::string name = string(input, 48);
+        if (!name.empty()) next.media_inputs.push_back(std::move(name));
+      }
+      next.media_input = string(extra["ic"], 48);
+      next.media_target = string(extra["ct"], 64);
+      next.media_shuffle = extra["sh"].is<int>() ? static_cast<int8_t>(extra["sh"].as<int>() ? 1 : 0) : -1;
+      next.media_repeat = string(extra["rp"], 4);
+      if (next.media_repeat != "off" && next.media_repeat != "all" && next.media_repeat != "one") next.media_repeat.clear();
+      next.media_features = extra["mf"].is<uint32_t>() ? extra["mf"].as<uint32_t>() : 0;
+      const std::string ground = string(extra["g"], 13);
+      next.has_ground = media_card::ground(ground, next.ground_top, next.ground_bottom);
+      next.ground_known = !ground.empty();
+      next.media_library = (extra["lb"] | 0) == 1;
+      // A favourite (firmware 0.24.0+): what its tile says, and its picture's mark.
+      next.fav_kind = string(extra["fk"], 24);
+      next.fav_source = string(extra["fo"], 48);
+      next.fav_mark = string(extra["fm"], 16);
+      next.fav_playing = (extra["fp"] | 0) == 1;
+      const uint32_t glyph = tile_icon::codepoint(string(extra["fi"], 8));
+      if (glyph && has_icon_glyph(glyph)) next.fav_glyph = tile_icon::utf8(glyph);
+    }
     const std::string name = string(root["name"], 80);
     if (!initial && tile.is_key() && name != tile.name) refresh_tile(tile.parent);
     tile.name = name;

@@ -19,6 +19,25 @@ DATA = json.loads((Path(__file__).with_name('catalogue.json')).read_text())
 TILE = DATA['tile']
 TYPES = DATA['domains']
 DOMAINS = frozenset(TYPES)
+# The commands a remote of each integration takes, read from Home Assistant's source and the libraries it pins
+# (tools/read_remote_commands.py, GitHub #117): {integration: {'from': [...], 'commands': [...]}}.
+REMOTE_COMMANDS = json.loads((Path(__file__).with_name('remote_commands.json')).read_text())['platforms']
+
+
+KEYPAD_KEYS = ('up', 'down', 'left', 'right', 'ok', 'back', 'home', 'play', 'volume_up', 'volume_down', 'mute')
+
+
+def remote_keypad(platform):
+    """The commands of a remote's keypad for its integration (catalogue/remote.yaml keypad, firmware 0.22.0), in the order
+    the screen takes them and an empty one for a key it lacks; None for an integration without one."""
+    keys = ((TYPES.get('remote') or {}).get('keypad') or {}).get(platform)
+    return [keys.get(key, '') for key in KEYPAD_KEYS] if keys else None
+
+
+def remote_commands(platform):
+    """The commands a remote of this integration takes, in its source's order; None where only the device, the hub or
+    the user's own configuration knows them (Harmony, Broadlink) or any text goes (Samsung)."""
+    return (REMOTE_COMMANDS.get(platform) or {}).get('commands')
 
 
 def parse_version(text):
@@ -46,6 +65,23 @@ def display_keys(domain):
 
 
 # ---- Home Assistant's side: does an entity meet what an option needs ----
+
+def bits(domain, *names):
+    """Home Assistant's feature bits of a type by the names its source gives them (catalogue/_ha.json), joined: the add-on's
+    counterpart of catalogue.ts `bits`. A name Home Assistant does not have for the type is a KeyError, never a 0."""
+    features = TYPES[domain]['features']
+    out = 0
+    for name in names:
+        out |= features[name]
+    return out
+
+
+def playing_features(domain, platform):
+    """What an integration reports while it plays, where it reports less while it plays nowhere (catalogue/_ha.json
+    `playing`, read from its source: Spotify's SUPPORT_SPOTIFY, GitHub #88), joined; 0 for any other."""
+    names = ((TYPES.get(domain) or {}).get('playing') or {}).get(platform)
+    return bits(domain, *names) if names else 0
+
 
 def features_hold(domain, names, attributes, strict=False):
     """Any of these features, where Home Assistant reports the entity's. What may be chosen or drawn (`needs`) is not

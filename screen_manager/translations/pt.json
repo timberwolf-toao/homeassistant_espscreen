@@ -241,7 +241,13 @@
     "media": {
       "muted": "Sem som",
       "not_playing": "Inativo",
-      "loading": "A carregar"
+      "loading": "A carregar",
+      "library": "Biblioteca",
+      "choose_speaker": "Escolher coluna",
+      "library_hint": "Toque numa capa da biblioteca",
+      "library_failed": "A biblioteca não respondeu",
+      "library_empty": "Nada aqui",
+      "starting_on": "A iniciar em {speaker}"
     },
     "timer": {
       "running": "Em curso",
@@ -552,7 +558,8 @@
         "map_entities": "Um mapa mostra no máximo {n} pessoas e localizadores, cada um uma vez, ao lado da pessoa do mosaico.",
         "firmware_first": "Para estes mosaicos, instale primeiro o firmware {version} ou mais recente no ecrã.",
         "entity_gone": "Uma das entidades escolhidas já não existe. Procure a nova entidade.",
-        "ids_too_long": "Em conjunto, os IDs de entidade destes mosaicos são demasiado longos para caberem numa mensagem para o ecrã; remova alguns mosaicos."
+        "ids_too_long": "Em conjunto, os IDs de entidade destes mosaicos são demasiado longos para caberem numa mensagem para o ecrã; remova alguns mosaicos.",
+        "favorite_play": "Escolha o que este favorito reproduz."
       },
       "top_bar": {
         "invalid": "Barra superior inválida; recarregue a página de gestão.",
@@ -729,6 +736,9 @@
         "unknown_board": "O feedback ainda não está disponível para esta placa.",
         "deleting": "A sua resposta partilhada ainda está a ser eliminada. Responda de novo quando terminar.",
         "storage": "O feedback está desligado: os dados guardados foram escritos por outra versão do Tessera."
+      },
+      "media": {
+        "browse": "{name} não respondeu com a sua biblioteca."
       }
     },
     "status": {
@@ -843,6 +853,9 @@
         },
         "input_button": {
           "run": "Botão para premir"
+        },
+        "remote": {
+          "toggle": "Interruptor"
         }
       },
       "top_bar": {
@@ -1173,6 +1186,18 @@
       "map": {
         "since_time": "desde as {time}",
         "battery": "Bateria"
+      },
+      "media": {
+        "playlist": "Playlist",
+        "album": "Álbum",
+        "artist": "Artista",
+        "track": "Faixa",
+        "podcast": "Podcast",
+        "episode": "Episódio",
+        "channel": "Canal",
+        "genre": "Género",
+        "directory": "Pasta",
+        "music": "Música"
       }
     }
   },
@@ -1428,6 +1453,7 @@
         "button": "Ações",
         "script": "Scripts",
         "automation": "Automatizações",
+        "remote": "Comandos",
         "fan": "Ventoinhas",
         "cover": "Coberturas",
         "scene": "Cenas",
@@ -1468,6 +1494,7 @@
       "switch": "Interruptor",
       "input_boolean": "Interruptor",
       "automation": "Automatização",
+      "remote": "Comando",
       "scene": "Cena",
       "script": "Script",
       "weather": "Clima",
@@ -1499,7 +1526,8 @@
       "sunpath": "trajetória do sol",
       "live": "imagem ao vivo",
       "cover": "capa do álbum",
-      "map": "mapa"
+      "map": "mapa",
+      "favorite": "favorito"
     },
     "sizes": {
       "single": "normal",
@@ -1545,7 +1573,10 @@
         "no_forecast": "Este serviço meteorológico não tem previsão diária no Home Assistant. Escolha outra apresentação.",
         "tall_cover_hint": "",
         "face_needs_firmware": "Este relógio precisa do firmware 0.3.6 ou mais recente: prima Atualizar no ecrã depois de guardar. Até lá, o ecrã mostra o relógio digital.",
-        "map_tile_needs_firmware": "O mosaico de mapa precisa do firmware 0.21.0 ou mais recente: carregue em Atualizar no ecrã depois de guardar."
+        "map_tile_needs_firmware": "O mosaico de mapa precisa do firmware 0.21.0 ou mais recente: carregue em Atualizar no ecrã depois de guardar.",
+        "favorite": "Favorito",
+        "favorite_hint": "Uma playlist, um álbum ou um artista deste leitor, iniciado com um toque na sua coluna; um toque durante a reprodução pausa, manter premido abre o leitor. Onde o ecrã mostra imagens, a capa preenche o mosaico.",
+        "favorite_needs_firmware": "Um favorito precisa do firmware 0.24.0 ou mais recente: prima Atualizar no ecrã depois de guardar."
       },
       "refresh": {
         "label": "Atualizar",
@@ -1698,6 +1729,19 @@
         "under": "Por baixo do relógio de cabeceira: um mosaico na sua forma redonda. Um toque faz o mesmo que num mosaico, e mantê-lo premido abre o seu cartão.",
         "name_shown": "Nome por baixo da tecla",
         "name_shown_hint": "Desligado mostra só o círculo."
+      },
+      "favorite": {
+        "plays": "Reproduz",
+        "none": "Nada escolhido ainda",
+        "choose": "Escolher",
+        "done": "Concluído",
+        "back": "Voltar",
+        "loading": "A carregar a biblioteca…",
+        "empty": "Nada aqui",
+        "open": "Abrir {name}",
+        "speaker": "Coluna",
+        "speaker_now": "Onde está a tocar",
+        "speaker_hint": "Onde começa. «Onde está a tocar» pede uma coluna no ecrã quando o leitor não toca em nenhuma."
       }
     },
     "tile_card": {
@@ -2561,6 +2605,34 @@
         "page": "Página",
         "bar": "Barra superior"
       }
+    },
+    "phone": {
+      "screens": "Ecrãs",
+      "add_tile": "Adicionar mosaico",
+      "add_to_cell": "Vai para o lugar {cell} de {page}",
+      "add_to_page": "Vai para o primeiro lugar livre de {page}",
+      "added": "{name} adicionado",
+      "page_of": "{n} de {total}",
+      "pages": "Páginas",
+      "page_tiles": "{n} mosaico | {n} mosaicos",
+      "pages_order": "Páginas e ordem",
+      "hint": "Toque num mosaico para o alterar.",
+      "hint_pages": "Toque num mosaico para o alterar. Deslize para a página seguinte.",
+      "on_screen": "Está tudo no ecrã",
+      "not_sent": "Alterado, ainda não enviado",
+      "more_settings": "Mais definições",
+      "more_settings_hint": "Vista, segunda linha e o que faz um toque",
+      "move": "Mover",
+      "full_editor": "Editor completo",
+      "simple_editor": "Vista simples"
+    },
+    "donate": {
+      "title": "Feito por uma pessoa",
+      "body": "O Tessera é gratuito e não tem assinatura. Desenvolvo-o no meu tempo livre. Se os teus ecrãs tornam a tua casa um pouco mais agradável, um café ajuda-me a continuar.",
+      "buy": "Paga um café ao Max",
+      "later": "Talvez mais tarde",
+      "donated": "Já fiz um donativo",
+      "thanks": "Obrigado! Esta mensagem não volta a aparecer."
     }
   }
 }

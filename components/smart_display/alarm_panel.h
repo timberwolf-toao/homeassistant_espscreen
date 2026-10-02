@@ -26,13 +26,13 @@
 #include <vector>
 #include "climate_card.h"
 #include "theme.h"
+#include "tile_catalogue.h"
 #include "ui_scale.h"
 
 namespace alarm_panel {
 
-namespace feature {
-constexpr uint32_t ARM_HOME = 1, ARM_AWAY = 2, ARM_NIGHT = 4, TRIGGER = 8, ARM_CUSTOM_BYPASS = 16, ARM_VACATION = 32;
-}
+// AlarmControlPanelEntityFeature by its names, from Home Assistant's source through the tile catalogue (tile_catalogue.h).
+namespace feature = tile_catalogue::alarm_control_panel;
 
 // The glyphs of Home Assistant's alarm icons (icons.json of alarm_control_panel: the state icons and the service
 // icons), all in the tile icon fonts (tile_icons.HA_DEFAULTS).

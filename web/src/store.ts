@@ -1,6 +1,6 @@
 // One reactive state for the whole editor. The Python API (server.py) is unchanged: this file is the
 // former app.js state and its calls, with the DOM work moved into the components.
-import { computed, reactive, toRaw, watch } from "vue";
+import { computed, reactive, ref, toRaw, watch } from "vue";
 import { isTallSize, sizeColumns, spanOf, spanOffered } from "./model/sizes";
 import { api, getJson, send, setCsrf } from "./api";
 import { andList, editorLanguage, languageMeta, loadLanguage, type NumberMarks, pickLanguage, STYLE_MARKS, t } from "./i18n";
@@ -72,6 +72,14 @@ export const state = reactive({
   search: "",
   // The library drawer along the bottom (app 0.4.32): open or folded, remembered in this browser.
   libraryOpen: (() => { try { return localStorage.getItem("esp-screens.library-open") !== "0"; } catch { return true; } })(),
+  // On a phone (app 0.4.40): the editor of everyday changes, unless this browser asked for the whole editor; the
+  // library as a sheet that opens for one tile, the pages in a sheet, and the tile just added marked for a moment.
+  fullEditor: (() => { try { return localStorage.getItem("esp-screens.full-editor") === "1"; } catch { return false; } })(),
+  addSheet: false,
+  pagesSheet: false,
+  previewOpen: false,
+  pageWizardOpen: false,
+  justAdded: null as string | null,
   // A choice the pointer rests on in the inspector, drawn on its tile before it is picked (app 0.4.32).
   optionPreview: null as null | { tileId: string; key: string; value: unknown },
   capabilities: {} as Record<string, Capability | null>,
@@ -102,6 +110,20 @@ export const state = reactive({
   palette: false,
   firmwareJob: null as null | { job: any; logs: string[] },
 });
+
+// ---- The phone (app 0.4.40) ----
+// A page as narrow as a phone gets the editor of everyday changes: the screen itself, one button to add a tile, a tile's
+// name, icon and colour, and everything else under the screen's menu. Wider pages, and a phone that chose the whole
+// editor, keep the editor as it was. The width is the browser's, so a desktop never sees any of it.
+const PHONE = typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(max-width: 640px)") : null;
+export const narrowPhone = ref(Boolean(PHONE?.matches));
+PHONE?.addEventListener?.("change", (event) => { narrowPhone.value = event.matches; });
+export const phone = computed(() => narrowPhone.value && !state.fullEditor);
+export function setFullEditor(on: boolean) {
+  state.fullEditor = on;
+  state.addSheet = false; state.pagesSheet = false; state.menuOpen = false;
+  try { localStorage.setItem("esp-screens.full-editor", on ? "1" : "0"); } catch {}
+}
 
 // This is a cached render projection of the one canonical draft. Mutations go
 // through document operations below, never through this flattened view.
@@ -184,6 +206,8 @@ export const firmwareVersion = (screen: Screen | undefined) =>
   (screen && "firmware_known" in screen ? screen.firmware_known : screen?.firmware) || "";
 export const firmwareOf = computed(() => firmwareVersion(currentScreen.value));
 export const supports = (major: number, minor: number, patch: number) => supportsVersion(firmwareOf.value, major, minor, patch);
+// A new media tile starts with its album cover where the screen draws one (app 0.4.42): a board with pictures, firmware 0.2.78+.
+export const coversByDefault = () => pictures.value && supports(0, 2, 78);
 // What the screen holds and draws, as the add-on says (app 0.2.78), so a screen whose version Home Assistant can't
 // report for a moment keeps its 48 tiles instead of dropping to ten, and a copied or imported layout isn't cut to ten.
 export const tileLimit = computed(() => {
@@ -667,7 +691,7 @@ export function select(id: string | null) {
   if (id !== state.selected && state.dirty && !confirm(t("editor.screen_view.confirm.switch"))) return;
   if (id !== state.selected) { flushSettings(); state.settingEdits = {}; }
   state.selected = id; state.selectedTile = null; state.inspector = null;
-  state.tab = "layout"; state.menuOpen = false;
+  state.tab = "layout"; state.menuOpen = false; state.addSheet = false; state.pagesSheet = false; state.previewOpen = false; state.pageWizardOpen = false;
   const screen = state.inventory.screens.find((item) => item.id === id);
   // Nothing chosen (the overview, app 0.4.0): the draft that was confirmed away is gone, so nothing is unsaved.
   if (!screen) { state.document = null; state.documentGrid = null; state.dirty = false; return; }
@@ -729,7 +753,7 @@ export function addTile(id: string) {
     }
     return;
   }
-  const tile = newTile(id);
+  const tile = newTile(id, coversByDefault());
   const page = Math.max(0, state.document!.pages.findIndex((page) => page.id === state.selectedPageId));
   const target = state.insertAt >= 0 ? state.insertAt : firstFree(occupied(entriesOf(layout)), sizeOf(tile), page * grid.slots);
   const slot = state.insertAt >= 0 || target < (page + 1) * grid.slots ? target : -1;
@@ -737,8 +761,19 @@ export function addTile(id: string) {
   if (slot < 0) return toast(t('editor.pages.selected_full'));
   if (slot >= 0 && placeTile(tile, slot)) {
     const added = state.layout!.tiles.find((item) => item.entity === id && item.slot === slot);
-    if (added) openTile(added);
+    if (added && phone.value) markAdded(added);
+    else if (added) openTile(added);
   }
+}
+// On a phone the sheet goes and the screen shows the new tile, lit for a moment, with Undo at hand: one tile is the
+// usual errand there, and its settings are one tap away.
+let addedTimer = 0;
+function markAdded(tile: Tile) {
+  state.addSheet = false;
+  state.justAdded = tile.id || null;
+  clearTimeout(addedTimer);
+  addedTimer = window.setTimeout(() => (state.justAdded = null), 2400);
+  toast(t("editor.phone.added", { name: tile.name || entityName(tile.entity) }), { label: t("editor.common.undo"), run: undo });
 }
 export function removeTile(tile: Tile) {
   if (!tile.id) return;

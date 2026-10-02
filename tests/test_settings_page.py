@@ -115,8 +115,10 @@ class Firmware(unittest.TestCase):
             x = int(values['SETTINGS_HOLD_X'])
             self.assertGreater(width - 2 * x, 0, f'{name}: the two bands leave no strip')
             self.assertGreater(scroll, 20, name)
-            if 'EDGE_SWIPE_BAND_PX' in values:
-                # The page swipe owns both edge bands; the hold may not start there.
+            # The page swipe owns both side bands; the hold may not start there. Resistive glass has only the bands
+            # along the top and the bottom (firmware 0.28.0+) and turns its pages by a flick anywhere: its hold keeps
+            # the whole strip.
+            if 'EDGE_SWIPE_BAND_PX' in values and 'without_sides()' not in values.get('BOOT_TOUCH', ''):
                 self.assertGreaterEqual(x, int(values['EDGE_SWIPE_BAND_PX']), name)
 
     def test_the_hold_strip_lies_under_every_card(self):

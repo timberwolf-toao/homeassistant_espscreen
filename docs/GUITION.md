@@ -1,4 +1,4 @@
-# Guition ESP32-S3 4-inch wallbox — 480 × 480
+# Guition ESP32-S3 4-inch wallbox, 480 × 480
 
 The **Guition 4848S040** has a board file of its own, next to the CYD's, for its
 ST7701S RGB display and **GT911 capacitive touch**, ESP32-S3, 16 MB flash, and

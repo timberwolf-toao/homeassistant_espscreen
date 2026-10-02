@@ -328,3 +328,20 @@ describe("the hold hint under On tap (GitHub #67)", () => {
     }
   });
 });
+
+describe("a lamp's own colour (tile_controls::lamp_color)", () => {
+  it("takes LVGL's integer HSV and the screen's whole degrees and percent, to the last bit", async () => {
+    const { tilePalette, lampColor } = await import("../src/model/tile-palette");
+    expect(lampColor(30, 50)).toBe(0xffbf7f);   // the float conversion gave ffbf80
+    expect(lampColor(0, 100)).toBe(0xff0000);
+    expect(lampColor(200, 9)).toBe(lampColor(0, 0));   // under 10 %: the amber of a lamp that is on
+    expect(tilePalette("light.a", { state: "on", a: { hs_color: [200, 9.6] } }).accent).toBe(`#${lampColor(200, 40).toString(16)}`);
+    expect(tilePalette("light.a", { state: "on", a: { hs_color: [200, 9.4] } }).accent).toBe(tilePalette("light.a", { state: "on" }).accent);
+  });
+  it("reads a battery's charge as the screen does: an empty state is no charge", async () => {
+    const { tilePalette } = await import("../src/model/tile-palette");
+    expect(tilePalette("sensor.b", { state: "", a: { device_class: "battery" } }).accent).toBe("#9e9e9e");
+    const { accent } = await import("../src/model/tile-palette");
+    expect(accent("sensor.b", { state: "", a: { device_class: "battery" } })).toBe(accent("sensor.b", { state: "x" }));
+  });
+});

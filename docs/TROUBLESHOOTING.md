@@ -36,6 +36,5 @@ For a USB log (stop other readers):
 python diagnostics/capture_serial.py --port <USB_PORT> --seconds 120
 ```
 
-The `docs/TEST_RESULTS_*.md` files describe tests on the owner's own boards. Their
-measurements are not calibration for a new board. Start at [README.md](../README.md), keep a working
+Measurements from another screen are not calibration for a new board. Start at [README.md](../README.md), keep a working
 local configuration, and change one cause at a time.

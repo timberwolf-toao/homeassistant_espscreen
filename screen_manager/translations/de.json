@@ -241,7 +241,13 @@
     "media": {
       "muted": "Stumm",
       "not_playing": "Nichts läuft",
-      "loading": "Wird geladen"
+      "loading": "Wird geladen",
+      "library": "Mediathek",
+      "choose_speaker": "Lautsprecher wählen",
+      "library_hint": "Tippe auf ein Cover in der Mediathek",
+      "library_failed": "Die Mediathek antwortet nicht",
+      "library_empty": "Hier ist nichts",
+      "starting_on": "Startet auf {speaker}"
     },
     "timer": {
       "running": "Läuft",
@@ -552,7 +558,8 @@
         "map_entities": "Eine Karte zeigt höchstens {n} Personen und Tracker, jeden einmal, neben der Person der Kachel.",
         "firmware_first": "Installiere für diese Kacheln zuerst Bildschirm-Firmware {version} oder neuer.",
         "entity_gone": "Eine gewählte Entität gibt es nicht mehr. Such die neue Entität heraus.",
-        "ids_too_long": "Die Entitäts-IDs dieser Kacheln sind zusammen zu lang für eine Nachricht an den Bildschirm; entferne ein paar Kacheln."
+        "ids_too_long": "Die Entitäts-IDs dieser Kacheln sind zusammen zu lang für eine Nachricht an den Bildschirm; entferne ein paar Kacheln.",
+        "favorite_play": "Wähle, was dieser Favorit abspielt."
       },
       "top_bar": {
         "invalid": "Ungültige Kopfleiste; lade die Verwaltungsseite neu.",
@@ -729,6 +736,9 @@
         "unknown_board": "Feedback ist für dieses Board noch nicht verfügbar.",
         "deleting": "Deine geteilte Antwort wird noch gelöscht. Antworte erneut, sobald das erledigt ist.",
         "storage": "Feedback ist aus: Die gespeicherten Daten stammen von einer anderen Version von Tessera."
+      },
+      "media": {
+        "browse": "{name} hat seine Mediathek nicht geliefert."
       }
     },
     "status": {
@@ -843,6 +853,9 @@
         },
         "input_button": {
           "run": "Taste „Drücken“"
+        },
+        "remote": {
+          "toggle": "Ein/Aus-Schalter"
         }
       },
       "top_bar": {
@@ -1173,6 +1186,18 @@
       "map": {
         "since_time": "seit {time}",
         "battery": "Akku"
+      },
+      "media": {
+        "playlist": "Playlist",
+        "album": "Album",
+        "artist": "Künstler",
+        "track": "Titel",
+        "podcast": "Podcast",
+        "episode": "Folge",
+        "channel": "Sender",
+        "genre": "Genre",
+        "directory": "Ordner",
+        "music": "Musik"
       }
     }
   },
@@ -1428,6 +1453,7 @@
         "button": "Aktionen",
         "script": "Skripte",
         "automation": "Automationen",
+        "remote": "Fernbedienungen",
         "fan": "Ventilatoren",
         "cover": "Abdeckungen",
         "scene": "Szenen",
@@ -1468,6 +1494,7 @@
       "switch": "Schalter",
       "input_boolean": "Schalter",
       "automation": "Automation",
+      "remote": "Fernbedienung",
       "scene": "Szene",
       "script": "Skript",
       "weather": "Wetter",
@@ -1499,7 +1526,8 @@
       "sunpath": "Sonnenbahn",
       "live": "Livebild",
       "cover": "Albumcover",
-      "map": "Karte"
+      "map": "Karte",
+      "favorite": "Favorit"
     },
     "sizes": {
       "single": "normal",
@@ -1545,7 +1573,10 @@
         "no_forecast": "Dieser Wetterdienst hat in Home Assistant keine Tagesvorhersage. Wähle eine andere Anzeige.",
         "tall_cover_hint": "",
         "face_needs_firmware": "Diese Uhr braucht Firmware 0.3.6 oder neuer: Nach dem Speichern beim Bildschirm auf Aktualisieren drücken. Bis dahin zeigt der Bildschirm die Digitaluhr.",
-        "map_tile_needs_firmware": "Die Kartenkachel braucht Firmware 0.21.0 oder neuer: Nach dem Speichern beim Bildschirm auf Aktualisieren drücken."
+        "map_tile_needs_firmware": "Die Kartenkachel braucht Firmware 0.21.0 oder neuer: Nach dem Speichern beim Bildschirm auf Aktualisieren drücken.",
+        "favorite": "Favorit",
+        "favorite_hint": "Eine Playlist, ein Album oder ein Künstler dieses Players, mit einem Tippen auf seinem Lautsprecher gestartet; ein Tippen während der Wiedergabe pausiert, Halten öffnet den Player. Wo der Bildschirm Bilder zeigt, füllt das Cover die Kachel.",
+        "favorite_needs_firmware": "Ein Favorit braucht Firmware 0.24.0 oder neuer: drücke nach dem Speichern beim Bildschirm auf Aktualisieren."
       },
       "refresh": {
         "label": "Auffrischen",
@@ -1698,6 +1729,19 @@
         "under": "Unter der Nachttischuhr: eine Kachel in ihrer runden Form. Ein Tippen tut, was es auf einer Kachel tut, und Halten öffnet ihre Karte.",
         "name_shown": "Name unter der Taste",
         "name_shown_hint": "Aus zeigt nur den Kreis."
+      },
+      "favorite": {
+        "plays": "Spielt",
+        "none": "Noch nichts gewählt",
+        "choose": "Wählen",
+        "done": "Fertig",
+        "back": "Zurück",
+        "loading": "Mediathek wird geladen…",
+        "empty": "Hier ist nichts",
+        "open": "{name} öffnen",
+        "speaker": "Lautsprecher",
+        "speaker_now": "Wo er gerade spielt",
+        "speaker_hint": "Wo er startet. „Wo er gerade spielt“ fragt auf dem Bildschirm nach einem Lautsprecher, wenn der Player nirgends spielt."
       }
     },
     "tile_card": {
@@ -2561,6 +2605,34 @@
         "page": "Seite",
         "bar": "Kopfleiste"
       }
+    },
+    "phone": {
+      "screens": "Bildschirme",
+      "add_tile": "Kachel hinzufügen",
+      "add_to_cell": "Kommt an Platz {cell} auf {page}",
+      "add_to_page": "Kommt an den ersten freien Platz auf {page}",
+      "added": "{name} hinzugefügt",
+      "page_of": "{n} von {total}",
+      "pages": "Seiten",
+      "page_tiles": "{n} Kachel | {n} Kacheln",
+      "pages_order": "Seiten und Reihenfolge",
+      "hint": "Tippe auf eine Kachel, um sie zu ändern.",
+      "hint_pages": "Tippe auf eine Kachel, um sie zu ändern. Wische zur nächsten Seite.",
+      "on_screen": "Alles ist auf dem Bildschirm",
+      "not_sent": "Geändert, noch nicht gesendet",
+      "more_settings": "Weitere Einstellungen",
+      "more_settings_hint": "Darstellung, zweite Zeile und was ein Tippen tut",
+      "move": "Verschieben",
+      "full_editor": "Vollständiger Editor",
+      "simple_editor": "Einfache Ansicht"
+    },
+    "donate": {
+      "title": "Von einer Person gemacht",
+      "body": "Tessera ist kostenlos und ohne Abo. Ich entwickle es in meiner Freizeit. Wenn deine Bildschirme dein Zuhause ein bisschen schöner machen, hilft mir ein Kaffee weiterzumachen.",
+      "buy": "Spendiere Max einen Kaffee",
+      "later": "Vielleicht später",
+      "donated": "Ich habe schon gespendet",
+      "thanks": "Danke! Diese Frage kommt nicht wieder."
     }
   }
 }

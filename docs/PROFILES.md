@@ -16,19 +16,23 @@ numbers.
 |---|---|---|
 | `packages/core.yaml` | Everything every screen shares: the LVGL tree (tiles, cards, overlays, the touch test page), the scripts, the API actions, the entities, the fonts, the globals, the Rotation select. It names no board and no hardware, and gives a default for every value a board may change. | The entry files |
 | `packages/looks/` | How big everything is: `standard.yaml` (drawn on the 4-inch Guition at 170 dpi) and `compact.yaml` (drawn on the CYD at 143 dpi). Every size is written at the look's own density and scaled to the board's `DISPLAY_DPI`, so a tile, a letter and a key keep their size in millimetres. | Every board, exactly one |
-| `packages/features/` | What a board can do, once for every board that can: `capacitive-touch.yaml` or `resistive-touch.yaml` (how its touch panel is read), `backlight.yaml` (a backlight the firmware dims) and `backlight-always-on.yaml` (one that must never go dark), `camera.yaml` (camera images, needs PSRAM), `self-test.yaml` (the UI self test with its geometry check), `snapshot.yaml` (a picture of the screen over the log). | Board files |
+| `packages/features/` | What a board can do, once for every board that can: `capacitive-touch.yaml` or `resistive-touch.yaml` (how its touch panel is read), `backlight.yaml` (a backlight the firmware dims) and `backlight-always-on.yaml` (one that must never go dark), `camera.yaml` (camera images, needs PSRAM), `self-test.yaml` (the UI self test with its geometry check), `snapshot.yaml` (a picture of the screen over the log), `rgb-led.yaml` (the RGB LED on the back of a board that has one, on the outputs its board file names). | Board files |
 | `packages/hardware/` | Hardware that several boards share: `esp-idf.yaml` (how every firmware is built), `esp32s3-rgb.yaml` (an ESP32-S3 with octal PSRAM driving an RGB panel), `waveshare-ch422g.yaml` (the Waveshare boards whose panel, touch and backlight hang on a CH422G expander), `guition-esp32p4.yaml` (the Guition ESP32-P4 boards with an ESP32-C6 for Wi-Fi) and the Guition boards on it, `guition-jc1060p470.yaml` and `guition-jc8012p4a1.yaml`, and `cyd-2432s028.yaml` (the CYD apart from its display controller). | Board files, and each other |
 | `packages/boards/` | One board: its word (`BOARD_ID`), its glass (`PANEL_W`, `PANEL_H`, `DISPLAY_DPI`, `ROTATION_LANDSCAPE`), its grid, its draw buffer, the packages it includes, and its own hardware sections. | The entry files |
 | `packages/cells/` | The cards of a grid, one per cell, written by `tools/generate_cells.py`. | Board files |
 | `packages/<board>.yaml` | The entry a screen installed from ESP Screens builds from over GitHub. ESP Screen Manager writes every screen's YAML with `files: [packages/<board>.yaml]`, so these names never change. | A screen's own YAML |
 | `checkout/<board>.yaml` | The same entry for a build from a clone of this repository (checkout/README.md), with the secrets from `checkout/secrets.yaml` and the components of the checkout. | You |
 
+Both entries of every board are written from `boards.yaml` by `tools/generate_entries.py` (`--check` in tools/check.sh
+fails when one is out of date), so neither is edited by hand. The old profiles in the root of the repository are gone
+(app 0.2.129); a build from a checkout names `checkout/<board>.yaml`.
+
 A board file reads like this (the 4-inch Guition, without its comments):
 
 ```yaml
 packages:
-  build: !include ../hardware/esp-idf.yaml
-  cells: !include ../cells/6.yaml
+  hardware: !include ../hardware/esp32s3-rgb.yaml
+  cells: !include ../cells/${GRID_CELLS}.yaml
   look: !include ../looks/standard.yaml
   touch: !include ../features/capacitive-touch.yaml
   backlight: !include ../features/backlight.yaml
@@ -45,10 +49,12 @@ substitutions:
   DISPLAY_DPI: "170"
   GRID_COLS: "2"
   GRID_ROWS: "3"
+  GRID_CELLS: "${ (GRID_COLS | int) * (GRID_ROWS | int) }"
   LVGL_BUFFER_SIZE: "25%"
-  BACKLIGHT_FREQUENCY: "20000Hz"
+  BACKLIGHT_FREQUENCY: "150Hz"
 
-# ... then esp32, psram, logger, the buses, the backlight output, the touch panel and the display
+# ... then its flash size, logger, the buses, the backlight output, the touch panel and the display
+# (esp-idf.yaml and the S3's PSRAM come with hardware/esp32s3-rgb.yaml)
 ```
 
 ## Which value wins
@@ -121,6 +127,13 @@ does (the CYD used to drive its backlight and run its self test its own way).
 Hooks are a stretch of C++ inside a shared lambda because ESPHome cannot merge two lambdas into one. A feature that
 needs a step of its own rather than a line inside a shared one brings its own script or automation instead.
 
+## Widgets made only in C++
+
+ESPHome compiles only the LVGL widget types the YAML names. A widget the firmware makes only in C++ therefore needs a
+hidden seed of its type in the YAML (`busy_spinner_seed`, `brand_mark_seed` and `roller_seed` in `packages/core.yaml`,
+`camera_image_seed` in `features/camera.yaml`) or an `-DLV_USE_<X>=1` build flag in the core. A seed looks unused;
+don't remove it.
+
 ## What an override may rely on
 
 An owner's Override YAML hangs on names in these files, and it lives on the owner's own Home Assistant where no test of
@@ -139,9 +152,9 @@ YAML loads it.
 ## Adding a board
 
 docs/ADDING_A_BOARD.md is the whole recipe. In short: `tools/new_board.py` writes the board file from the board that
-resembles it most, you replace its hardware sections, add its entry to `boards.yaml` (the catalog New screen is drawn from) and the
-entries (`packages/<board>.yaml`, `checkout/<board>.yaml`), and run `tools/generate_cells.py`, `tools/generate_board_shapes.py`
-and `tools/check.sh --firmware`. A board that shares a family's hardware includes that family's file under
+resembles it most, you replace its hardware sections, add its entry to `boards.yaml` (the catalog New screen is drawn from) and run
+`tools/generate_entries.py` (the entries `packages/<board>.yaml` and `checkout/<board>.yaml`), `tools/generate_cells.py`,
+`tools/generate_board_shapes.py` and `tools/check.sh --firmware --board <key>`. A board that shares a family's hardware includes that family's file under
 `packages/hardware/` and states only what differs; a board with hardware like no other keeps it in its own file until
 a second board shares it.
 
@@ -159,4 +172,4 @@ validated configuration of `esphome config` and the C++ that `esphome compile --
 those of app 0.2.126, with ESPHome 2026.9.0 and the packages' `min_version` 2026.6.2. Every size resolved to the same
 number, every component and lambda was the same, and the generated C++ held the same statements. What differs is the
 order in which ESPHome registers components and API actions, which follows the order of the files, and the numbers
-ESPHome gives what it names itself. docs/TEST_RESULTS_02127.md has the details.
+ESPHome gives what it names itself.

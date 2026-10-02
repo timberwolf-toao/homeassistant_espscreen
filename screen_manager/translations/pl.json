@@ -241,7 +241,13 @@
     "media": {
       "muted": "Wyciszony",
       "not_playing": "Nic nie gra",
-      "loading": "Ładowanie"
+      "loading": "Ładowanie",
+      "library": "Biblioteka",
+      "choose_speaker": "Wybierz głośnik",
+      "library_hint": "Dotknij okładki w bibliotece",
+      "library_failed": "Biblioteka nie odpowiada",
+      "library_empty": "Nic tu nie ma",
+      "starting_on": "Uruchamianie na {speaker}"
     },
     "timer": {
       "running": "Działa",
@@ -552,7 +558,8 @@
         "map_entities": "Mapa pokazuje najwyżej {n} osób i lokalizatorów, każdy raz, obok osoby z kafelka.",
         "firmware_first": "Dla tych kafelków najpierw zainstaluj na ekranie firmware {version} lub nowszy.",
         "entity_gone": "Wybrana encja już nie istnieje. Wyszukaj nową encję.",
-        "ids_too_long": "Identyfikatory encji tych kafelków są razem za długie, by zmieścić się w jednej wiadomości do ekranu; usuń kilka kafelków."
+        "ids_too_long": "Identyfikatory encji tych kafelków są razem za długie, by zmieścić się w jednej wiadomości do ekranu; usuń kilka kafelków.",
+        "favorite_play": "Wybierz, co odtwarza ten ulubiony."
       },
       "top_bar": {
         "invalid": "Nieprawidłowy górny pasek; odśwież stronę zarządzania.",
@@ -729,6 +736,9 @@
         "unknown_board": "Opinie nie są jeszcze dostępne dla tej płytki.",
         "deleting": "Twoja udostępniona odpowiedź jest jeszcze usuwana. Odpowiedz ponownie, gdy to się zakończy.",
         "storage": "Opinie są wyłączone: zapisane dane pochodzą z innej wersji Tessera."
+      },
+      "media": {
+        "browse": "{name} nie udostępnił swojej biblioteki."
       }
     },
     "status": {
@@ -843,6 +853,9 @@
         },
         "input_button": {
           "run": "Przycisk Naciśnij"
+        },
+        "remote": {
+          "toggle": "Przełącznik wł./wył."
         }
       },
       "top_bar": {
@@ -1173,6 +1186,18 @@
       "map": {
         "since_time": "od {time}",
         "battery": "Bateria"
+      },
+      "media": {
+        "playlist": "Playlista",
+        "album": "Album",
+        "artist": "Wykonawca",
+        "track": "Utwór",
+        "podcast": "Podcast",
+        "episode": "Odcinek",
+        "channel": "Kanał",
+        "genre": "Gatunek",
+        "directory": "Folder",
+        "music": "Muzyka"
       }
     }
   },
@@ -1428,6 +1453,7 @@
         "button": "Akcje",
         "script": "Skrypty",
         "automation": "Automatyzacje",
+        "remote": "Piloty",
         "fan": "Wentylatory",
         "cover": "Osłony",
         "scene": "Sceny",
@@ -1468,6 +1494,7 @@
       "switch": "Przełącznik",
       "input_boolean": "Przełącznik",
       "automation": "Automatyzacja",
+      "remote": "Pilot",
       "scene": "Scena",
       "script": "Skrypt",
       "weather": "Pogoda",
@@ -1499,7 +1526,8 @@
       "sunpath": "tor słońca",
       "live": "obraz na żywo",
       "cover": "okładka albumu",
-      "map": "mapa"
+      "map": "mapa",
+      "favorite": "ulubione"
     },
     "sizes": {
       "single": "normalny",
@@ -1545,7 +1573,10 @@
         "no_forecast": "Ta usługa pogodowa nie ma prognozy dziennej w Home Assistant. Wybierz inny widok.",
         "tall_cover_hint": "",
         "face_needs_firmware": "Ten zegar wymaga oprogramowania 0.3.6 lub nowszego: po zapisaniu naciśnij Aktualizuj przy ekranie. Do tego czasu ekran pokazuje zegar cyfrowy.",
-        "map_tile_needs_firmware": "Kafelek mapy wymaga oprogramowania 0.21.0 lub nowszego: po zapisaniu naciśnij Aktualizuj przy ekranie."
+        "map_tile_needs_firmware": "Kafelek mapy wymaga oprogramowania 0.21.0 lub nowszego: po zapisaniu naciśnij Aktualizuj przy ekranie.",
+        "favorite": "Ulubione",
+        "favorite_hint": "Jedna playlista, album lub wykonawca tego odtwarzacza, uruchamiany dotknięciem na jego głośniku; dotknięcie podczas odtwarzania wstrzymuje, przytrzymanie otwiera odtwarzacz. Tam, gdzie ekran wyświetla obrazy, okładka wypełnia kafelek.",
+        "favorite_needs_firmware": "Ulubione wymaga firmware 0.24.0 lub nowszego: po zapisaniu naciśnij Aktualizuj przy ekranie."
       },
       "refresh": {
         "label": "Odświeżanie",
@@ -1698,6 +1729,19 @@
         "under": "Pod zegarem przy łóżku: kafelek w okrągłej formie. Dotknięcie działa jak na kafelku, a przytrzymanie otwiera jego kartę.",
         "name_shown": "Nazwa pod przyciskiem",
         "name_shown_hint": "Wyłączone pokazuje sam okrąg."
+      },
+      "favorite": {
+        "plays": "Odtwarza",
+        "none": "Jeszcze nic nie wybrano",
+        "choose": "Wybierz",
+        "done": "Gotowe",
+        "back": "Wstecz",
+        "loading": "Wczytywanie biblioteki…",
+        "empty": "Nic tu nie ma",
+        "open": "Otwórz {name}",
+        "speaker": "Głośnik",
+        "speaker_now": "Tam, gdzie gra",
+        "speaker_hint": "Gdzie startuje. „Tam, gdzie gra” prosi na ekranie o głośnik, gdy odtwarzacz nigdzie nie gra."
       }
     },
     "tile_card": {
@@ -2561,6 +2605,34 @@
         "page": "Strona",
         "bar": "Górny pasek"
       }
+    },
+    "phone": {
+      "screens": "Ekrany",
+      "add_tile": "Dodaj kafelek",
+      "add_to_cell": "Trafi na miejsce {cell} na stronie {page}",
+      "add_to_page": "Trafi na pierwsze wolne miejsce na stronie {page}",
+      "added": "Dodano: {name}",
+      "page_of": "{n} z {total}",
+      "pages": "Strony",
+      "page_tiles": "{n} kafelek | {n} kafelki | {n} kafelków",
+      "pages_order": "Strony i kolejność",
+      "hint": "Dotknij kafelka, aby go zmienić.",
+      "hint_pages": "Dotknij kafelka, aby go zmienić. Przesuń, aby przejść do następnej strony.",
+      "on_screen": "Wszystko jest na ekranie",
+      "not_sent": "Zmieniono, jeszcze nie wysłano",
+      "more_settings": "Więcej ustawień",
+      "more_settings_hint": "Widok, druga linia i działanie dotknięcia",
+      "move": "Przenieś",
+      "full_editor": "Pełny edytor",
+      "simple_editor": "Prosty widok"
+    },
+    "donate": {
+      "title": "Zrobione przez jedną osobę",
+      "body": "Tessera jest darmowa i nie ma subskrypcji. Tworzę ją w wolnym czasie. Jeśli Twoje ekrany sprawiają, że dom jest trochę przyjemniejszy, kawa pomaga mi działać dalej.",
+      "buy": "Postaw Maxowi kawę",
+      "later": "Może później",
+      "donated": "Już wpłaciłem",
+      "thanks": "Dziękuję! Ta wiadomość już nie wróci."
     }
   }
 }

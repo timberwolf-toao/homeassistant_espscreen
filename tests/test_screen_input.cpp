@@ -199,6 +199,39 @@ int main() {
   up.begin(240, 790, 480, 800);
   assert(up.armed());
   assert(up.update(240, 745) == G::home);
+  // Down from the top edge opens the settings page (firmware 0.28.0+, GitHub #133): the same band and travel along
+  // the top, judged by the way the finger goes in the corners as well.
+  screen_input::EdgeSwipe down;
+  down.configure(32, 40);
+  down.begin(240, 6, 480, 480);
+  assert(down.armed());
+  assert(down.update(242, 30) == G::none);      // 24 px down: not far enough
+  assert(down.update(244, 50) == G::settings);  // 44 px down: the settings page
+  assert(down.update(244, 200) == G::none);     // once per touch
+  down.begin(240, 6, 480, 480);
+  assert(down.update(300, 46) == G::none);      // 60 px sideways against 40 down: a sideways drag
+  down.begin(240, 6, 480, 480);
+  assert(down.update(240, -40) == G::none);     // up and off the glass: nothing
+  down.begin(240, 6, 480);                      // no height stated: no top band either
+  assert(!down.armed());
+  down.begin(474, 6, 480, 480);                 // the top right corner: what the finger does decides
+  assert(down.update(470, 60) == G::settings);
+  down.begin(474, 6, 480, 480);
+  assert(down.update(420, 10) == G::next);
+  // Glass that turns its pages by a flick anywhere (the resistive CYD) keeps only the top and the bottom band: a drag
+  // in from a side edge is that flick's, never a second page turn.
+  screen_input::EdgeSwipe ends;
+  ends.configure(27, 34);
+  ends.without_sides();
+  ends.begin(4, 120, 320, 240);
+  assert(!ends.armed());
+  assert(ends.update(80, 120) == G::none);
+  ends.begin(160, 236, 320, 240);
+  assert(ends.update(160, 200) == G::home);
+  ends.begin(160, 3, 320, 240);
+  assert(ends.update(162, 40) == G::settings);
+  ends.begin(3, 236, 320, 240);                 // the bottom left corner: only the bottom band is there
+  assert(ends.update(60, 234) == G::none);
   screen_input::TouchGuard rollover;
   rollover.begin(std::numeric_limits<uint32_t>::max() - 30);
   assert(rollover.accept(50, 1)); // millis wraps after 49 days

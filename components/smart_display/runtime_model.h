@@ -206,8 +206,14 @@ struct Extra {
   // The range a thermostat keeps the room in (target_temp_low and target_temp_high, firmware 0.19.0), where it has
   // one instead of a single temperature: heat_cool, and auto on some.
   float target_low = NAN, target_high = NAN;
-  // A select's options, at most eight.
+  // A select's options, sixteen at most; a remote's activities (activity_list, firmware 0.22.0+) are these too.
   std::vector<std::string> options;
+  // The activity a remote runs (current_activity, firmware 0.22.0+): Harmony's and Android TV Remote's.
+  std::string activity;
+  // A remote's keypad (firmware 0.22.0+): the command of each key in the order of catalogue/remote.yaml's keypad (up, down,
+  // left, right, OK, back, home, play, volume up, volume down, mute), empty where the remote has no such key. The add-on
+  // sends it for an integration whose commands it read from Home Assistant; a remote without one has none.
+  std::vector<std::string> keypad;
   // Weather: up to five days and eight hours.
   std::vector<Forecast> forecast;
   std::vector<Hour> hours;
@@ -225,6 +231,28 @@ struct Extra {
   // folds this into the picture it asks for, so a map is drawn again when something moved and never on a clock.
   std::string map_mark;
   uint32_t media_duration = 0, media_position = 0, media_position_at = 0;
+  // More of a media player (firmware 0.24.0+, app 0.4.42+): the speaker it plays on and the ones it may (source_list,
+  // sixteen at most), shuffle (-1 for a player without it) and repeat ("" without it), the features it reported at its
+  // widest when that is more than now (a player at rest keeps the keys it had, faded: GitHub #88), the two colours of
+  // its cover that the card's ground is made of, and whether its library opens.
+  std::string media_source, media_repeat;
+  std::vector<std::string> media_sources;
+  // Where a player plays (firmware 0.26.0+, the app's speakers.py): per speaker of media_sources its flags (SPEAKER_ON,
+  // SPEAKER_GROUPS) and its volume (0 to 100, -1 for none), the inputs Home Assistant lists in source_list for a player
+  // whose sources are inputs (a Sonos's TV input, a TV's ports) with the one in use, and the speaker the card follows:
+  // its media keys act on that player. A media_source here is the pill's words ("Living room + 1").
+  std::vector<uint8_t> speaker_flags;
+  std::vector<int8_t> speaker_volumes;
+  std::vector<std::string> media_inputs;
+  std::string media_input, media_target;
+  int8_t media_shuffle = -1;
+  uint32_t media_features = 0, ground_top = 0, ground_bottom = 0;
+  // ground_known: the app read the cover (its colours, or that it has none to speak of), so its cover may be asked for.
+  bool has_ground = false, ground_known = false, media_library = false;
+  // A favourite (firmware 0.24.0+, app 0.4.42+): the kind of thing it plays in the screen's words ("Playlist"), the
+  // speaker chosen for it, the mark of its picture, the glyph of its kind, and whether it plays now.
+  std::string fav_kind, fav_source, fav_mark, fav_glyph;
+  bool fav_playing = false;
   // Vacuum: its own speeds (at most four) and speed, the mode, water and suction rows (see Choice), and
   // from sensors of its device the room it is in and whether it charges.
   std::vector<std::string> fan_speeds;
@@ -266,7 +294,11 @@ struct Extra {
            choices.empty() && room.empty() && !charging && std::isnan(tilt) && action.empty() && action_data.empty() &&
            action_templates.empty() && state_word.empty() && subtitle.empty() && !subtitle_at && effect.empty() &&
            option_rows.empty() && number_rows.empty() && lamps.empty() && code_format.empty() && changed_by.empty() && !arm_code_free &&
-           !code_saved && !alarm_end && !alarm_delay && !assumed;
+           !code_saved && !alarm_end && !alarm_delay && !assumed && activity.empty() && keypad.empty() &&
+           media_source.empty() && media_repeat.empty() && media_sources.empty() && media_shuffle < 0 && !media_features &&
+           speaker_flags.empty() && speaker_volumes.empty() && media_inputs.empty() && media_input.empty() && media_target.empty() &&
+           !has_ground && !ground_known && !media_library && fav_kind.empty() && fav_source.empty() && fav_mark.empty() &&
+           fav_glyph.empty() && !fav_playing;
   }
 };
 // The numbers of a clock text ("0:05:00", "07:45"), at most `max` of them, each after optional white space, up to the
@@ -344,8 +376,11 @@ struct Tile {
   // card, its name included, and sends it in the page's strip like a live camera, so no map arithmetic lives here.
   // The map tile of the screen's own cards (firmware 0.21.0+) is the same picture, following whom the app is told to.
   bool is_map() const { return display == "map" && (domain() == "person" || entity == "screen.map"); }
+  // A favourite (firmware 0.24.0+): a player's tile that plays one thing of its library on a tap, with that thing's
+  // picture over the card where the board draws pictures. Never a whole page: the player's card is that.
+  bool favorite() const { return display == "favorite" && domain() == "media_player" && !full; }
   // A tile that draws its picture out of the page's strip (runtime_tiles.h, live_*).
-  bool pictured() const { return live() || cover_tile() || is_map(); }
+  bool pictured() const { return live() || cover_tile() || is_map() || (favorite() && !extra().fav_mark.empty()); }
   // Double width takes a row; full (firmware 0.2.62+) takes the whole page, all six slots, and is also wide.
   bool wide = false, full = false;
   uint8_t height = 1;  // Row span; independent of the card design and page height.

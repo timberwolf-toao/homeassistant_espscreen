@@ -49,13 +49,27 @@ export function modeBar(shape: Shape, place: "row" | "tall" | "full", reach: num
   return { room, width, finger, inset };
 }
 
-/** A card's content width in glass pixels (runtime_tiles cell_content_width and the card's own content): `columns` of
- * the page's `across` cells, the page less its margins shared between them with a gap between two, less the card's
- * padding and its border. One column of a wide card is the cell its controls fill. */
-export function cardContent(shape: Shape, across: number, columns: number) {
-  const s = shape.spacing ?? (uiScale(shape).compact ? { margin: 9, gap: 6, tile_pad: 8 } : { margin: 16, gap: 12, tile_pad: 12 });
-  const cell = Math.floor(((shape.width ?? 320) - 2 * s.margin - (across - 1) * s.gap) / Math.max(1, across));
-  return columns * cell + (columns - 1) * s.gap - 2 * s.tile_pad - 2;
+const spacingOf = (shape: Shape) => shape.spacing ?? (uiScale(shape).compact ? { margin: 9, gap: 6, tile_pad: 8 } : { margin: 16, gap: 12, tile_pad: 12 });
+
+/** The cell a wide card's controls fill, in glass pixels (runtime_tiles cell_content_width): the page less its margins
+ * shared between `across` cells with a gap between two, rounded down, less the card's padding and its border. */
+export function cellContent(shape: Shape, across: number) {
+  const s = spacingOf(shape);
+  return Math.floor(((shape.width ?? 320) - 2 * s.margin - (across - 1) * s.gap) / Math.max(1, across)) - 2 * s.tile_pad - 2;
+}
+
+/** A card's content width in glass pixels: `columns` of the page's `across` cells from column `start`, as LVGL's grid
+ * shares the page between its columns (lv_grid.c, one fr each: every column the nearest whole share of what is left, so
+ * the last one ends on the margin), with the gaps between them, less the card's padding and its border. */
+export function cardContent(shape: Shape, across: number, columns: number, start = 0) {
+  const s = spacingOf(shape), n = Math.max(1, across);
+  let free = Math.max(0, (shape.width ?? 320) - 2 * s.margin - (n - 1) * s.gap), width = 0;
+  for (let i = 0, left = n; i < n; ++i, --left) {
+    const track = Math.floor((free + Math.floor(left / 2)) / left);
+    free -= track;
+    if (i >= start && i < start + columns) width += track;
+  }
+  return width + (columns - 1) * s.gap - 2 * s.tile_pad - 2;
 }
 
 /** A range's chip on a wide card's -/+ pill (runtime_tiles stepper_keys and range_chip), in glass pixels: the face its
@@ -63,7 +77,7 @@ export function cardContent(shape: Shape, across: number, columns: number) {
  * whether its heat or cool icon fits beside that number (else the number stands alone in its end's colour). */
 export function wideChip(shape: Shape, across: number, widest: string) {
   const { px } = uiScale(shape), pill = pillMetrics(shape), fonts = shape.fonts || {};
-  const width = cardContent(shape, across, 1), chip = width - 2 * (pill.inset + pill.key + pill.inset), pad = px(6);
+  const width = cellContent(shape, across), chip = width - 2 * (pill.inset + pill.key + pill.inset), pad = px(6);
   const line = (size: number) => Math.round(size * 1.172), ems = textEms(widest);
   let face = pill.faces[pill.faces.length - 1] ?? 14;
   for (const size of pill.faces) if (line(size) <= pill.height && ems * size + pad <= chip) { face = size; break; }

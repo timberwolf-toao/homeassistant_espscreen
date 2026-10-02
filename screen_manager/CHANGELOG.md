@@ -1,3 +1,166 @@
+## 0.4.47 (firmware 0.28.0)
+
+- **Swipe up from the bottom edge goes home from anywhere.** Over an open card, a camera, a player's library or the
+  settings page, a swipe up from the bottom edge of the glass closes it all and shows the home page, as on a phone.
+  Until now it only worked over the tiles. A swipe that starts on a slider stays that slider's.
+- **Swipe down from the top edge opens the settings page** (GitHub #133). Holding the top bar still works too.
+- On the CYD and the Hosyond both swipes start in a band along the top and the bottom edge; turning pages stays a flick
+  anywhere over the tiles.
+
+## 0.4.46 (firmware 0.27.0)
+
+- **Every Sonos has its plus on the Spotify tile.** The speakers of Spotify's library showed a plus only once music
+  already played on one of them, so there was nothing to tap to start a group. Now every speaker that groups has its
+  plus at once: the first one starts what plays (or the next playlist you tap) on that speaker, and the next ones join
+  it.
+- **The speaker's name stays whole.** With the input key and the library key both at the top, the pill with the
+  speaker's name was cut short ("Sla..."). It now takes the room between the back key and those two keys.
+- **More speakers on a page.** A speaker's volume line in the menu is a little lower, so the Guition shows a group of
+  three and the fourth speaker on one page. Its slider still reacts across a finger's height.
+- **A coffee card on the overview.** The editor's home overview shows a small card at the bottom right with a link to
+  support the project. It waits two days after your first visit, never shows while you edit a screen, and stays away
+  for good once you say you already donated. Only your browser remembers the choice.
+
+## 0.4.45 (firmware 0.26.0)
+
+- **Play your speakers together.** The speaker menu on a player's card now groups, the way Home Assistant's own join
+  dialog does: a player that reports grouping (Sonos and others) lists the players of its own integration that do too.
+  A speaker in the group has a filled tick and its own volume under its name, the others a plus; the plus adds one at
+  once, the tick takes it out, and the pill at the top names the group ("Living room + 1"). A tap on the name of a
+  speaker already in the group does nothing, so a finger that misses its volume never breaks the group. More speakers
+  than the glass holds go on pages, as the rest of the screen does.
+- **Spotify on a Sonos.** Spotify Connect rarely lists a Sonos, but Home Assistant's Sonos integration lists your
+  Spotify account in every Sonos's library once Spotify is linked in the Sonos app. The Spotify tile now offers those
+  speakers next to its Spotify Connect devices: pick one and what plays moves there, a playlist or album from the
+  library plays there, and the card follows that speaker (its cover, its keys, its volume) until Spotify plays on its own
+  again. The speakers in that group join and leave as above. A favourite can have such a speaker as its own.
+- **Inputs behind their own key.** Home Assistant's `source` is a player's input, so a Sonos's TV input and favourites,
+  or a TV's ports, showed up as speakers in the pill. They now sit behind an input key at the top of the card, with
+  Home Assistant's own icon for it, and the pill keeps the speakers. Spotify's sources stay speakers, since they are
+  the Spotify Connect devices. A screen on older firmware keeps the menu it had.
+- **Credit.** Playing speakers together, a volume per speaker and Spotify on a Sonos follow the media player work of
+  @woozer in [#87](https://github.com/MaxGramser/homeassistant_espscreen/pull/87). Thank you!
+
+## 0.4.44 (firmware 0.25.0)
+
+- **A heat/cool range on the thermostat card, as a band.** A thermostat set to a range (heat/cool, with a low and a high
+  target) showed its two targets as two small numbers above one "Target", and one pair of -/+ keys that moved whichever
+  end was last tapped, which only a fainter shade told apart. The card now shows one big number and, under it, the
+  device's whole span as a band with the degrees along it: the heat colour runs from the minimum up to the low target,
+  the cool colour from the high target up to the maximum, and the bare track lies between them, as Home Assistant's own
+  thermostat draws it. A knob stands on each end; tap one and the number, the -/+ keys and the knob take that side's
+  colour, so what a key moves is always in sight. While the room is colder than the low target or warmer than the high
+  one, the part the device has to cover is drawn in full with a mark at the room's temperature. A thermostat with one
+  target draws exactly as before. The band is LVGL's scale, new in every board's firmware; the CYD stays within its
+  flash budget.
+
+## 0.4.43 (firmware 0.24.0)
+
+- **The media card sits on one dark colour from its cover** instead of a gradient (#135). Screens draw 16-bit colour, and
+  a gradient between two dark colours has only a few steps in it, so it showed as broad bands across the card, on the
+  CYD and on the large screens alike. The ground is now one dark shade of the cover's leading colour: no bands, and the
+  rounded corners of the cover match the ground behind them, where a square edge showed before. It comes from the app,
+  so screens on firmware 0.24.0 get it without an update.
+
+## 0.4.42 (firmware 0.24.0)
+
+- **The media card plays on the colours of its cover.** The card of a media player sits on a ground taken from the
+  cover that plays, with the speaker it plays on at the top: tap it to move the music to another one. Shuffle, repeat
+  and a bar you drag through the track are under the title, where the player has them.
+- **Your library on the screen.** The library key on the card opens what Home Assistant can browse on that player,
+  folder by folder (playlists, artists, albums and the rest), down to a page of covers with page dots for up to 48 of
+  them. A tap on a cover plays it on the speaker the card shows. Nothing is made for one service: it is the player and
+  its library as Home Assistant reports them.
+- **Favourite tiles.** A media player tile can be a favourite now (Display → Favourite): choose a playlist, album or
+  artist from the player's library in the editor and, if you like, the speaker it plays on. A tap starts it; the
+  favourite shows its cover behind its name, a play key, and a ring while it plays. Its picture waits with the same
+  spinner as every picture card.
+- **Spotify at rest keeps its card** (#88). A Spotify player that plays nothing still offers its library and its
+  speakers, so you choose a speaker and start from the screen, where the card used to have no keys at all.
+- **Cover is the default for a new media tile** on a screen that shows pictures. Tiles you already have stay as they
+  are; on the CYD and the other screens without pictures nothing changes.
+- The covers and the library need a screen with the memory for pictures. The CYD keeps the card on its cover colours,
+  the speakers and the favourites, drawn with icons.
+- Tested: on a Guition and a CYD on the bench with Spotify through Home Assistant: the card, the speakers, the
+  library, favourites, an alert camera and a camera full screen while covers load, and on the CYD 47 tiles through
+  restarts and resets. The CYD image is 92.9 % of its slot, 25 KB more than firmware 0.23.0.
+- **Credit.** Seeking through a track, the speaker at the top of the card and the cover-led player follow the media
+  player work of @woozer in [#87](https://github.com/MaxGramser/homeassistant_espscreen/pull/87). Thank you!
+
+## 0.4.41 (firmware 0.23.0)
+
+- **The editor draws what the screen draws, to the pixel.** A new check compares the editor's sizes and colours with
+  the firmware's own code on every board, and it found five places where the editor was slightly off:
+  - a lamp's colour on its tile, by one step in a few thousand colours;
+  - a battery without a charge, which the editor showed red at 0 % where the screen shows no charge;
+  - the widths of cards on a five-column screen such as the 10.1-inch Guition, where a column could be a pixel wider;
+  - the home mark in the top bar of the 7-inch Waveshare, Waveshare 7B and Sunton screens;
+  - a tall tile offered on a grid too small to hold it.
+- **Firmware 0.23.0 tidies the code, with nothing new on the glass.** The alarm panel, the lock and a light's effects
+  page now read Home Assistant's feature flags by their names from the tile catalogue, as the rest of the firmware
+  already did. Update when it suits you.
+- For contributors: the documentation now describes the project as it is built today, with an index in docs/README.md
+  and a list per recipe of every place a change touches. New checks keep the editor and the firmware in step, test
+  every tile type on every board, keep the flash of every 4 MB board within budget, and compare the tile catalogue with
+  each new Home Assistant release every week. On the oldest ESPHome the packages support, a change for every board now
+  builds one board instead of four.
+- Tested: the CYD, both Guitions and the Waveshare 7 build with ESPHome 2026.9.0 (the CYD image is 1,678,864 B, 91.5 %
+  of its slot, the same as firmware 0.22.0), and the CYD, the Guition 4848S040 and the Waveshare 7 with 2026.6.2.
+
+## 0.4.40 (firmware 0.22.0)
+
+- **The editor on a phone is about your screen now.** On a phone the editor opens on the screen as it stands on the
+  glass, one page at a time, with one button under your thumb: **Add tile**. Swipe for the next page; tap the page's
+  name under the screen for the list of pages, to go to one, move it by its handle or add one.
+- **Adding a tile** opens a sheet that says where the tile goes, with the search and the kinds of entity as chips. One
+  tap adds it: the sheet closes, the new tile lights up for a moment and Undo is beside the message. A tap on an empty
+  place adds the next tile right there. Once something changed, the button at the bottom is **Save & send**.
+- **A tile's settings** open as a sheet over the lower half, so the screen above it shows every change: its name, icon
+  and colour first, then **Move** to another page and **Remove**. **More settings** opens every other setting, as on a
+  computer.
+- **Everything else is in the screen's ··· menu**: preview, undo and redo, add a page, pages and order, the top bar,
+  screen settings and rename, and what the menu held already. The overview's ··· holds search, alerts, settings and a
+  new screen.
+- **Full editor** in that menu brings back the editor of a computer on that phone, and **Simple view** returns. The
+  phone remembers the choice. A computer and a tablet keep the editor exactly as it was.
+- Nothing changes on the screens.
+
+## 0.4.39
+
+- **New licence.** From this release Tessera is licensed under the GNU Affero General Public License v3.0 instead of
+  the MIT License. Using, changing and sharing it stays free, also commercially, but whoever passes on a changed version,
+  on a device or as an online service, shares its source under the same licence. Releases up to and including 0.4.38
+  stay under the MIT License. NOTICE lists the third-party code and its licences.
+- Nothing changes on the screens or in the editor.
+
+## 0.4.38 (firmware 0.22.0)
+
+- **Remotes in the library** (#117). A remote (`remote.*`, such as a Harmony hub, an Android TV, or a Broadlink or other
+  IR blaster) is a tile now, with Home Assistant's icons and colours: amber while on, the crossed-out remote while off.
+  A tap opens its card, as Home Assistant's tile card opens its dialog: the power key in the top bar, where the light's
+  and the thermostat's have theirs, and the remote's activities where it has them (Harmony, Android TV Remote), each of
+  which turns it on with that activity. The tile names the activity it runs. Set the tap to **On / off** to switch it
+  with a tap instead; a wide tile carries the switch.
+- **A remote you hold in your hand, on the glass.** For a remote whose commands Home Assistant's source names (Apple TV,
+  Android TV, Roku, Sky, DirecTV, LG, Panasonic, Vizio, Xbox, Kaleidescape, JVC, Lyngdorf) the card is a keypad: a
+  ring of four arrows round OK, and Back, Home and Play/Pause with the volume beside or under it. Each key sends the
+  command that integration takes for it, and only the keys it has are drawn: a Sky box gets no volume keys, a projector
+  Back and Menu. Every screen keeps one arrangement for every remote, from what its glass holds: a column on each side,
+  a row under the ring, or two rows on narrow glass standing up. Keys go out at once, also several in a row.
+- **A key of a remote is a tile of its own**: set its tap to **Perform action**, choose **Send command** and pick the
+  command, with the device for a Broadlink. Give each key its own name and icon.
+- **The commands each remote takes, from Home Assistant's source.** For thirteen integrations (Android TV Remote, Android
+  TV, Apple TV, Roku, Sky, DirecTV, LG Netcast, Panasonic Viera, Vizio, Xbox, Kaleidescape, JVC, Lyngdorf) the command
+  field lists what the remote takes, filtered as you type. The lists are read from Home Assistant and the exact library
+  version each integration pins (`tools/read_remote_commands.py`), so they follow Home Assistant when it updates. Where
+  only the hub, the learned codes or your own configuration know the names (Harmony, Broadlink, Bravia) or any text goes
+  (Samsung, Philips), you type the command; a typed command always goes as typed.
+- A remote's "on" says the remote may send, not that the device behind it runs: a Broadlink that is off drops every
+  command. Name the tile after the remote, and power the player with a command tile of its own.
+- Needs firmware 0.22.0: a screen with a remote tile is offered the update before its layout goes out. CYD image is
+  1,678,864 B, 91.5 % of its slot, 10.2 KB more (the keypad and its icons). Built: CYD, Guition 4848S040, JC8012P4A1,
+  Waveshare 7.
+
 ## 0.4.37 (firmware 0.21.0)
 
 - **The editor on a phone** (#124). On a narrow window the library stood in the middle of the page with the pages

@@ -83,6 +83,48 @@ int main() {
     sound(l, 300, 300);
     assert(!l.wide);
   }
+  // Shuffle and repeat (firmware 0.24.0+) stand at the ends of the keys' row where it has room: the Guition's card
+  // has it, the CYD's card and a CYD tile do not.
+  {
+    Metrics m; Layout l = layout(m, 480, 396);
+    assert(l.sides);
+    assert(l.shuffle.right() < l.prev.x && l.next.right() < l.repeat.x);
+    assert(l.shuffle.cy() == l.play.cy() && l.repeat.cy() == l.play.cy() && l.shuffle.w == l.repeat.w);
+    assert(inside(l.shuffle, 480, 396) && inside(l.repeat, 480, 396) && l.shuffle.x >= m.margin());
+    assert(l.play.cx() == 240);  // the row stays in the middle
+    // The seek area is the bar's length and at least a key's height, round the bar's own line.
+    assert(l.seek.x == l.bar.x && l.seek.w == l.bar.w && l.seek.h > l.bar.h && l.seek.cy() == l.bar.cy());
+    Metrics small; small.large = false; small.title_h = 21; small.artist_h = 17; small.small_h = 13;
+    Layout cyd = layout(small, 320, 192);
+    assert(!cyd.sides && cyd.shuffle.w == 0);
+    // A wide glass (800x480) has the room as well; the row keeps its keys at their full gaps.
+    Layout wide = layout(m, 800, 396);
+    sound(wide, 800, 396);
+    printf("sides: guition shuffle x=%d repeat x=%d; 800 wide %s\n", l.shuffle.x, l.repeat.x, wide.sides ? "yes" : "no");
+  }
+  // Seeking: a place on the bar is a second of the track, and a seek holds until Home Assistant agrees.
+  assert(seek_seconds(0, 200, 240) == 0 && seek_seconds(100, 200, 240) == 120 && seek_seconds(250, 200, 240) == 240);
+  assert(seek_seconds(-5, 200, 240) == 0 && seek_seconds(50, 0, 240) == 0 && seek_seconds(50, 200, 0) == 0);
+  {
+    Seek s;
+    s.send(120, 1000, 5000, "Song");
+    assert(s.holds(30, 4990, 1500, 5001, true, "Song"));         // the old position: the knob stays where it was sent
+    assert(!s.holds(121, 5001, 1600, 5002, true, "Song"));       // near it: Home Assistant agrees, the hold ends
+    s.send(120, 1000, 5000, "Song");
+    assert(!s.holds(30, 4990, 1500, 5001, true, "Other"));       // another track: the hold ends
+    s.send(120, 1000, 5000, "Song");
+    assert(!s.holds(30, 4990, 1000 + SEEK_HOLD_MS, 5007, true, "Song"));  // too long without an answer
+    s.send(60, 1000, 5000, "Song");
+    assert(s.holds(10, 5000, 2000, 5010, false, "Song") && !s.holds(61, 5000, 2000, 5010, false, "Song"));
+  }
+  // The card's ground: two colours from the app, nothing else.
+  {
+    uint32_t top = 0, bottom = 0;
+    assert(ground("2B484F,121E20", top, bottom) && top == 0x2B484F && bottom == 0x121E20);
+    assert(ground("611d18,280c0a", top, bottom) && top == 0x611D18);
+    assert(!ground("-", top, bottom) && !ground("", top, bottom) && !ground("2B484F;121E20", top, bottom) && !ground("2B484G,121E20", top, bottom));
+    assert(std::string(next_repeat("off")) == "all" && std::string(next_repeat("all")) == "one" && std::string(next_repeat("one")) == "off");
+  }
   // Progress: the position runs on while playing, stands still when paused, never beyond the track.
   assert(progress(0, 0, 0, true, 0) == -1);
   assert(progress(60, 1000, 1000, true, 240) == 250);

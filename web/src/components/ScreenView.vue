@@ -3,7 +3,8 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { t } from "../i18n";
 import {
-  canAlert, closeInspector, copyLayoutFrom, currentScreen, currentTile, removeTile, exportLayout, go, identify, importLayout, needsUpdate, redo, save, startUpdate, state, undo,
+  canAlert, closeInspector, copyLayoutFrom, currentScreen, currentTile, removeTile, exportLayout, go, goHome, identify, importLayout, narrowPhone, needsUpdate, openBar,
+  phone, redo, renameScreen, save, setFullEditor, startUpdate, state, tileLimit, undo,
 } from "../store";
 import LayoutView from "./LayoutView.vue";
 import SettingsTab from "./SettingsTab.vue";
@@ -44,6 +45,21 @@ function copyFrom(id: string) {
   copyLayoutFrom(id);
 }
 function pickFile() { closeMenu(); fileInput.value?.click(); }
+// The phone's menu (app 0.4.40) holds what the toolbar and the tabs hold on a wider page.
+function phoneBack() {
+  if (state.tab === "settings") { state.tab = "layout"; return; }
+  goHome();
+}
+const phoneStatus = computed(() => !screen.value.online ? t("editor.common.offline")
+  : state.dirty ? t("editor.phone.not_sent") : screen.value.in_sync ? t("editor.phone.on_screen") : t("editor.screen_view.sending"));
+function phoneSettings() { closeMenu(); closeInspector(); state.tab = "settings"; }
+function phoneRename() {
+  closeMenu();
+  const name = prompt(t("editor.sidebar.rename.label"), screen.value.name);
+  if (name && name.trim() && name.trim() !== screen.value.name) renameScreen(screen.value, name.trim());
+}
+const full = computed(() => (state.layout?.tiles.length || 0) >= tileLimit.value);
+function phoneAdd() { state.insertAt = -1; closeInspector(); state.addSheet = true; }
 async function onFile(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input.files?.[0];
@@ -84,11 +100,15 @@ onBeforeUnmount(() => { document.removeEventListener("keydown", beforeKey, true)
 
 <template>
   <header class="main-head">
+    <button v-if="phone" type="button" class="phone-back" @click="phoneBack">
+      <Icon name="chevron-left" />{{ state.tab === "settings" ? t("editor.screen_view.tabs.layout") : t("editor.phone.screens") }}
+    </button>
     <div class="head-title">
       <h1 id="screen-name">{{ screen.name }}</h1>
-      <span id="delivery" class="chip status" :class="statusKind" :title="statusText"><span class="dot"></span>{{ statusWord }}</span>
+      <span v-if="!phone" id="delivery" class="chip status" :class="statusKind" :title="statusText"><span class="dot"></span>{{ statusWord }}</span>
+      <p v-else class="phone-status" :class="{ dirty: state.dirty }" :title="statusText"><span class="dot" :class="statusKind"></span>{{ phoneStatus }}</p>
     </div>
-    <div class="seg tabs" role="tablist" :aria-label="screen.name">
+    <div v-if="!phone" class="seg tabs" role="tablist" :aria-label="screen.name">
       <button type="button" id="tab-layout" role="tab" :aria-pressed="state.tab === 'layout' ? 'true' : 'false'" :aria-selected="state.tab === 'layout'" @click="state.tab = 'layout'">
         <Icon name="view-dashboard-outline" />{{ t("editor.screen_view.tabs.layout") }}
       </button>
@@ -97,14 +117,30 @@ onBeforeUnmount(() => { document.removeEventListener("keydown", beforeKey, true)
       </button>
     </div>
     <div class="head-right">
+      <template v-if="!phone">
       <span v-if="!state.dirty" id="dirty" class="saved-note" :class="{ sent: state.saved }"><Icon name="check" />{{ state.saved ? t(screen.virtual ? "editor.preview.saved" : "editor.screen_view.sent") : t("editor.screen_view.all_saved") }}</span>
       <span v-else id="dirty" class="chip dirty">{{ t("editor.common.unsaved") }}</span>
-      <button v-if="state.dirty" id="save" type="button" class="btn primary" :disabled="state.busy" title="⌘S" @click="save()">
+      </template>
+      <button v-if="state.dirty && !phone" id="save" type="button" class="btn primary" :disabled="state.busy" title="⌘S" @click="save()">
         <span v-if="state.busy" class="spin small"></span>{{ state.busy ? t("editor.common.saving") : t(screen.virtual ? "editor.preview.save" : "editor.common.save_send") }}
       </button>
       <UiMenu v-model:open="state.menuOpen" width="264px">
         <template #trigger>
           <button id="more" type="button" class="icon-btn" :aria-label="t('editor.screen_view.more')"><Icon name="dots-horizontal" /></button>
+        </template>
+        <template v-if="phone && state.layout">
+          <div class="phone-menu-row" role="group">
+            <button type="button" role="menuitem" @click="closeMenu(); state.tab = 'layout'; state.previewOpen = true"><Icon name="play" />{{ t("editor.pages.preview") }}</button>
+            <button type="button" role="menuitem" :disabled="!state.undoCount" @click="undo"><Icon name="undo" />{{ t("editor.common.undo") }}</button>
+            <button type="button" role="menuitem" :disabled="!state.redoCount" @click="redo"><Icon name="redo" />{{ t("editor.pages.redo") }}</button>
+          </div>
+          <UiMenuItem icon="file-plus-outline" @select="state.tab = 'layout'; state.pageWizardOpen = true">{{ t("editor.layout.add_page") }}</UiMenuItem>
+          <UiMenuItem icon="view-column-outline" @select="state.tab = 'layout'; state.pagesSheet = true">{{ t("editor.phone.pages_order") }}</UiMenuItem>
+          <UiMenuItem icon="page-layout-header" @select="state.tab = 'layout'; openBar(0, state.barPage)">{{ t("editor.page.edit_bar") }}</UiMenuItem>
+          <UiMenuSeparator />
+          <UiMenuItem v-if="!screen.virtual" icon="cog-outline" @select="phoneSettings">{{ t("editor.screen_view.tabs.settings") }}</UiMenuItem>
+          <UiMenuItem v-if="!screen.virtual" icon="pencil-outline" @select="phoneRename">{{ t("editor.sidebar.rename.button") }}</UiMenuItem>
+          <UiMenuSeparator />
         </template>
         <UiMenuLabel>{{ t("editor.screen_view.menu.group_screen") }}</UiMenuLabel>
         <UiMenuItem id="identify" icon="monitor-eye" :hint="t('editor.screen_view.menu.identify_hint')" :disabled="!canAlert(screen) || !screen.online"
@@ -123,6 +159,11 @@ onBeforeUnmount(() => { document.removeEventListener("keydown", beforeKey, true)
         <UiMenuLabel>{{ t("editor.screen_view.menu.group_advanced") }}</UiMenuLabel>
         <UiMenuItem id="open-override" icon="code-braces" :disabled="!screen.update?.profile" :title="screen.update?.profile ? '' : t('editor.screen_view.menu.override_none')" @select="openOverride">{{ t("editor.screen_view.menu.override") }}</UiMenuItem>
         <UiMenuItem icon="flash" @select="go('#firmware')">{{ t("editor.nav.firmware") }}</UiMenuItem>
+        <template v-if="narrowPhone">
+          <UiMenuSeparator />
+          <UiMenuItem v-if="phone" icon="monitor-dashboard" @select="setFullEditor(true)">{{ t("editor.phone.full_editor") }}</UiMenuItem>
+          <UiMenuItem v-else icon="cellphone" @select="setFullEditor(false)">{{ t("editor.phone.simple_editor") }}</UiMenuItem>
+        </template>
       </UiMenu>
       <input ref="fileInput" type="file" accept="application/json,.json" hidden @change="onFile" />
     </div>
@@ -134,5 +175,15 @@ onBeforeUnmount(() => { document.removeEventListener("keydown", beforeKey, true)
       <SettingsTab v-else />
     </div>
     <Drawer />
+  </div>
+  <!-- The phone's one button (app 0.4.40): add a tile, and once something changed, send it to the screen. -->
+  <div v-if="phone && state.tab === 'layout' && state.layout" class="phone-dock">
+    <button type="button" id="phone-add" class="btn" :class="state.dirty ? 'soft square' : 'primary'" :disabled="full"
+      :aria-label="t('editor.phone.add_tile')" :title="full ? t('editor.library.full', tileLimit) : ''" @click="phoneAdd">
+      <Icon name="plus" /><span v-if="!state.dirty">{{ t("editor.phone.add_tile") }}</span>
+    </button>
+    <button v-if="state.dirty" type="button" id="save" class="btn primary" :disabled="state.busy" @click="save()">
+      <span v-if="state.busy" class="spin small"></span><Icon v-else name="tray-arrow-up" />{{ state.busy ? t("editor.common.saving") : t(screen.virtual ? "editor.preview.save" : "editor.common.save_send") }}
+    </button>
   </div>
 </template>

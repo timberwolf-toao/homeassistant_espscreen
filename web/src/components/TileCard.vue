@@ -9,10 +9,10 @@ import { vDrag } from "../drag";
 import { numberText, t, te } from "../i18n";
 import { dimensions, sizeOf, inlineControlKind, displayName, effectiveControls, isFull, isWide, keysOf, pageTarget } from "../model/layout";
 import { clockText, glyph } from "../model/topbar";
-import { clock24, currentScreen, deviceStyle, screenShape, isCompact, supports, entityName, isSelected, liveOf, numberMarks, openTile, placeTile, removeTile, screenBuiltinName, screenText, state, tileIconCp, toast, unitSuffix } from "../store";
+import { clock24, currentScreen, deviceStyle, screenShape, isCompact, supports, pictures, entityName, isSelected, liveOf, numberMarks, openTile, placeTile, removeTile, screenBuiltinName, screenText, state, tileIconCp, toast, unitSuffix } from "../store";
 import { modeColor, tilePalette, tileActive } from "../model/tile-palette";
 import { textEms, wideChip, widestSetpoint } from "../model/ui-scale";
-import { drawable } from "../model/catalogue";
+import { bits, drawable } from "../model/catalogue";
 import type { Tile } from "../types";
 import TileResize from "./TileResize.vue";
 import { availableControl, controlKeys } from "../model/tall-controls";
@@ -38,7 +38,9 @@ function activate() {
   else if (live.value) openTile(props.tile);
 }
 // A built-in card is named as the screens name it, in their language (app 0.2.90).
-const name = computed(() => props.tile.name || (domain.value === "screen" && screenBuiltinName(props.tile.entity)) || entityName(props.tile.entity));
+// A favourite (app 0.4.42) is named after what it plays until it has a name of its own.
+const favoritePlay = computed(() => display.value === 'favorite' && domain.value === 'media_player' ? (props.tile.options?.play as Record<string, string> | undefined) : undefined);
+const name = computed(() => props.tile.name || favoritePlay.value?.title || (domain.value === "screen" && screenBuiltinName(props.tile.entity)) || entityName(props.tile.entity));
 const shape = computed(() => dimensions(sizeOf(props.tile), grid.value));
 const climateModes = computed(() => domain.value === 'climate' && effectiveControls(props.tile, state.inventory) === 'setpoint_mode' && shape.value.rows > 1);
 const tall = computed(() => shape.value.rows > 1 && (!full.value || coverExtended.value || climateModes.value) && ["standard", "cover"].includes(display.value));
@@ -185,7 +187,7 @@ const runs = computed(() => domain.value === "automation" && props.tile.options?
 const palette = computed(() => tilePalette(props.tile.entity, current.value, runs.value));
 const gone = computed(() => !current.value || ["unavailable", "unknown", ""].includes(current.value.state));
 const on = computed(() => tileActive(props.tile.entity, current.value, runs.value));
-const isOn = computed(() => (["light", "switch", "input_boolean", "fan"].includes(domain.value) || domain.value === "automation" && !runs.value) && current.value?.state === "on");
+const isOn = computed(() => (["light", "switch", "input_boolean", "fan", "remote"].includes(domain.value) || domain.value === "automation" && !runs.value) && current.value?.state === "on");
 const unit = computed(() => current.value?.a?.unit_of_measurement as string | undefined);
 const capital = (text: string) => text.charAt(0).toUpperCase() + text.slice(1).replace(/_/g, " ");
 // Numbers as the screens write them, "1,234.5" or "1.234,5" (app 0.2.90): a state only with a unit, or of an entity
@@ -209,7 +211,7 @@ function haWord(c: { state: string; a: Record<string, any> }) {
 // and +: the end they move, heat or cool, with its icon in that mode's colour; the low end first, as the screen does.
 const rangeChip = computed(() => {
   const a = current.value?.a || {}, f = Number(a.supported_features || 0);
-  if (domain.value !== "climate" || !rangeReady.value || (f & 1 && a.temperature != null) || !(f & 2) || a.target_temp_low == null || a.target_temp_high == null) return null;
+  if (domain.value !== "climate" || !rangeReady.value || (f & bits("climate", "TARGET_TEMPERATURE") && a.temperature != null) || !(f & bits("climate", "TARGET_TEMPERATURE_RANGE")) || a.target_temp_low == null || a.target_temp_high == null) return null;
   const digits = Number(a.target_temp_step || 0.5) >= 1 ? 0 : 1;
   return { icon: "fire", color: modeColor("heat"), text: `${num(Number(a.target_temp_low).toFixed(digits))}°`, ems: textEms(widestSetpoint(a)) };
 });
@@ -239,6 +241,8 @@ const status = computed(() => {
   if (domain.value === "weather") return `${word}${a.temperature !== undefined ? ` · ${num(a.temperature)}°` : ""}`;
   if (domain.value === "cover" && a.current_position !== undefined && a.current_position > 0 && a.current_position < 100) return `${word} · ${a.current_position}${unitSuffix("%")}`;
   if (domain.value === "media_player" && a.media_title) return `${word} · ${a.media_title}`;
+  // A remote that runs an activity names it (firmware 0.22.0+), as the screen does.
+  if (domain.value === "remote" && c.state === "on" && a.current_activity) return String(a.current_activity);
   if (domain.value === "sensor" || NUMERIC.includes(domain.value)) return value(c.state);
   return word;
 });
@@ -266,13 +270,27 @@ const pageLink = computed(() => `${screenText("screen.tile.page", { n: goesTo.va
 const sliderStyle = computed(() => ({ background: `linear-gradient(to right, ${palette.value.accent} ${fill.value}%, ${palette.value.track} ${fill.value}%)` }));
 const volumeStyle = sliderStyle;
 // The add-on prepares artwork; source URLs and HA credentials stay server-side.
-const artwork = computed(() => tall.value && display.value === 'cover' && domain.value === 'media_player' && current.value?.a?.artwork_mark
+const artwork = computed(() => pictures.value && tall.value && display.value === 'cover' && domain.value === 'media_player' && current.value?.a?.artwork_mark
   ? `api/media-art?entity=${encodeURIComponent(props.tile.entity)}&v=${encodeURIComponent(String(current.value.a.artwork_mark))}` : '');
 const artworkLoaded = ref(false);
 watch(artwork, () => { artworkLoaded.value = false; });
 // A live camera fills its card on every size (app 0.3.13; 1x2 and 2x2 since 0.3.8): the add-on's picture, cut the way
 // the tile asks, with the name at the bottom or nothing on it. Until the picture is here, the head as on the screen.
 const cameraCard = computed(() => display.value === 'live' && ['camera', 'image'].includes(domain.value));
+// A favourite (app 0.4.42): what it plays fills the card, dimmed as an album cover over a card is, with its name, its
+// line and a round play key; on a screen without pictures the ordinary tile with the icon of what it plays.
+const favoriteCard = computed(() => Boolean(favoritePlay.value) && !full.value);
+const favoritePicture = computed(() => favoriteCard.value && pictures.value && favoritePlay.value?.thumb
+  ? `api/media/picture?entity=${encodeURIComponent(props.tile.entity)}&url=${encodeURIComponent(favoritePlay.value.thumb)}` : '');
+const favoriteLoaded = ref(false);
+watch(favoritePicture, () => { favoriteLoaded.value = false; });
+const FAVORITE_ICONS: Record<string, string> = { album: 'F0025', playlist: 'F0CB8', artist: 'F0803', track: 'F0387', podcast: 'F0994', episode: 'F0994', channel: 'F0439' };
+const favoriteIcon = computed(() => props.tile.options?.icon && props.tile.options.icon !== 'auto' ? tileIconCp(props.tile) : FAVORITE_ICONS[favoritePlay.value?.class || ''] || 'F024B');
+const favoriteLine = computed(() => {
+  const kind = favoritePlay.value?.class, speaker = props.tile.options?.speaker as string | undefined;
+  const word = kind && te(`addon.screen.media.${kind}`) ? screenText(`addon.screen.media.${kind}`) : '';
+  return [word, speaker].filter(Boolean).join(' · ');
+});
 const cameraPicture = computed(() => cameraCard.value ? `api/camera-preview?entity=${encodeURIComponent(props.tile.entity)}` : '');
 const cameraLoaded = ref(false);
 watch(cameraPicture, () => { cameraLoaded.value = false; });
@@ -313,7 +331,7 @@ async function onKey(e: KeyboardEvent) {
 </script>
 
 <template>
-  <span v-if="round" class="round-tile" :class="{ chosen, placeholder: placeholder || (!live && !foreign) }" :data-tile-id="tile.id"
+  <span v-if="round" class="round-tile" :class="{ chosen, placeholder: placeholder || (!live && !foreign), 'just-added': !preview && !!tile.id && state.justAdded === tile.id }" :data-tile-id="tile.id"
     :style="{ '--tile-icon': palette.icon, '--tile-circle': palette.circle }">
     <button type="button" class="round-key" :aria-label="name" :disabled="preview && !live"
       v-drag="preview || foreign ? null : { kind: 'tile', tile }" @click.stop="activate">
@@ -323,7 +341,7 @@ async function onKey(e: KeyboardEvent) {
     <!-- The same remove key as on a tile, at the circle's corner. -->
     <button v-if="live && !preview" type="button" class="remove" :title="t('editor.tile_card.remove')" :aria-label="t('editor.tile_card.remove_named', { name })" @click.stop="removeTile(tile)">✕</button>
   </span>
-  <div v-else class="tile" :class="{ wide, full, tall, 'tall-action': tallAction || tallStack, 'big-key': bigKey, photo: artworkLoaded && !!artwork, camera: cameraCard && cameraLoaded, bare, placeholder: placeholder || (!live && !foreign), chosen }" :data-slot="slot" :data-tile-id="tile.id" :data-columns="shape.columns" :data-rows="shape.rows"
+  <div v-else class="tile" :class="{ wide, full, tall, 'tall-action': tallAction || tallStack, 'big-key': bigKey, photo: artworkLoaded && !!artwork, camera: (cameraCard && cameraLoaded) || (favoriteCard && favoriteLoaded), bare, placeholder: placeholder || (!live && !foreign), chosen, 'just-added': !preview && !!tile.id && state.justAdded === tile.id }" :data-slot="slot" :data-tile-id="tile.id" :data-columns="shape.columns" :data-rows="shape.rows"
     :style="{ gridColumn: `${slot % grid.columns + 1} / span ${shape.columns}`, gridRow: `${Math.floor(slot % grid.slots / grid.columns) + 1} / span ${shape.rows}`, ...(background && !bare ? { backgroundColor: background } : {}), '--tile-icon': palette.icon, '--tile-circle': palette.circle, '--tile-accent': palette.accent }"
     :tabindex="!foreign && (preview ? goesTo : live) ? 0 : -1" :role="!foreign && (preview ? goesTo : live) ? 'button' : undefined" :aria-label="live ? label : undefined"
     v-drag="preview || foreign ? null : { kind: 'tile', tile }" @click="activate" @keydown="live && onKey($event)">
@@ -381,6 +399,14 @@ async function onKey(e: KeyboardEvent) {
       <span class="head"><span class="ic mdi">{{ glyph(tileIconCp(tile)) }}</span><span class="tx"><span class="nm">{{ name }}</span><span class="st">{{ line }}</span></span></span>
       <SensorHistory :entity="tile.entity" :hours="Number(tile.options?.history_hours || 24)" />
     </template>
+    <template v-else-if="favoriteCard">
+      <img v-if="favoritePicture" :key="favoritePicture" class="camera-art fill favorite-art" :src="favoritePicture" alt="" @load="favoriteLoaded = true" @error="favoriteLoaded = false" />
+      <span v-if="!favoriteLoaded" class="head"><span class="ic mdi">{{ glyph(favoriteIcon) }}</span><span class="tx"><span class="nm">{{ name }}</span><span v-if="favoriteLine" class="st">{{ favoriteLine }}</span></span></span>
+      <template v-else>
+        <span class="favorite-text"><span class="nm">{{ name }}</span><span v-if="favoriteLine" class="st">{{ favoriteLine }}</span></span>
+        <span class="favorite-key mdi" aria-hidden="true">{{ glyph('F040A') }}</span>
+      </template>
+    </template>
     <template v-else-if="cameraCard">
       <img v-if="cameraPicture" :key="cameraPicture" class="camera-art" :class="tile.options?.fit === 'contain' ? 'contain' : 'fill'" :src="cameraPicture" alt="" @load="cameraLoaded = true" @error="cameraLoaded = false" />
       <span v-if="!cameraLoaded" class="head"><span class="ic mdi">{{ glyph(tileIconCp(tile)) }}</span><span class="tx"><span class="nm">{{ name }}</span><span v-if="line" class="st" :class="{ off: gone }">{{ line }}</span></span></span>
@@ -435,7 +461,7 @@ async function onKey(e: KeyboardEvent) {
         <ModeBar v-else-if="tallControls === 'mode' && domain === 'climate'" :a="current?.a || {}" :mode="current?.state || ''" place="tall" :columns="shape.columns" />
         <template v-else-if="tallKeys.length"><span v-for="(control, i) in tallKeys" :key="i" class="key mdi" :class="{ primary: control.primary, disabled: control.disabled, active: control.mode === current?.state }">{{ key(control.icon) }}</span></template>
         <span v-else-if="tallControls === 'stepper'" class="stp"><span class="mdi">{{ key("minus") || "−" }}</span><b>{{ bigValue }}</b><span class="mdi">{{ key("plus") || "+" }}</span></span>
-        <template v-else-if="tallControls === 'volume'"><span v-if="features & 4" class="range" :style="volumeStyle"></span><span v-if="features & 8" class="key mdi">{{ key(current?.a?.is_volume_muted ? 'volume-off' : 'volume-high') }}</span></template>
+        <template v-else-if="tallControls === 'volume'"><span v-if="features & bits('media_player', 'VOLUME_SET')" class="range" :style="volumeStyle"></span><span v-if="features & bits('media_player', 'VOLUME_MUTE')" class="key mdi">{{ key(current?.a?.is_volume_muted ? 'volume-off' : 'volume-high') }}</span></template>
         <span v-else-if="tallControls === 'run'" class="run">{{ runText }}</span>
         <span v-else class="range" :style="sliderStyle"></span>
       </span>
@@ -580,4 +606,10 @@ async function onKey(e: KeyboardEvent) {
 /* The shade the add-on puts under the name (tile_art.FADE_SHARE, FADE_DEPTH). */
 .tile .camera-name { position: absolute; inset: auto 0 0 0; height: 42%; padding: 0 9px 8px; display: flex; align-items: end; color: white; font-weight: 700; background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .59)); border-radius: 0 0 inherit inherit; pointer-events: none; }
 .tile .camera-name > span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* A favourite (app 0.4.42): the picture dimmed as the screen dims it (a third of its light), the words and the key over it. */
+.tile .favorite-art { filter: brightness(.333); }
+.tile .favorite-text { position: absolute; inset: auto 0 0 0; padding: 0 calc(var(--key, 34px) + 14px) 8px 9px; display: flex; flex-direction: column; color: white; pointer-events: none; min-width: 0; }
+.tile .favorite-text .nm { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile .favorite-text .st { font-size: .85em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile .favorite-key { position: absolute; right: 8px; bottom: 8px; width: var(--key, 34px); height: var(--key, 34px); border-radius: 50%; background: #f2f2f2; color: #000; display: grid; place-items: center; font-size: 20px; pointer-events: none; }
 </style>

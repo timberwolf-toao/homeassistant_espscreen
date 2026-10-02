@@ -93,7 +93,7 @@ within reach at all. Then put the firmware on the screen from the computer you'r
 opened over https (see below):
 
 1. Plug the screen into this computer with a USB data cable.
-2. Under **Install via**, choose **This computer · install from this browser** and click
+2. In the Install step of **New screen**, choose **From this computer** and click
    **Connect & install**.
 3. The browser asks which port to use: choose the screen's. ESP Screens first checks that the
    board carries the chip the chosen board needs (an ESP32, ESP32-S3 or ESP32-P4), then builds the
@@ -111,7 +111,7 @@ port, until the installation starts.
 
 **Download.** For any other browser:
 
-1. Under **Install via**, choose **Download · flash from your own computer** and click
+1. In the Install step of **New screen**, choose **Download the file** and click
    **Build & download**. ESP Screens builds the firmware the same way; when it's ready,
    the window offers the file, for example `kitchen.factory.bin`.
 2. Plug the screen into your own computer with a USB data cable.
@@ -238,7 +238,20 @@ Click **Save & send** to send your changes.
 - Automation: tap to turn it on or off, and hold the tile to run its actions now, as **Run actions** does in Home
   Assistant (its conditions are skipped). Under **On tap**, **Run automation actions** swaps the two: a tap runs it and holding the
   tile turns it on or off. The tile then looks like a script's button, coloured while the actions run (firmware 0.7.0+).
-- Media player: tap for the media card with the cover (boards with camera pictures), the keys, and the volume.
+- Remote: tap for its card with the power key and, where the remote has them, its activities, or for an Apple TV,
+  Android TV, Roku and others a keypad with arrows, OK, Back, Home and the volume (firmware 0.22.0+). For
+  a key such as Play or Menu, add the remote again with **On tap** set to **Perform action** and **Send command**, and
+  pick the command from the list under the field (Android TV, Apple TV, Roku and others) or type it as Home Assistant
+  knows it (Harmony, Broadlink).
+- Media player: tap for the media card with the cover (boards with camera pictures), the keys, and the volume. The
+  speaker it plays on is at the top of the card; tap it to choose another. A player that groups (Sonos and others that
+  report it) lists the speakers it can play together with: the plus at the end of a row adds one, the tick takes it out,
+  and each speaker in the group has its own volume. A speaker whose library holds your Spotify account is a speaker of
+  the Spotify tile too: pick it and the music moves there, and the card follows it. Inputs, such as a Sonos's TV input or
+  its favourites, are behind their own key at the top (firmware 0.26.0+). Where Home Assistant can browse the player,
+  the library key opens its library down to a page of covers, and a tap plays one (firmware 0.24.0+, boards with camera
+  pictures). **Display → Favourite** makes the tile play one playlist, album or artist you pick from that library, on
+  the speaker you choose. A new media tile shows its cover by default on a board with pictures.
 - Camera or image (every board except the CYD, the Waveshare 3.5-inch and the Hosyond 4-inch): tap for the
   picture full screen, refreshed every four seconds. **Display → Live picture** fills the tile itself, on every size, and refreshes every 5, 10, 15 or 30 seconds (firmware 0.3.7+, [CAMERA.md](CAMERA.md)).
 - Alarm panel: tap for its card with a key per mode, and a keypad when the panel asks for a code (firmware 0.3.3+).
@@ -259,8 +272,11 @@ edge, like the back-swipe gesture on a phone; slow or fast, and a swipe starting
 middle of the screen does nothing, so tapping and dragging tiles never
 accidentally changes pages. On the CYD and the Hosyond, it stays a quick swipe across the screen. Sliders
 only control their value; detail menus and standby don't change pages. Swiping up from the
-bottom edge goes back to the Home page (firmware 0.2.100+; page 1 unless you chose another page as Home, [PAGES.md](PAGES.md)), in the same way: from the bottom edge on
-the boards that swipe from an edge, a quick swipe up anywhere on the CYD and the Hosyond. Every swipe that is
+bottom edge goes back to the Home page (firmware 0.2.100+; page 1 unless you chose another page as Home, [PAGES.md](PAGES.md)).
+With firmware 0.28.0+ it works wherever you are, like the home gesture on a phone: an open card, a camera or the
+settings page closes on the way. Swiping down from the top edge opens the screen's settings page. A swipe that starts on
+a slider stays that slider's. The CYD and the Hosyond take both from a band along the top and bottom edge as well, and
+a quick swipe up anywhere over the tiles still goes home there. Every swipe that is
 taken lights the edge it came from for a quarter of a second, so the screen answers the gesture
 before the new page is drawn.
 
@@ -424,7 +440,7 @@ HA mechanisms used: [Ingress](https://developers.home-assistant.io/docs/apps/pre
 
 Open the screen in ESP Screens and its **Screen settings** tab. A change there applies at
 once; there is nothing to save, and no firmware flash is needed. The same settings are on the
-screen itself (hold the top bar, firmware 0.2.44+) and, with firmware 0.2.49+, on the screen's
+screen itself (swipe down from the top edge or hold the top bar, firmware 0.2.44+) and, with firmware 0.2.49+, on the screen's
 device in Home Assistant ([SETTINGS.md](SETTINGS.md)).
 
 | Setting | Options | Default |

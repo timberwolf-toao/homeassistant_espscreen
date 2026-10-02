@@ -11,7 +11,7 @@ import InstallerView from "./components/InstallerView.vue";
 import FirmwareView from "./components/FirmwareView.vue";
 import AlertsView from "./components/AlertsView.vue";
 import OverrideView from "./components/OverrideView.vue";
-import { currentScreen, route, state } from "./store";
+import { currentScreen, phone, route, state } from "./store";
 
 const view = computed(() => {
   if (route.value === "#settings") return AppSettingsView;
@@ -32,8 +32,9 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKey));
 </script>
 
 <template>
-  <div class="app" :class="{ dragging: state.drag.active }">
-    <Sidebar />
+  <div class="app" :class="{ dragging: state.drag.active, phone }">
+    <!-- On a phone the overview and a screen carry their own way around (app 0.4.40): the sidebar's row stays for the rest. -->
+    <Sidebar v-if="!(phone && route === '')" />
     <main class="main">
       <component :is="view" />
     </main>

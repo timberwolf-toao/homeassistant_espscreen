@@ -219,7 +219,7 @@ Guition it comes in about 1.8 s (2.8 s with 4 KB).
   the camera opens and loads the link as soon as it comes. About 2 s when the app still has the
   camera's last snapshot (it keeps one for 30 s after the last load), 4.5 s when it must ask Home
   Assistant first, of which 2.4 s is the camera's own snapshot. Firmware 0.2.72 took 3.4 s and
-  5.8 s. Details in docs/TEST_RESULTS_0287.md.
+  5.8 s.
 - Wi-Fi without power save (firmware 0.2.74 sets `power_save_mode: none` itself) makes the screen
   wait on its Wi-Fi less often while an image comes in: a loop held over 50 ms in one of eleven
   opens, against five of twelve with power save.

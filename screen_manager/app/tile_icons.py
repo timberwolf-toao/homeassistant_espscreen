@@ -192,6 +192,15 @@ GROUPS = (
 # Glyphs the firmware draws itself (weather conditions, sun, checkmark, direct controls) that the picker does not offer.
 FIXED = (
     ('alert-circle-outline', 'F05D6'),
+    # A remote's keypad (firmware 0.22.0): the ring's arrows up and down beside chevron-left/-right, Back, Home,
+    # Play/Pause and the volume keys.
+    ('chevron-up', 'F0143'),
+    ('chevron-down', 'F0140'),
+    ('arrow-u-left-top', 'F17B3'),
+    ('play-pause', 'F040E'),
+    ('volume-plus', 'F075D'),
+    ('volume-minus', 'F075E'),
+    ('volume-mute', 'F075F'),
     ('check', 'F012C'),
     # Direct controls on wide cards (firmware 0.2.19+).
     ('pause', 'F03E4'),
@@ -207,6 +216,9 @@ FIXED = (
     ('home-map-marker', 'F05F8'),
     ('plus', 'F0415'),
     ('minus', 'F0374'),
+    # A player's input key: Home Assistant's icon for `source` (more-info-media_player, mdiLoginVariant), drawn the same
+    # by exit-to-app in this font.
+    ('exit-to-app', 'F0206'),
     ('chevron-left', 'F0141'),
     ('chevron-right', 'F0142'),
     ('close', 'F0156'),
@@ -233,6 +245,13 @@ FIXED = (
     ('crosshairs', 'F01A3'),
     # A light that is off, as Home Assistant shows one without an icon of its own (firmware 0.2.53+).
     ('lightbulb-off', 'F0E4F'),
+    # A media player's card and library (firmware 0.24.0+): shuffle and repeat, and an artist and a folder without a
+    # picture of their own (media_library.CLASS_ICONS).
+    ('shuffle-variant', 'F049F'),
+    ('repeat', 'F0456'),
+    ('repeat-once', 'F0458'),
+    ('account-music', 'F0803'),
+    ('folder', 'F024B'),
 )
 
 # Home Assistant's own default icons for the domains a tile or the top bar shows (frontend/get_icons, `entity_component`,
@@ -331,6 +350,9 @@ HA_DEFAULTS = (
     ('robot', 'F06A9'),
     ('robot-confused', 'F169F'),
     ('robot-off', 'F16A7'),
+    # A remote (firmware 0.22.0+), as Home Assistant draws it on and off (remote/icons.json).
+    ('remote', 'F0454'),
+    ('remote-off', 'F0EC4'),
     ('script-text-play', 'F1727'),
     ('security', 'F0483'),
     ('shield', 'F0498'),
@@ -384,7 +406,7 @@ GLYPHS = {**{name: codepoint for name, (codepoint, _) in ICONS.items()}, **dict(
 
 # Mirrors runtime_tiles::icon_for() so the editor mockup shows what the screen draws.
 DEFAULTS = {'light': 'lightbulb', 'climate': 'air-conditioner', 'vacuum': 'robot-vacuum', 'fan': 'fan',
-            'cover': 'window-shutter', 'scene': 'sofa', 'script': 'sofa', 'automation': 'robot', 'sensor': 'gauge', 'binary_sensor': 'gauge',
+            'cover': 'window-shutter', 'scene': 'sofa', 'script': 'sofa', 'automation': 'robot', 'remote': 'remote', 'sensor': 'gauge', 'binary_sensor': 'gauge',
             'timer': 'timer-outline', 'person': 'account', 'camera': 'cctv', 'image': 'cctv', 'screen': 'clock-outline'}
 # The cards the screen brings itself: one icon per entity, not per domain.
 BUILTIN_TILES = {'screen.clock': 'clock-outline', 'screen.settings': 'cog', 'screen.map': 'map-marker', **{f'screen.page_{n}': 'arrow-right' for n in range(1, 9)}}
@@ -392,7 +414,7 @@ FALLBACK = 'power'
 # The large icon font of a card that takes the whole page (firmware 0.2.62+): what the screen draws on its own for a
 # domain, a state or a built-in card, at 64 px on the Guition and 40 px on the CYD. Kept to these so the CYD's flash
 # stays free; a chosen icon outside this set shows at its usual size in the big circle.
-BIG_GLYPHS = tuple(dict.fromkeys(list(DEFAULTS.values()) + list(BUILTIN_TILES.values()) + ['lightbulb-off', 'robot-off', FALLBACK] +
+BIG_GLYPHS = tuple(dict.fromkeys(list(DEFAULTS.values()) + list(BUILTIN_TILES.values()) + ['lightbulb-off', 'robot-off', 'remote-off', FALLBACK] +
                                  ['weather-sunny', 'weather-night', 'weather-cloudy', 'weather-partly-cloudy', 'weather-rainy',
                                   'weather-pouring', 'weather-snowy', 'weather-snowy-rainy', 'weather-fog', 'weather-hail',
                                   'weather-lightning', 'weather-lightning-rainy', 'weather-windy', 'alert-circle-outline',

@@ -11,17 +11,34 @@ import { t } from "../i18n";
 import { domainInfo } from "../model/layout";
 import { glyph } from "../model/topbar";
 import { tilePalette } from "../model/tile-palette";
-import { addTile, automaticIcon, liveOf, loadLibraryStates, pictures, repeatable, state, tileLimit } from "../store";
+import { addTile, automaticIcon, editorLayout, liveOf, loadLibraryStates, pageTitleShown, phone, pictures, repeatable, state, tileLimit } from "../store";
 import Icon from "./ui/Icon.vue";
 import UiSwitch from "./ui/UiSwitch.vue";
 
 // The domains to filter on; the label of each is editor.library.filters.<domain>, "all" for no filter.
 const FILTERS = [
   "", "light", "climate", "switch", "binary_sensor", "button", "script", "automation", "fan", "cover", "scene", "vacuum", "sensor",
-  "media_player", "weather", "number", "select", "person", "timer", "screen", "alarm_control_panel", "lock",
+  "media_player", "remote", "weather", "number", "select", "person", "timer", "screen", "alarm_control_panel", "lock",
 ];
 const ALIAS: Record<string, string> = { switch: "input_boolean", number: "input_number", select: "input_select", weather: "sun", button: "input_button" };
 const SHOWN = 80;
+// Open: on a wider page the drawer along the bottom, remembered; on a phone (app 0.4.40) a sheet that opens for a tile
+// and goes once it is added, closed or swiped away. Closing it there forgets the cell it was opened for.
+const open = computed({
+  get: () => phone.value ? state.addSheet : state.libraryOpen,
+  set: (value: boolean) => {
+    if (!phone.value) { state.libraryOpen = value; return; }
+    state.addSheet = value;
+    if (!value) { state.insertAt = -1; state.search = ""; }
+  },
+});
+// Where the tile goes, said at the top of the phone's sheet.
+const destination = computed(() => {
+  const pages = state.document?.pages || [];
+  const page = state.insertAt >= 0 ? Math.floor(state.insertAt / editorLayout.grid.slots) : Math.max(0, pages.findIndex((item) => item.id === state.selectedPageId));
+  const name = pageTitleShown(page) || t("editor.page.label", { page: page + 1 });
+  return state.insertAt >= 0 ? t("editor.phone.add_to_cell", { cell: state.insertAt % editorLayout.grid.slots + 1, page: name }) : t("editor.phone.add_to_page", { page: name });
+});
 type Entry = { id: string; name: string; area?: string; device?: string; state?: string; tile?: boolean };
 // How many tiles each entity has on the screen. One that is there stays addable when the firmware takes an entity on
 // several tiles (a page tile from 0.2.65, any entity but the bedside clock from 0.16.0): its mark says how often.
@@ -76,8 +93,8 @@ const groups = computed(() => {
 });
 // The order the arrow keys walk: the groups as they stand.
 const flat = computed(() => groups.value.flatMap((group) => group.entities));
-watch(() => [state.libraryOpen, shownList.value.map((entity) => entity.id).join('|'), Math.floor(state.now / 60000)], (_, __, cleanup) => {
-  if (!state.libraryOpen) return;
+watch(() => [open.value, shownList.value.map((entity) => entity.id).join('|'), Math.floor(state.now / 60000)], (_, __, cleanup) => {
+  if (!open.value) return;
   const timer = window.setTimeout(() => loadLibraryStates(shownList.value.map((entity) => entity.id)), 180);
   cleanup(() => clearTimeout(timer));
 }, { immediate: true });
@@ -101,7 +118,7 @@ const count = computed(() => state.inventory.entities.length);
 const tone = (e: { id: string; state?: string }) => {
   const domain = e.id.split(".")[0];
   if (e.state === "unavailable" || e.state === "unknown") return "gone";
-  if (["light", "switch", "input_boolean", "automation", "fan"].includes(domain) && e.state === "on") return "on";
+  if (["light", "switch", "input_boolean", "automation", "remote", "fan"].includes(domain) && e.state === "on") return "on";
   return "";
 };
 // The name without its device's name in front, the way Home Assistant shows an entity on its device's card:
@@ -130,7 +147,7 @@ function walk(step: number) {
   nextTick(() => (list.value?.querySelector(".ent.active") as HTMLElement | null)?.scrollIntoView?.({ block: "nearest" }));
 }
 function onSearchKey(e: KeyboardEvent) {
-  if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); state.libraryOpen = true; walk(e.key === "ArrowDown" ? 1 : -1); }
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); open.value = true; walk(e.key === "ArrowDown" ? 1 : -1); }
   else if (e.key === "Enter") {
     const entity = flat.value[active.value];
     if (entity && addable(entity)) { e.preventDefault(); addTile(entity.id); }
@@ -138,7 +155,7 @@ function onSearchKey(e: KeyboardEvent) {
     // First Escape clears the search, the next one folds the drawer and hands the keys back to the page.
     e.stopPropagation();
     if (state.search) state.search = "";
-    else { state.libraryOpen = false; search.value?.blur(); }
+    else { open.value = false; search.value?.blur(); }
   }
 }
 // A key typed where nothing takes text is the start of a search: the drawer opens on it (Notion's and Apple's way of
@@ -155,7 +172,9 @@ function onPageKey(e: KeyboardEvent) {
   openSearch();
 }
 function openSearch() {
-  state.libraryOpen = true;
+  open.value = true;
+  // A phone's keyboard would cover the list it opens on: there the field waits for a tap.
+  if (phone.value) return;
   nextTick(() => { const input = search.value; if (!input) return; input.focus(); input.setSelectionRange(input.value.length, input.value.length); });
 }
 onMounted(() => document.addEventListener("keydown", onPageKey));
@@ -167,9 +186,9 @@ const MIN = 180;
 const HEAD = 49;
 const height = ref(Math.max(MIN, Number(localStorage.getItem(HEIGHT_KEY)) || 300));
 const maxHeight = () => Math.max(MIN, Math.round(window.innerHeight * 0.7));
-function toggle() { state.libraryOpen = !state.libraryOpen; }
+function toggle() { open.value = !open.value; }
 // Typing in the folded bar opens the drawer on what it finds.
-watch(() => state.search, (q) => { if (q) state.libraryOpen = true; });
+watch(() => state.search, (q) => { if (q) open.value = true; });
 // An empty cell or a clock's key marked for the next entity opens the drawer and puts the cursor in the search.
 watch(() => [state.insertAt, state.insertKey], () => {
   if (state.insertAt < 0 && !state.insertKey) return;
@@ -182,7 +201,7 @@ function grab(e: PointerEvent) {
   // Dragging the edge selects nothing on the page it passes over.
   e.preventDefault();
   document.body.style.userSelect = "none";
-  drag = { y: e.clientY, h: state.libraryOpen ? height.value : HEAD };
+  drag = { y: e.clientY, h: open.value ? height.value : HEAD };
   resizing.value = true;
   (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
 }
@@ -190,8 +209,8 @@ function move(e: PointerEvent) {
   if (!drag) return;
   const next = drag.h + drag.y - e.clientY;
   // Dragged below its least height it folds; dragged up from folded it opens.
-  if (next < MIN * 0.6) { state.libraryOpen = false; return; }
-  state.libraryOpen = true;
+  if (next < MIN * 0.6) { open.value = false; return; }
+  open.value = true;
   height.value = Math.min(maxHeight(), Math.max(MIN, next));
 }
 function release() {
@@ -204,7 +223,7 @@ function release() {
 function onResizeKey(e: KeyboardEvent) {
   if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
   e.preventDefault();
-  state.libraryOpen = true;
+  open.value = true;
   height.value = Math.min(maxHeight(), Math.max(MIN, height.value + (e.key === "ArrowUp" ? 40 : -40)));
   localStorage.setItem(HEIGHT_KEY, String(Math.round(height.value)));
 }
@@ -212,11 +231,16 @@ onBeforeUnmount(release);
 </script>
 
 <template>
-  <aside class="library" id="library" :class="{ open: state.libraryOpen, resizing }" :style="{ height: `${state.libraryOpen ? height : HEAD}px` }">
-    <div class="lib-grip" role="separator" aria-orientation="horizontal" tabindex="0" :aria-label="t('editor.library.resize')"
+  <div v-if="phone && open" class="sheet-dim" @click="open = false"></div>
+  <aside class="library" id="library" :class="{ open, resizing }" :style="phone ? undefined : { height: `${open ? height : HEAD}px` }">
+    <div v-if="phone" class="sheet-head">
+      <span class="sheet-title"><b>{{ t("editor.phone.add_tile") }}</b><small>{{ destination }}</small></span>
+      <button type="button" class="icon-btn sheet-close" :aria-label="t('editor.common.close')" @click="open = false"><Icon name="close" /></button>
+    </div>
+    <div v-else class="lib-grip" role="separator" aria-orientation="horizontal" tabindex="0" :aria-label="t('editor.library.resize')"
       @pointerdown="grab" @pointermove="move" @pointerup="release" @pointercancel="release" @keydown="onResizeKey"><i></i></div>
     <div class="lib-head">
-      <button type="button" class="lib-title" id="library-toggle" :aria-expanded="state.libraryOpen ? 'true' : 'false'" aria-controls="library-body" :title="t('editor.library.hint')" @click="toggle">
+      <button v-if="!phone" type="button" class="lib-title" id="library-toggle" :aria-expanded="open ? 'true' : 'false'" aria-controls="library-body" :title="t('editor.library.hint')" @click="toggle">
         <Icon name="chevron-down" class="lib-chevron" />
         <span>{{ t("editor.library.title") }}</span>
       </button>
@@ -227,9 +251,9 @@ onBeforeUnmount(release);
           @focus="searching = true" @blur="searching = false" @keydown="onSearchKey" />
         <kbd v-if="!state.search && !searching" aria-hidden="true">/</kbd>
       </label>
-      <span v-if="!state.libraryOpen" class="lib-count">{{ t("editor.library.entities", count) }}</span>
+      <span v-if="!open" class="lib-count">{{ t("editor.library.entities", count) }}</span>
     </div>
-    <div class="lib-body" id="library-body" :inert="!state.libraryOpen || undefined">
+    <div class="lib-body" id="library-body" :inert="!open || undefined">
       <div class="lib-rail">
         <nav class="lib-domains" id="filters" :aria-label="t('editor.library.filter_label')">
           <button v-for="[value, n] in offered" :key="value" type="button" :aria-pressed="state.filter === value ? 'true' : 'false'" @click="state.filter = value">

@@ -20,6 +20,8 @@ its release is one of the app (the catalog grows); only the boards that already 
     tools/affected_boards.py --keys       only the board keys it reaches, space separated, empty for none
     tools/affected_boards.py --build-keys the boards a build needs: --keys, or every board when the build's own tools,
                                           entries, fixtures or ESPHome changed (tools/check.sh --affected, CI)
+    tools/affected_boards.py --older-sample  what a change that reaches every board builds on the min_version ESPHome:
+                                          the CYD, plus a board for each changed file the CYD does not build
     tools/affected_boards.py --verify     whether every board it reaches builds a higher firmware number
     tools/affected_boards.py --base REF   compare with REF instead
 
@@ -209,7 +211,8 @@ def oldest(args):
     skipped there, which is what that board should do (GitHub #50: an ILI9342 CYD passed on the add-on's ESPHome and
     failed on 2026.6.2)."""
     version = re.search(r'(?m)^  min_version: (\S+)', profiles.CORE.read_text()).group(1)
-    return [f'- And on the oldest ESPHome the packages promise ({version}), as CI does:',
+    return [f'- And on the oldest ESPHome the packages promise ({version}), as CI does (a change that reaches every '
+            f'board builds the CYD there, tools/profiles.py MIN_VERSION_SAMPLE):',
             f'  ESPHOME="uv run -q --no-project --with esphome=={version} esphome" tools/check.sh {args}']
 
 
@@ -259,7 +262,7 @@ def plan(reach, new=frozenset(), read_base=read_now):
                   f'  "## <app> (firmware {shared_next})".',
                   '- Run tools/check.sh and tools/check.sh --firmware --sample (the four boards of tools/profiles.py SAMPLE,',
                   '  the CYD flash budget); --firmware --all builds every board when a change needs that.']
-        lines += oldest('--firmware --sample')
+        lines += oldest('--firmware --affected')
     else:
         done = all(built_now[key] == for_boards for key in boards)
         lines += [f'Firmware for {", ".join(sorted(boards))} alone: every other screen is left alone. The core stays, '
@@ -335,6 +338,19 @@ def build_keys(reach, paths):
     return [board for board in profiles.BOARDS if board in reached]
 
 
+def older_sample(reach):
+    """The boards a change that reaches every board builds on the packages' min_version ESPHome (app 0.4.41):
+    profiles.MIN_VERSION_SAMPLE, plus for every changed file none of those builds one board that does, the first of
+    profiles.SAMPLE that includes it, else the first in boards.yaml."""
+    picked = list(profiles.MIN_VERSION_SAMPLE)
+    order = list(profiles.SAMPLE) + [board for board in profiles.BOARDS if board not in profiles.SAMPLE]
+    for path in sorted(reach):
+        boards = reach[path]
+        if boards and not boards & set(picked):
+            picked.append(next(board for board in order if board in boards))
+    return picked
+
+
 def main(argv=None):
     try:
         return run(argv)
@@ -350,6 +366,9 @@ def run(argv=None):
     parser.add_argument('--build-keys', action='store_true',
                         help='print the board keys a build of the change needs: --keys, and every board when the '
                              "build's own tools, entries, fixtures or ESPHome changed (tools/check.sh --affected, CI)")
+    parser.add_argument('--older-sample', action='store_true',
+                        help='print the board keys a change that reaches every board builds on the min_version ESPHome: '
+                             'the CYD, and a board for each changed file it does not build (tools/check.sh --affected)')
     parser.add_argument('--verify', action='store_true',
                         help='exit 1 when a board the change reaches builds no higher firmware number than the base and '
                              'this is a release (or --strict); exit 3 when it is not a release yet, a warning')
@@ -358,6 +377,9 @@ def run(argv=None):
     base = args.base or default_base()
     if not known(base):
         # A push that starts a branch has no commit before it; there is nothing to compare with.
+        if args.older_sample:
+            print(' '.join(profiles.MIN_VERSION_SAMPLE))
+            return 0
         if args.keys or args.build_keys:
             # Nothing to compare with: build every board rather than none.
             print(' '.join(profiles.BOARDS))
@@ -369,6 +391,9 @@ def run(argv=None):
     new = new_boards(base)
     if args.build_keys:
         print(' '.join(build_keys(reach, paths)))
+        return 0
+    if args.older_sample:
+        print(' '.join(older_sample(reach)))
         return 0
     if args.verify:
         missing = unraised(reach, base, new)

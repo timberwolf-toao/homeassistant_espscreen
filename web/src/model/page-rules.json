@@ -18,6 +18,7 @@
     "media_player",
     "number",
     "person",
+    "remote",
     "scene",
     "script",
     "select",
@@ -51,6 +52,7 @@
     "media_player",
     "number",
     "person",
+    "remote",
     "scene",
     "script",
     "select",
@@ -88,7 +90,8 @@
     "media_player": [
       "standard",
       "watch",
-      "cover"
+      "cover",
+      "favorite"
     ],
     "person": [
       "standard",
@@ -169,6 +172,9 @@
     "number": [
       "stepper",
       "slider"
+    ],
+    "remote": [
+      "toggle"
     ],
     "scene": [
       "run"
@@ -396,6 +402,7 @@
     "media_player",
     "number",
     "person",
+    "remote",
     "scene",
     "script",
     "select",

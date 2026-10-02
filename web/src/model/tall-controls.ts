@@ -67,7 +67,7 @@ export function availableControl(domain: string, kind: string | null, state: str
   if (kind === 'setpoint' || kind === 'setpoint_mode')
     return domain === 'climate' && (f & bits('climate', 'TARGET_TEMPERATURE') || (f & bits('climate', 'TARGET_TEMPERATURE_RANGE') && range)) ? kind : '';
   if (kind === 'stepper' || kind === 'slider') return ['number', 'input_number'].includes(domain) ? kind : '';
-  if (kind === 'toggle') return ['light', 'switch', 'input_boolean', 'automation', 'fan'].includes(domain) ? kind : '';
+  if (kind === 'toggle') return ['light', 'switch', 'input_boolean', 'automation', 'remote', 'fan'].includes(domain) ? kind : '';
   if (kind === 'run') return ['scene', 'script', 'button', 'input_button', 'automation'].includes(domain) ? kind : '';
   return '';
 }
@@ -79,13 +79,13 @@ export const withCoverTilt = (primary: string, tilt: boolean) => tilt ? (primary
 export function coverTiltKind(state: string, a: Attributes): '' | 'position' | 'buttons' {
   if (['unavailable', 'unknown', ''].includes(state)) return '';
   const f = Number(a.supported_features || 0);
-  return f & 128 ? 'position' : f & 112 ? 'buttons' : '';
+  return f & bits('cover', 'SET_TILT_POSITION') ? 'position' : f & bits('cover', 'OPEN_TILT', 'CLOSE_TILT', 'STOP_TILT') ? 'buttons' : '';
 }
 export function coverTiltKeys(a: Attributes): ControlKey[] {
   const f = Number(a.supported_features || 0), value = a.current_tilt_position;
   return [
-    ...(f & 16 ? [{ icon: 'blinds-open', disabled: typeof value === 'number' && value >= 99.5 }] : []),
-    ...(f & 64 ? [{ icon: 'stop' }] : []),
-    ...(f & 32 ? [{ icon: 'blinds', disabled: typeof value === 'number' && value <= .5 }] : []),
+    ...(f & bits('cover', 'OPEN_TILT') ? [{ icon: 'blinds-open', disabled: typeof value === 'number' && value >= 99.5 }] : []),
+    ...(f & bits('cover', 'STOP_TILT') ? [{ icon: 'stop' }] : []),
+    ...(f & bits('cover', 'CLOSE_TILT') ? [{ icon: 'blinds', disabled: typeof value === 'number' && value <= .5 }] : []),
   ];
 }

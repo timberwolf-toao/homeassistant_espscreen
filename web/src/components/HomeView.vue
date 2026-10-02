@@ -5,10 +5,14 @@ import { computed, onMounted, reactive } from "vue";
 import { t } from "../i18n";
 import { barMetricsFor } from "../model/topbar";
 import { boardTitle } from "../model/boards";
-import { go, homeView, loadOverview, screenLight, screenSubline, select, state } from "../store";
+import { go, homeView, loadOverview, phone, screenLight, screenSubline, select, setFullEditor, state } from "../store";
+import UiMenu from "./ui/UiMenu.vue";
+import UiMenuItem from "./ui/UiMenuItem.vue";
+import UiMenuSeparator from "./ui/UiMenuSeparator.vue";
 import { previewShapeOf } from "../model/preview";
 import type { Screen } from "../types";
 import FirmwarePreview from "./FirmwarePreview.vue";
+import DonateCard from "./DonateCard.vue";
 import TileCard from "./TileCard.vue";
 import TopbarSvg from "./TopbarSvg.vue";
 import Icon from "./ui/Icon.vue";
@@ -36,6 +40,16 @@ onMounted(loadOverview);
 <template>
   <section id="home" class="home">
     <header class="home-head">
+      <!-- On a phone the sidebar's row is gone (app 0.4.40): search, alerts, settings and a new screen are in this menu. -->
+      <UiMenu v-if="phone" width="240px">
+        <template #trigger><button type="button" class="icon-btn home-more" :aria-label="t('editor.screen_view.more')"><Icon name="dots-horizontal" /></button></template>
+        <UiMenuItem icon="magnify" @select="state.palette = true">{{ t("editor.sidebar.search") }}</UiMenuItem>
+        <UiMenuItem icon="alert-circle-outline" @select="go('#alerts')">{{ t("editor.nav.alerts") }}</UiMenuItem>
+        <UiMenuItem icon="cog-outline" @select="go('#settings')">{{ t("editor.nav.settings") }}</UiMenuItem>
+        <UiMenuItem icon="plus" @select="go('#new-screen')">{{ t("editor.nav.new_screen") }}</UiMenuItem>
+        <UiMenuSeparator />
+        <UiMenuItem icon="monitor-dashboard" @select="setFullEditor(true)">{{ t("editor.phone.full_editor") }}</UiMenuItem>
+      </UiMenu>
       <h1>{{ t("editor.home.title") }}</h1>
       <p>{{ t("editor.home.summary", { online, count: state.inventory.screens.length }) }}</p>
     </header>
@@ -74,6 +88,7 @@ onMounted(loadOverview);
       </div>
       <button type="button" class="home-new" @click="go('#new-screen')"><Icon name="plus" class="home-plus" />{{ t("editor.nav.new_screen") }}</button>
     </div>
+    <DonateCard />
   </section>
 </template>
 

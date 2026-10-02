@@ -241,7 +241,13 @@
     "media": {
       "muted": "Némítva",
       "not_playing": "Nincs lejátszás",
-      "loading": "Betöltés"
+      "loading": "Betöltés",
+      "library": "Könyvtár",
+      "choose_speaker": "Válassz hangszórót",
+      "library_hint": "Koppints egy borítóra a könyvtárban",
+      "library_failed": "A könyvtár nem válaszolt",
+      "library_empty": "Itt nincs semmi",
+      "starting_on": "Indítás: {speaker}"
     },
     "timer": {
       "running": "Fut",
@@ -552,7 +558,8 @@
         "map_entities": "Egy térkép legfeljebb {n} személyt és nyomkövetőt mutat, mindegyiket egyszer, a csempe saját személye mellett.",
         "firmware_first": "Ezekhez a csempékhez előbb telepíts {version} vagy újabb kijelző-firmware-t.",
         "entity_gone": "Egy kiválasztott entitás már nem létezik. Keresd meg az újat.",
-        "ids_too_long": "Ezeknek a csempéknek az entitásazonosítói együtt túl hosszúak ahhoz, hogy egy üzenetben elférjenek; távolíts el néhány csempét."
+        "ids_too_long": "Ezeknek a csempéknek az entitásazonosítói együtt túl hosszúak ahhoz, hogy egy üzenetben elférjenek; távolíts el néhány csempét.",
+        "favorite_play": "Válaszd ki, mit játsszon ez a kedvenc."
       },
       "top_bar": {
         "invalid": "Érvénytelen felső sáv; frissítsd a kezelőoldalt.",
@@ -729,6 +736,9 @@
         "unknown_board": "Ehhez a panelhez még nem érhető el visszajelzés.",
         "deleting": "A megosztott válaszod törlése még folyamatban van. Ha kész, válaszolj újra.",
         "storage": "A visszajelzés ki van kapcsolva: a mentett adatait a Tessera egy másik verziója írta."
+      },
+      "media": {
+        "browse": "{name} nem adta meg a könyvtárát."
       }
     },
     "status": {
@@ -843,6 +853,9 @@
         },
         "input_button": {
           "run": "Nyomógomb"
+        },
+        "remote": {
+          "toggle": "Be/ki kapcsoló"
         }
       },
       "top_bar": {
@@ -1173,6 +1186,18 @@
       "map": {
         "since_time": "{time} óta",
         "battery": "Akkumulátor"
+      },
+      "media": {
+        "playlist": "Lejátszási lista",
+        "album": "Album",
+        "artist": "Előadó",
+        "track": "Szám",
+        "podcast": "Podcast",
+        "episode": "Epizód",
+        "channel": "Csatorna",
+        "genre": "Műfaj",
+        "directory": "Mappa",
+        "music": "Zene"
       }
     }
   },
@@ -1428,6 +1453,7 @@
         "button": "Műveletek",
         "script": "Szkriptek",
         "automation": "Automatizmusok",
+        "remote": "Távirányítók",
         "fan": "Ventilátorok",
         "cover": "Árnyékolók",
         "scene": "Jelenetek",
@@ -1468,6 +1494,7 @@
       "switch": "Kapcsoló",
       "input_boolean": "Kapcsoló",
       "automation": "Automatizmus",
+      "remote": "Távirányító",
       "scene": "Jelenet",
       "script": "Szkript",
       "weather": "Időjárás",
@@ -1499,7 +1526,8 @@
       "sunpath": "napút",
       "live": "élő kép",
       "cover": "albumborító",
-      "map": "térkép"
+      "map": "térkép",
+      "favorite": "kedvenc"
     },
     "sizes": {
       "single": "normál",
@@ -1545,7 +1573,10 @@
         "no_forecast": "Ennek az időjárás-szolgáltatásnak nincs napi előrejelzése a Home Assistantban. Válassz másik megjelenítést.",
         "tall_cover_hint": "Az albumborítót sötétített háttérként használja. Borító nélkül a normál csempe látszik.",
         "face_needs_firmware": "Ehhez az órához 0.3.6 vagy újabb firmware kell: mentés után nyomd meg a Frissítés gombot a kijelzőnél. Addig a kijelző a digitális órát mutatja.",
-        "map_tile_needs_firmware": "A térképcsempéhez 0.21.0 vagy újabb firmware kell: mentés után nyomd meg a Frissítés gombot a kijelzőnél."
+        "map_tile_needs_firmware": "A térképcsempéhez 0.21.0 vagy újabb firmware kell: mentés után nyomd meg a Frissítés gombot a kijelzőnél.",
+        "favorite": "Kedvenc",
+        "favorite_hint": "Ennek a lejátszónak egy lejátszási listája, albuma vagy előadója, egy koppintással indítva a hangszóróján; lejátszás közbeni koppintás szünetel, nyomva tartás megnyitja a lejátszót. Ahol a képernyő képeket mutat, a borító kitölti a csempét.",
+        "favorite_needs_firmware": "A kedvenchez 0.24.0 vagy újabb firmware kell: mentés után nyomd meg a Frissítés gombot a képernyőnél."
       },
       "refresh": {
         "label": "Frissítés",
@@ -1698,6 +1729,19 @@
         "under": "Az éjjeliszekrény-óra alatt: egy csempe kerek formában. Koppintásra ugyanazt teszi, mint csempeként, nyomva tartva pedig megnyitja a kártyáját.",
         "name_shown": "Név a gomb alatt",
         "name_shown_hint": "Kikapcsolva csak a kör látszik."
+      },
+      "favorite": {
+        "plays": "Lejátssza",
+        "none": "Még nincs kiválasztva",
+        "choose": "Kiválasztás",
+        "done": "Kész",
+        "back": "Vissza",
+        "loading": "Könyvtár betöltése…",
+        "empty": "Itt nincs semmi",
+        "open": "{name} megnyitása",
+        "speaker": "Hangszóró",
+        "speaker_now": "Ahol éppen szól",
+        "speaker_hint": "Ahol indul. Az „Ahol éppen szól” a képernyőn kér hangszórót, ha a lejátszó sehol sem szól."
       }
     },
     "tile_card": {
@@ -2561,6 +2605,34 @@
         "page": "Oldal",
         "bar": "Felső sáv"
       }
+    },
+    "phone": {
+      "screens": "Képernyők",
+      "add_tile": "Csempe hozzáadása",
+      "add_to_cell": "Ide kerül: {page}, {cell}. hely",
+      "add_to_page": "Ide kerül: {page}, első szabad hely",
+      "added": "{name} hozzáadva",
+      "page_of": "{n} / {total}",
+      "pages": "Oldalak",
+      "page_tiles": "{n} csempe | {n} csempe",
+      "pages_order": "Oldalak és sorrend",
+      "hint": "Koppints egy csempére a módosításához.",
+      "hint_pages": "Koppints egy csempére a módosításához. Lapozz oldalra a következő oldalhoz.",
+      "on_screen": "Minden a képernyőn van",
+      "not_sent": "Módosítva, még nincs elküldve",
+      "more_settings": "További beállítások",
+      "more_settings_hint": "Megjelenés, második sor és a koppintás hatása",
+      "move": "Áthelyezés",
+      "full_editor": "Teljes szerkesztő",
+      "simple_editor": "Egyszerű nézet"
+    },
+    "donate": {
+      "title": "Egyetlen ember készíti",
+      "body": "A Tessera ingyenes, és nincs előfizetés. A szabadidőmben fejlesztem. Ha a kijelzőid egy kicsit kellemesebbé teszik az otthonodat, egy kávé segít, hogy folytassam.",
+      "buy": "Hívd meg Maxet egy kávéra",
+      "later": "Talán később",
+      "donated": "Már adományoztam",
+      "thanks": "Köszönöm! Ez az üzenet többé nem jelenik meg."
     }
   }
 }

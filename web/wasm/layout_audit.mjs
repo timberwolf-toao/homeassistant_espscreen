@@ -1,5 +1,6 @@
 // The layout geometry of the real firmware, without drawing a picture (app 0.4.32). Reads a list of screens from the
-// file named on the command line, each with its glass, grid, density and a list of layouts, runs every layout through
+// file named on the command line, each with its glass, grid, density and a list of layouts (its tiles, and how many
+// pages it has where a card goes to another), runs every layout through
 // the WebAssembly build of runtime_tiles.h, and writes what preview_layout() reports for each to stdout as one JSON
 // array. tests/test_layout_audit.py writes the list and checks the answer; see there for what is checked and why.
 import { readFileSync } from 'node:fs';
@@ -21,8 +22,14 @@ for (const screen of screens) {
   let n = 0;
   for (const layout of screen.layouts) {
     // A fresh session per layout, as a screen gets from the app after a save.
-    const receive = connection(m, (++n).toString(16).padStart(16, '1'), (n + 1000).toString(16).padStart(16, '2'));
-    configure(receive, 'Audit', 1, layout.tiles);
+    // A layout the firmware refuses is reported with its reason, and the next one goes on.
+    try {
+      const receive = connection(m, (++n).toString(16).padStart(16, '1'), (n + 1000).toString(16).padStart(16, '2'));
+      configure(receive, 'Audit', layout.pages ?? 1, layout.tiles);
+    } catch (error) {
+      out.push({ screen: screen.key, layout: layout.key, error: String(error.message ?? error).split('\n')[0] });
+      continue;
+    }
     // Long enough for the pages to be built and the first frame drawn; marquees and animations need no more.
     for (let i = 0; i < 12; i++) tick(64);
     const report = JSON.parse(m.ccall('preview_layout', 'string', [], []));

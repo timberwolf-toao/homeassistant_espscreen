@@ -8,6 +8,7 @@
 #include <vector>
 #include "runtime_model.h"
 #include "screen_text.h"
+#include "tile_catalogue.h"
 
 // A light's effects page (firmware 0.2.70+, app 0.2.83+): the modes of a lamp such as a WLED, reached from the
 // sparkles key at the top right of the light's colour card. One card of rows, each the name of something the lamp
@@ -24,8 +25,6 @@ using runtime_tiles::NumberRow;
 using runtime_tiles::OptionRow;
 using runtime_tiles::Tile;
 
-// LightEntityFeature.EFFECT: the light offers an effect list.
-constexpr uint32_t EFFECT_FEATURE = 4;
 // Names a picker holds at most; a WLED lists about 220 effects.
 constexpr size_t MAX_NAMES = 400;
 // How many of those names this screen can actually hold. A WLED light brings hundreds of effects and every one
@@ -44,9 +43,9 @@ inline size_t names_room(size_t left) {
 constexpr uint32_t SENT_HOLD_MS = 4000;
 
 inline int clamp(int value, int low, int high) { return std::max(low, std::min(high, value)); }
-// Whether a light has an effects page: it offers effects, or its device has rows to show.
+// Whether a light has an effects page: it offers effects (LightEntityFeature.EFFECT), or its device has rows to show.
 inline bool available(const Tile &t) {
-  return t.domain() == "light" && ((t.supported & EFFECT_FEATURE) != 0 || !t.extra().option_rows.empty() || !t.extra().number_rows.empty());
+  return t.domain() == "light" && ((t.supported & tile_catalogue::light::EFFECT) != 0 || !t.extra().option_rows.empty() || !t.extra().number_rows.empty());
 }
 // A number's place on its slider, 0-100 % of its range.
 inline int percent_of(float value, float low, float high) {
@@ -433,7 +432,7 @@ inline void draw() {
   // The rows: the light's effect first, then the selects of its device.
   struct Spec { std::string entity, name, current, fallback; uint32_t icon; bool light; };
   std::vector<Spec> specs;
-  if (t && (t->supported & EFFECT_FEATURE)) specs.push_back({t->entity, screen_text::tr(screen_text::txt::effects_effect), t->extra().effect, "\U000F0674", 0, true});
+  if (t && (t->supported & tile_catalogue::light::EFFECT)) specs.push_back({t->entity, screen_text::tr(screen_text::txt::effects_effect), t->extra().effect, "\U000F0674", 0, true});
   if (t) for (auto &r : t->extra().option_rows) specs.push_back({r.entity, r.name, r.current, "\U000F0411", r.icon, false});
   const int row_text_h = lv_font_get_line_height(row_font);
   const size_t number_count = t ? std::min<size_t>(2, t->extra().number_rows.size()) : 0;

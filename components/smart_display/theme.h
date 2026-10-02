@@ -81,6 +81,10 @@ enum Role : uint8_t {
   CAMERA_INK,           // the camera's name over the image
   CAMERA_NOTE,          // "No image from this camera"
   CAMERA_TRACK,         // the ring of the spinner while the first image loads (firmware 0.2.73+)
+  // ---- the media card: a dark ground from its cover's colours in both looks (firmware 0.24.0+); these are its
+  // ground while the app has read no colours, and a cover's own two take their place once it has
+  MEDIA_TOP,
+  MEDIA_BOTTOM,
   // ---- the CYD's touch calibration: dark in both looks, a yellow crosshair
   CALIBRATION_PAGE,
   CALIBRATION_INK,
@@ -152,6 +156,8 @@ inline constexpr Pair ROLES[ROLE_COUNT] = {
   /* CAMERA_INK */               {0xF2F2F2, 0xDADADA},
   /* CAMERA_NOTE */              {0x9E9E9E, 0x8A8A8A},
   /* CAMERA_TRACK */             {0x393D42, 0x393D42},
+  /* MEDIA_TOP */                {0x1E2328, 0x1E2328},
+  /* MEDIA_BOTTOM */             {0x0E1013, 0x0E1013},
   /* CALIBRATION_PAGE */         {0x101820, 0x101820},
   /* CALIBRATION_INK */          {0xFFFFFF, 0xFFFFFF},
   /* CALIBRATION_MARK */         {0xFFD34D, 0xFFD34D},

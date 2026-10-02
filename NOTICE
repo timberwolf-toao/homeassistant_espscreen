@@ -1,5 +1,48 @@
 ESP Screens (Tessera)
-Copyright (c) 2026 Max Gramser. Licensed under the MIT License (see LICENSE).
+Copyright (c) 2026 Max Gramser and contributors.
+
+Tessera is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+License as published by the Free Software Foundation, version 3 of the License or (at your option) any later version.
+It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE for the full text.
+
+Earlier releases: every release up to and including add-on 0.4.38 was published under the MIT License, and those
+copies stay under it. Contributions that came in under the MIT License keep their authors' copyright and that notice:
+
+  MIT License, Copyright (c) 2026 Max Gramser and contributors.
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+  documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+  persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice
+  and this permission notice shall be included in all copies or substantial portions of the Software.
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+  WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+  COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+  OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+ESPHome-touch-display-mount (https://github.com/akuehlewind/ESPHome-touch-display-mount)
+  Copyright (c) 2023 Adrian Kuehlewind. MIT License (as above). The very first version of this project started from it.
+
+ESPHome components (https://github.com/esphome/esphome)
+  components/xpt2046, components/mipi_dsi_v3 and components/gsl3680_v3 are adapted from ESPHome and from an ESPHome
+  fork, under the ESPHome License kept in each folder (C++ code GPLv3, Python code MIT). Each folder's README describes
+  the changes. components/gsl3680_v3/gsl_point_id.cpp is Copyright 2010-2016 Silead Inc., GPLv2 or later, used here
+  under version 3.
+
+GSL3680 touch firmware (components/gsl3680_v3/gsl3680_firmware.h)
+  A data table loaded into the touch controller of the Guition JC8012P4A1 V3, from Silead via the same ESPHome fork.
+  It is not part of this project's own work and is not covered by its licence; it is passed on as it is distributed
+  in the ESPHome community.
+
+Fonts and icons
+  Roboto and Montserrat: SIL Open Font License 1.1 (fonts/Roboto-OFL.txt). Material Design Icons: Pictogrammers Free
+  License, the fonts under the Apache License 2.0 (fonts/MDI-LICENSE.txt). They keep their own licences.
+
+Pictures
+  The front door in the camera pictures under docs/images is a photo by Virginia Marinova on Unsplash, used under the
+  Unsplash License, which is not this project's licence.
+
+The firmware preview (web/wasm) lists its third-party code in web/public/firmware-preview-licenses.txt.
 
 The editor's browser installer (New screen and Firmware & USB, "This computer") contains third-party code.
 It is loaded only when someone installs a screen from the browser. The full licence texts ship with the app in

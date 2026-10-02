@@ -16,3 +16,9 @@ displays:
   cover:
     screen: {pictures: true, firmware: 0.2.78}
     sizes: {full: false}
+  # A favourite (firmware 0.24.0): one playlist, album, artist or show from the player's library, started with a tap on
+  # the speaker chosen for it, or where the player plays. Its cover fills the tile on a board that draws pictures.
+  favorite:
+    needs: {features: [BROWSE_MEDIA]}
+    screen: {firmware: 0.24.0}
+    sizes: {full: false}

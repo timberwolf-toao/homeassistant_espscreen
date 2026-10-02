@@ -29,6 +29,7 @@ export const isTallSize = (size: unknown) => size !== "full" && sizeRows(size) >
 export const isWideSize = (size: unknown) => size === "full" || sizeColumns(size) > 1;
 /** The size a rectangle on this grid is: its name, else its span; null when the grid does not take it. */
 export function sizeFor(columns: number, rows: number, grid: Grid): Size | null {
+  if (columns > grid.columns || rows > grid.rows) return null;
   if (columns === grid.columns && rows === grid.rows) return "full";
   if (columns === 1 && rows === 1) return "single";
   if (columns === Math.min(2, grid.columns) && rows === 1) return "wide";

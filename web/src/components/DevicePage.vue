@@ -7,7 +7,7 @@ import { computed, nextTick, onBeforeUnmount } from "vue";
 import { vDrag } from "../drag";
 import { t } from "../i18n";
 import { sizeOf } from "../model/layout";
-import { deviceStyle, homeKeyShown, isCompact, movePage, navigationSettings, openBar, openPage, pageAt, pageReady, pageTitleShown, previewed, roomyNames, screenText, setHomePage, state, topbarItems } from "../store";
+import { closeInspector, deviceStyle, homeKeyShown, isCompact, movePage, navigationSettings, openBar, openPage, pageAt, pageReady, pageTitleShown, phone, previewed, roomyNames, screenText, setHomePage, state, topbarItems } from "../store";
 import type { Tile } from "../types";
 import TileCard from "./TileCard.vue";
 import TopbarSvg from "./TopbarSvg.vue";
@@ -37,9 +37,11 @@ const filled = computed(() => props.entries.filter((e) => pageOf(e.slot) === pro
 const cellStyle = (slot: number) => ({ gridColumn: slot % grid.columns + 1, gridRow: Math.floor(slot % grid.slots / grid.columns) + 1 });
 function pickCell(slot: number) {
   state.selectedPageId = owned.value?.id || state.selectedPageId;
-  const marked = state.insertAt === slot;
+  const marked = state.insertAt === slot && !phone.value;
   state.insertAt = marked ? -1 : slot;
-  if (state.insertAt >= 0) document.querySelector<HTMLInputElement>("#search")?.focus();
+  // On a phone the empty cell opens the sheet to add a tile there (app 0.4.40), without a keyboard over the list.
+  if (state.insertAt >= 0 && phone.value) { closeInspector(); state.addSheet = true; }
+  else if (state.insertAt >= 0) document.querySelector<HTMLInputElement>("#search")?.focus();
 }
 // A whole page moves by its label (app 0.2.121) and leaves by the button beside its cell count (app 0.2.123). One
 // page has nowhere to go and cannot leave either, and the page a tile can start behind the last one isn't a page yet.

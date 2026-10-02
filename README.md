@@ -21,8 +21,8 @@ Thank you! I work on this project with a lot of love, and every bit of support h
 <a href="https://buymeacoffee.com/f5j9jnkmhpv"><img src="https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=&slug=f5j9jnkmhpv&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" height="42"></a>
 
 <p align="center">
-  <img src="docs/images/photo-guition-page-2.jpg" width="49%" alt="The Guition 4-inch screen on a table: the second page with scenes and scripts, the robot vacuum and a table lamp with a brightness slider">
-  <img src="docs/images/photo-guition-vacuum.jpg" width="49%" alt="The vacuum card on the Guition: docked and charging, start cleaning and dock, the cleaning mode, suction and water">
+  <img src="docs/images/photo-guition-page-2.jpg" width="49%" alt="The Guition 4-inch screen on a table: the Evening page with Movie night and Good night in pastel lilac and blue, and the ceiling light and the bedroom fan as tall tiles with their sliders">
+  <img src="docs/images/photo-guition-vacuum.jpg" width="49%" alt="The vacuum card on the Guition: docked at 100 %, Start cleaning and Dock, and the suction from Quiet to Max">
 </p>
 
 **A touch screen for every room that you lay out yourself, and manage from Home Assistant. Incredibly easy to set up and to use.**
@@ -74,31 +74,31 @@ home fits on one page.
 <p align="center"><sub>To scale, each with the page it fills: the same home on the 2.8-inch CYD, the 4-inch Guition, the 4.3-inch and 7-inch Waveshare, and the 10.1-inch Guition. Rendered from the firmware's own code, one board at a time.</sub></p>
 <p align="center">
   <img src="docs/images/board-cyd.png" width="32%" alt="The kitchen page on the 2.8-inch CYD: the weather with five days, a pasta timer, the coffee machine, the kitchen lamp and the power usage">
-  <img src="docs/images/board-guition.png" width="32%" alt="The living room page on the 4-inch Guition: an analog clock with the date, a temperature graph, the weather, the table lamp and Sam at home">
-  <img src="docs/images/board-waveshare43.png" width="32%" alt="The hallway page on the 4.3-inch Waveshare: a clock, a wide temperature graph, the weather, Sam, the heating with minus and plus, and the table lamp">
+  <img src="docs/images/board-guition.png" width="32%" alt="The Good morning page on the 4-inch Guition: an analog clock with the time and the date, the weather for four days, the coffee machine in orange and Sam at home">
+  <img src="docs/images/board-waveshare43.png" width="32%" alt="The front door page on the 4.3-inch Waveshare: the front door camera live on a tile of two by two cells, the lock, the porch light, the weather and Sam">
 </p>
 <p align="center">
-  <img src="docs/images/board-waveshare7.png" width="49%" alt="The bedroom page on the 7-inch Waveshare: sixteen cells with a clock, a wide temperature graph, the weather, the heating, the ceiling light and Sonos with sliders, the energy graph, the robot and a good-night script">
-  <img src="docs/images/board-jc8012p4a1.png" width="49%" alt="The study page on the 10.1-inch Guition: twenty cells with a clock, graphs, the weather, the heating, the ceiling light, a timer, Sonos, the curtains, the power usage, the robot, the coffee machine and a good-night script">
+  <img src="docs/images/board-waveshare7.png" width="49%" alt="The living room page on the 7-inch Waveshare: the album cover on a tile of two by two cells, a clock with the date, the weather for five days, the heating and the curtains one cell wide and two high, a temperature graph and a lamp dimmer">
+  <img src="docs/images/board-jc8012p4a1.png" width="49%" alt="The living room page on the 10.1-inch Guition: twenty-five cells with a clock, the weather, Sam, the album cover and the front door camera on two by two tiles each, the heating two cells high, graphs for the temperature and the energy, a lamp dimmer, the coffee machine, the robot and a good-night script">
 </p>
 <p align="center">
-  <img src="docs/images/boards-standing.png" width="66%" alt="Two of the same screens built standing up, to scale: the 10.1-inch Guition as a kitchen wall panel with twenty tiles over four columns, and the 7-inch Waveshare by the front door with fourteen tiles in two columns">
+  <img src="docs/images/boards-standing.png" width="66%" alt="Two of the same screens built standing up, to scale: the 10.1-inch Guition with the same living room page in five columns of tall cells, and the 7-inch Waveshare by the front door with a clock, the weather, the front door camera, the lock, the porch light, the heating, Sam and the alarm in two columns">
 </p>
-<p align="center"><sub>The same home standing up. Which way a screen hangs is chosen when it is built, and every board that is not square hangs either way, with a grid of its own: the 10.1-inch Guition 4 × 5 instead of 5 × 4, the 7-inch Waveshare 2 × 7 instead of 4 × 4. Which board is which, and what to look for when you buy one: <a href="#which-screen">Which screen</a>.</sub></p>
+<p align="center"><sub>The same home standing up. Which way a screen hangs is chosen when it is built, and every board that is not square hangs either way, with a grid of its own: the 7-inch Waveshare 2 × 7 instead of 4 × 4, while the 10.1-inch Guition keeps its 5 × 5 in tall cells. Which board is which, and what to look for when you buy one: <a href="#which-screen">Which screen</a>.</sub></p>
 
 ## Taller tiles, richer cards
 
 <p align="center">
-  <img src="docs/images/tall-jc8012p4a1.png" width="98%" alt="A full page on the 10.1-inch Guition: a clock with the date, the weather for five days, a media tile two cells wide and two high with the album cover dimmed behind the title and the play keys, the blinds one cell wide and two high with a position slider, the heating two by two with minus, plus and every mode key, a temperature graph, a table lamp dimmer and a coffee machine switch">
+  <img src="docs/images/tall-jc8012p4a1.png" width="98%" alt="The 10.1-inch Guition in Dark mode: a clock with the date, the weather for five days, a media tile two cells wide and two high with the album cover dimmed behind the title and the play keys, the front door camera live beside it, the heating one cell wide and two high with minus, plus and its mode keys, graphs for the temperature and the energy, a table lamp dimmer, the coffee machine, the robot and a good-night script">
 </p>
 <p align="center">
   <img src="docs/images/tall-guition-media.png" width="32%" alt="The 4-inch Guition: a media tile two by two with the album cover behind the track, the artist and the previous, pause and next keys, above a table lamp with its dimmer">
-  <img src="docs/images/tall-guition-climate.png" width="32%" alt="The heating two by two: the target temperature between minus and plus, the room temperature under it and a row of mode keys, heat lit in orange, above a temperature graph">
-  <img src="docs/images/tall-guition-home.png" width="32%" alt="Two tiles one cell wide and two high: the blinds with their position in large type and a slider, and the coffee machine with its icon, name and switch in the middle; the robot vacuum with start, stop and dock below">
+  <img src="docs/images/tall-guition-climate.png" width="32%" alt="The Comfort page: the heating one cell wide and two high with its setpoint between minus and plus and its mode keys, heat lit in orange, the curtains open at 70 % with a slider, and a temperature graph">
+  <img src="docs/images/tall-guition-home.png" width="32%" alt="The Evening page: Movie night and Good night in pastel lilac and blue, and two tiles one cell wide and two high: the ceiling light at 59 % and the bedroom fan, each with a big slider">
 </p>
 <p align="center">
-  <img src="docs/images/tall-waveshare43-media.png" width="49%" alt="The 4.3-inch Waveshare: the media tile two by two with its album cover, a bedroom thermostat one cell wide and two high, a lamp dimmer and a person">
-  <img src="docs/images/tall-waveshare43-climate.png" width="49%" alt="The same screen in dark mode: the heating two by two with its mode keys beside the setpoint, the blinds one by two, a temperature graph and the coffee machine">
+  <img src="docs/images/tall-waveshare43-media.png" width="49%" alt="The 4.3-inch Waveshare: the media tile two by two with its album cover, the heating one cell wide and two high, a lamp dimmer and Sam at home">
+  <img src="docs/images/tall-waveshare43-climate.png" width="49%" alt="The same screen in Dark mode: the bedroom thermostat two by two with its setpoint between minus and plus, the curtains one cell wide and two high, a temperature graph and the coffee machine">
 </p>
 <p align="center"><sub>A tile can be 1 × 2 or 2 × 2 cells as well as one cell, double width or the whole page, and the card follows the room it gets: a player shows its album cover behind the track (every screen but the CYD), the heating shows its setpoint and the modes Home Assistant lists for it (the last key opens the card when they do not all fit), a blind shows its position, and its slats where there is room, and a lamp, a switch, a script or a scene two cells high is one big key. Every board works out the same card from its own glass. Each page has its own title and top bar, any page can be Home, and a page can stay out of the page dots and be opened from a tile, with a Back key to return. Rendered from the firmware's own LVGL code with a demo home.</sub></p>
 
@@ -106,7 +106,7 @@ home fits on one page.
 
 <p align="center">
   <img src="docs/images/guition-weather-tiles.png" width="32%" alt="The 4-inch Guition with two weather tiles: a wide one with today and the next three days, and a big one listing the days under each other, each with a coloured bar from its low to its high on one scale">
-  <img src="docs/images/guition-thermostat-tiles.png" width="32%" alt="Three thermostats: the heating with its setpoint between minus and plus and a bar with Heat and Auto, an airco on cool with heat, cool and more behind three dots, and a short bedroom tile with the stepper on one row">
+  <img src="docs/images/guition-thermostat-tiles.png" width="32%" alt="Three thermostats: the heating with its setpoint between minus and plus and a bar with Heat and Auto, an airco on cool with heat, cool and more behind three dots, and a wide bedroom tile with the stepper on one row">
   <img src="docs/images/guition-camera-fill.png" width="32%" alt="A garden camera on a tile of two by two cells, its picture filling the whole card with the camera's name at the bottom, above the garden lights and the garden temperature">
 </p>
 <p align="center">
@@ -120,10 +120,38 @@ home fits on one page.
   <img src="docs/images/guition-lock-confirm.png" width="32%" alt="The lock card waiting for the second tap: the big lock orange and open, with Confirm under it">
 </p>
 <p align="center">
-  <img src="docs/images/waveshare43-new-tiles.png" width="49%" alt="The 4.3-inch Waveshare: a wide weather tile with the coming days, the heating with its stepper, a front door camera filling a tile of two by two cells, and the dryer">
+  <img src="docs/images/waveshare43-new-tiles.png" width="49%" alt="The 4.3-inch Waveshare: a wide weather tile with the coming days, the bedroom thermostat, a garden camera filling a tile of two by two cells, the washing machine on Cotton eco and the dryer">
   <img src="docs/images/waveshare43-select-card.png" width="49%" alt="The select card of a washing machine on the 4.3-inch Waveshare: its programmes in two columns, Cotton eco checked, and page dots for the rest">
 </p>
 <p align="center"><sub>The weather with the coming days, and on a bigger tile the whole week with a bar from each day's low to its high. A thermostat has its − / + and a bar with a key per mode; an airco shows heat and cool first and the rest behind "…". A live camera on a taller tile fills the card with its picture and its name, or shows the whole picture. Your alarm is a tile in Home Assistant's colours, with a key for every mode and Home Assistant's keypad when the panel asks for a code; someone coming in wakes every screen with the keypad to disarm. A lock locks with one tap and asks for a second one before it unlocks; its card has Open door where the lock can open its latch, and Home Assistant's keypad when the lock asks for a code. A select, such as a washing machine's programme, opens a list with a check at the one it is on. On every screen with the memory for it, every page is built ahead and kept, so the next one is there the moment you turn to it. Rendered from the firmware's own LVGL code with a demo home.</sub></p>
+
+## Music, from the speaker to the library
+
+<p align="center">
+  <img src="docs/images/media-boards-scale.png" width="98%" alt="The same player card on five screens side by side on one scale, from the 2.8-inch CYD to the 10.1-inch Guition: the album cover on a ground in its own colours, the speaker Kitchen at the top, the title, the bar through the track, the keys and the volume">
+</p>
+<p align="center">
+  <img src="docs/images/media-guition-player.png" width="32%" alt="The player card on the 4-inch Guition: the album cover on a ground in the cover's own colours, the speaker Kitchen at the top, the title and artist, a bar to drag through the track, shuffle, previous, pause, next and repeat, and the volume">
+  <img src="docs/images/media-guition-speakers.png" width="32%" alt="The speaker menu open over the card: Bedroom, Kitchen with a check mark, and Living room">
+  <img src="docs/images/media-guition-favourites.png" width="32%" alt="A page of favourites: an album and a playlist with their covers dimmed behind the name and a play key, the playlist that plays ringed in blue with a pause key, an artist and the player itself">
+</p>
+<p align="center">
+  <img src="docs/images/media-guition-library.png" width="32%" alt="The library of the player: Playlists, Artists, Albums, Liked songs, Podcasts, Recently played, Top artists and Top tracks">
+  <img src="docs/images/media-guition-albums.png" width="32%" alt="A page of albums: six covers with their titles, page dots and arrows to turn to the next six">
+  <img src="docs/images/media-cyd-favourites.png" width="32%" alt="The same favourites on the 2.8-inch CYD, drawn with icons: an album, two playlists, an artist and the player">
+</p>
+<p align="center">
+  <img src="docs/images/media-waveshare43-player.png" width="49%" alt="The player card on the 4.3-inch Waveshare: the cover at the left on its coloured ground, the title, the bar and the keys beside it, the volume along the bottom">
+  <img src="docs/images/media-waveshare43-albums.png" width="49%" alt="A page of albums on the 4.3-inch Waveshare: five covers in a row with page arrows">
+</p>
+<p align="center">
+  <img src="docs/images/media-waveshare43-starting.png" width="49%" alt="Favourites on the 4.3-inch Waveshare: the wide favourite Sunday Morning starting on the Kitchen speaker, a spinner round its play key">
+  <img src="docs/images/media-waveshare43-speakers.png" width="49%" alt="The speaker menu over the player card on the 4.3-inch Waveshare: Bedroom, Kitchen with a check mark, and Living room">
+</p>
+<p align="center">
+  <img src="docs/images/media-jc8012p4a1-albums.png" width="66%" alt="A page of albums on the 10.1-inch Guition: eighteen covers in three rows of six">
+</p>
+<p align="center"><sub>A media player's card sits on the colours of the cover that plays, and the speaker it plays on is at the top: tap it to move the music to another one. Shuffle, repeat and a bar you drag through the track sit under the title. The library key opens what Home Assistant can browse on that player, folder by folder down to a page of covers, and a tap on a cover plays it. A favourite is a tile that plays one playlist, album or artist on the speaker you choose, with its cover behind it, and a player at rest keeps its card, so you pick a speaker and start from there. Nothing here is made for one service: it is the player and its library as Home Assistant reports them, so Spotify works like any other player that can browse. The covers and the library need a screen with the memory for pictures (<a href="https://tessera-maxgramser.on-forge.com/docs/cameras">how</a>); the CYD keeps the card, the speakers and the favourites, drawn with icons. Rendered from the firmware's own LVGL code with made-up records.</sub></p>
 
 ## Where everyone is
 
@@ -144,9 +172,9 @@ home fits on one page.
 ## On the screen
 
 <p align="center">
-  <img src="docs/images/guition-home.png" width="32%" alt="Guition 4-inch screen: an analog clock with the date, a temperature graph, the weather forecast, a lamp and presence">
-  <img src="docs/images/guition-controls.png" width="32%" alt="Double-width tiles with direct control: the heating setpoint, a dimmer and the Sonos volume">
-  <img src="docs/images/guition-page-4.png" width="32%" alt="An energy graph, the robot vacuum, a coffee machine, a fan and a good-night script with pastel backgrounds">
+  <img src="docs/images/guition-front-door.png" width="32%" alt="The Front door page on the Guition 4-inch screen: the front door camera live on a tile of two by two cells with its name, the front door locked and the porch light on">
+  <img src="docs/images/guition-energy.png" width="32%" alt="The Energy page: today's energy as a graph, the power and the humidity as large values, and the robot vacuum with start, stop and dock">
+  <img src="docs/images/guition-weather-page.png" width="32%" alt="The Weather page: the garden forecast on a big tile, each day with a bar from its low to its high, above the sun's path with sunrise and sunset">
 </p>
 <p align="center">
   <img src="docs/images/guition-full-light.png" width="32%" alt="A full-page tile: one big amber light switch that fills the screen, so you push anywhere without looking">
@@ -159,7 +187,7 @@ home fits on one page.
   <img src="docs/images/guition-light.png" width="32%" alt="Light control: color, color temperature and brightness">
 </p>
 <p align="center">
-  <img src="docs/images/guition-vacuum.png" width="32%" alt="Vacuum card: docked and charging, start and dock, the cleaning mode vacuum, vac and mop or mop, suction and water">
+  <img src="docs/images/guition-vacuum.png" width="32%" alt="Vacuum card: docked at 100 %, Start cleaning and Dock, and the suction from Quiet to Max">
   <img src="docs/images/guition-blind.png" width="32%" alt="Cover card for a venetian blind: its battery, the position slider with the blind hanging from the top, the tilt slider over slats, and open, stop and close">
   <img src="docs/images/guition-history-touch.png" width="32%" alt="A finger on the history graph: the top of the card shows the average of that hour and its time, the graph stays as it is">
 </p>
@@ -168,12 +196,7 @@ home fits on one page.
   <img src="docs/images/guition-effects-picker.png" width="32%" alt="The effect picker: a drum with every effect Home Assistant lists, TV Simulator in the middle, and the check key at the top right that sends it">
   <img src="docs/images/cyd-effects.png" width="32%" alt="The same effects page on the CYD: four rows and the two sliders in 320 by 240 pixels">
 </p>
-<p align="center">
-  <img src="docs/images/guition-media.png" width="32%" alt="The media card on the Guition: the album cover, the title, artist and album, a progress bar with the elapsed and total time, previous, pause and next keys and the volume slider">
-  <img src="docs/images/guition-media-full.png" width="32%" alt="A media player over the whole page: the cover at the left, the track, the bar and the keys beside it, the volume row along the bottom">
-  <img src="docs/images/guition-dark-media.png" width="32%" alt="The media card in dark mode: the same cover and keys on a black page">
-</p>
-<p align="center"><sub>Tap a tile to switch it, hold it for the full card. Keys and sliders right on the tile, pastel colors, a clock, the weather and history you can read with a finger. A lamp with modes (a WLED) gets an effects page with a drum picker, named and filled from what Home Assistant lists for it. The media card shows what plays with its album cover, fetched by ESP Screens like a camera picture, and a media tile can show that cover in the icon's place (<a href="https://tessera-maxgramser.on-forge.com/docs/cameras">how</a>). Rendered from the firmware's own LVGL code with a demo home.</sub></p>
+<p align="center"><sub>Tap a tile to switch it, hold it for the full card. Keys and sliders right on the tile, pastel colors, a clock, the weather and history you can read with a finger. A lamp with modes (a WLED) gets an effects page with a drum picker, named and filled from what Home Assistant lists for it. Rendered from the firmware's own LVGL code with a demo home.</sub></p>
 <p align="center">
   <img src="docs/images/guition-camera-tiles.png" width="32%" alt="Cameras as tiles on the Guition: the front door camera filling a tall tile with its name at the bottom, a porch camera showing its whole picture with black above and below, the porch light and Sam at home">
   <img src="docs/images/guition-camera.png" width="32%" alt="A camera tile tapped: the front door camera full screen, with the round back key and the camera's name at the top">
@@ -181,29 +204,29 @@ home fits on one page.
 </p>
 <p align="center"><sub>Cameras are tiles too, not only part of an alert: any camera or snapshot in Home Assistant (a doorbell's last ring, for example) goes on a screen like any other tile. Tap it for the picture full screen, refreshed every four seconds, or let the tile itself show its live picture (Display → Live picture, every 5 to 30 s) over the whole tile, on every size up to a full page, filled or whole, with or without its name; an alert can carry the same picture. Every screen but the CYD, the Waveshare 3.5-inch and the Hosyond 4-inch, which have no memory for pictures (<a href="https://tessera-maxgramser.on-forge.com/docs/cameras">how it works</a>).</sub></p>
 <p align="center">
-  <img src="docs/images/cyd-home.png" width="32%" alt="CYD 2.8-inch screen: the weather forecast, a kitchen timer, the coffee machine, a lamp and power usage as a large value">
-  <img src="docs/images/cyd-page-2.png" width="32%" alt="Second CYD page: Sonos volume, presence, a scene and an energy graph">
+  <img src="docs/images/cyd-home.png" width="32%" alt="CYD 2.8-inch screen: the weather forecast, a pasta timer, the coffee machine in orange, the kitchen lamp and the power usage as a large value">
+  <img src="docs/images/cyd-page-2.png" width="32%" alt="Second CYD page: the Sonos volume, Sam at home, the Movie night scene in lilac and an energy graph">
   <img src="docs/images/cyd-weather.png" width="32%" alt="The weather card on the CYD: current weather, the coming hours and the coming days">
 </p>
 <p align="center">
   <img src="docs/images/cyd-tiles-controls.png" width="32%" alt="The CYD with heating mode keys, playback keys for the radio and a ceiling fan's speed slider">
-  <img src="docs/images/cyd-vacuum.png" width="32%" alt="The vacuum card on the CYD: state, battery and charging, clean and dock, the cleaning mode, suction and water">
+  <img src="docs/images/cyd-vacuum.png" width="32%" alt="The vacuum card on the CYD: docked at 100 %, clean and dock, and the suction from Quiet to Max">
   <img src="docs/images/cyd-history.png" width="32%" alt="The history card on the CYD: power over 24 hours with its highest and lowest moment, an axis in watts and clock times">
 </p>
 <p align="center">
-  <img src="docs/images/cyd-media.png" width="32%" alt="The media card on the CYD: the player's icon where the cover would be, the title, artist and album, the bar with its times, the keys and the volume slider">
+  <img src="docs/images/cyd-media.png" width="32%" alt="The media card on the CYD on the colours of its cover: the player's icon where the cover would be, the title, artist and album, the bar with its times, the keys and the volume slider">
   <img src="docs/images/cyd-media-full.png" width="32%" alt="A media player over the whole CYD page: the icon at the left, the track and the keys beside it, the volume row along the bottom">
   <img src="docs/images/cyd-dark-media.png" width="32%" alt="The media card on the CYD in dark mode">
 </p>
 <p align="center"><sub>The same cards on the 2.8-inch CYD, 320 × 240. The CYD has no memory for pictures: its media card shows the player's icon in the cover's place.</sub></p>
 <p align="center">
-  <img src="docs/images/guition-dark-home.png" width="32%" alt="Dark mode on the Guition: the same home page with a black page, graphite cards and soft white text, the clock, the temperature graph, the weather, a lamp and presence">
-  <img src="docs/images/guition-dark-controls.png" width="32%" alt="Dark mode with direct control: the heating setpoint, the dimmer's slider and the Sonos volume keep their colours">
-  <img src="docs/images/guition-dark-page-4.png" width="32%" alt="Dark mode with pastel backgrounds: the coffee machine and the good-night script keep their colour, deeper">
+  <img src="docs/images/guition-dark-home.png" width="32%" alt="Dark mode on the Guition: the living room page on a black page, the album cover and the lamp dimmer in their own colours">
+  <img src="docs/images/guition-dark-controls.png" width="32%" alt="Dark mode on the Good morning page: graphite cards and soft white text, the clock, the weather, the coffee machine in a deep orange and Sam">
+  <img src="docs/images/guition-dark-page-4.png" width="32%" alt="Dark mode on the Evening page: the two scenes in deeper lilac and blue, and the tall ceiling light and fan sliders keep their colours">
 </p>
 <p align="center"><sub>Dark mode, for a screen beside the bed: the same pages, darker. It is a switch on the screen, in ESP Screens and in Home Assistant, so an automation can turn it on at bedtime.</sub></p>
 <p align="center">
-  <img src="docs/images/guition-settings-screen.png" width="32%" alt="The settings page on the Guition, Screen: back to page 1 by itself and after how long, also on standby and swiping between pages, with the page buttons and the rotation on its second page">
+  <img src="docs/images/guition-settings-screen.png" width="32%" alt="The settings page on the Guition, Screen: back to Home by itself and after how long, also on standby, swiping between pages and the page buttons, with the rotation on its second page">
   <img src="docs/images/guition-settings.png" width="32%" alt="The settings page on the Guition, Brightness: the brightness with minus and plus, Dark mode off, Auto standby on, standby after 10 minutes and the standby brightness">
   <img src="docs/images/guition-dark-settings.png" width="32%" alt="The same Brightness page right after turning Dark mode on: a black page with graphite rows and soft white text">
 </p>
@@ -212,21 +235,31 @@ home fits on one page.
 ## Managed from Home Assistant
 
 <p align="center">
-  <img src="docs/images/editor.png" width="98%" alt="ESP Screens in Home Assistant: your screens in the sidebar, the pages of the living room screen side by side with their top bar, and the entity library on the right">
+  <img src="docs/images/editor-home.png" width="98%" alt="Tessera in Home Assistant: Your screens, seven screens from the 2.8-inch CYD to the 10.1-inch Guition, each with a preview of its first page drawn by its own firmware, one with an update waiting">
 </p>
-<p align="center"><sub>ESP Screens, a page in Home Assistant: your screens on the left, the pages of the chosen screen in the middle with the values Home Assistant reports right now, the library on the right.</sub></p>
 <p align="center">
-  <img src="docs/images/editor-tiles.png" width="63%" alt="Choosing tiles: the pages of the screen side by side, next to the library with its search and filters">
-  <img src="docs/images/editor-tile-settings.png" width="33%" alt="Tile settings of the curtains in the drawer: double-width with open, stop and close on the tile, what a tap does, and the pastel background">
+  <img src="docs/images/editor.png" width="98%" alt="Tessera in Home Assistant: the living room screen's pages side by side, each with its title and top bar, Living room, Good morning, Comfort and Evening, and the library under them grouped by room">
+</p>
+<p align="center"><sub>Tessera, a page in Home Assistant: every screen at a glance, then the pages of the chosen one side by side with the values Home Assistant reports right now, and the library of your home under them.</sub></p>
+<p align="center">
+  <img src="docs/images/editor-tiles.png" width="63%" alt="Choosing tiles: the pages of the screen side by side, and the library searched for lamp with the four lamps of the home and their rooms">
+  <img src="docs/images/editor-tile-settings.png" width="33%" alt="Tile settings of the curtains in the drawer: on tap Perform action with Set cover position at 50 %, the position slider on the tile, the icon and the pastel background">
 </p>
 <p align="center"><sub>Search your home, drop a tile on the preview, tap it for its name, width, control and color, and for what a tap does: open its card, switch it, or run any action Home Assistant has for it, such as the curtains to 50 %. Save, and the screen has it. ⌘K searches screens, entities and actions; Identify blinks a screen so you know which one it is.</sub></p>
 <p align="center">
-  <img src="docs/images/editor-top-bar.png" width="31%" alt="Add to the top bar, in the drawer: the time, an analog clock, the date, suggestions from your own home and any entity">
-  <img src="docs/images/editor-settings.png" width="65%" alt="Settings in ESP Screens: New screen and Firmware & USB, the firmware updates, the Alerts cheatsheet, and the Claude skill">
+  <img src="docs/images/editor-top-bar.png" width="31%" alt="The top bar in the drawer: the page title on the left, and on the right the outdoor temperature, people at home and the time, with how each looks on the screen">
+  <img src="docs/images/editor-settings.png" width="65%" alt="Settings in Tessera: New screen and Firmware & USB, the firmware updates, Language & region, the Alerts cheatsheet, and the Claude skill">
 </p>
 <p align="center"><sub>A top bar built from your own home, firmware updates over Wi-Fi (every night if you like), and a skill so Claude can rearrange your screens.</sub></p>
 <p align="center">
-  <img src="docs/images/editor-screen-settings.png" width="98%" alt="The Screen settings tab in ESP Screens: Brightness with Dark mode and standby, Night with its hours and brightness, and Screen with back to page 1, swiping, the page buttons and the rotation">
+  <img src="docs/images/editor-phone-screens.png" width="23%" alt="Tessera on a phone: Your screens, each with a preview of its first page drawn by its own firmware, one with an update waiting">
+  <img src="docs/images/editor-phone-screen.png" width="23%" alt="One screen on a phone: its page as the screen shows it, the page picker under it and one big Add tile button">
+  <img src="docs/images/editor-phone-tile.png" width="23%" alt="A tile tapped on a phone: a sheet with its icon and pastel background, More settings, Move and Remove">
+  <img src="docs/images/editor-phone-add.png" width="23%" alt="Add tile on a phone: a sheet with search, the kinds as chips and the home's devices by room, each with a plus">
+</p>
+<p align="center"><sub>On a phone, Tessera is the editor of everyday changes: your screens, a page as the screen shows it, a tap on a tile for its icon and colour, and Add tile. Everything else is in the screen's ··· menu, and <b>Full editor</b> there opens the whole editor.</sub></p>
+<p align="center">
+  <img src="docs/images/editor-screen-settings.png" width="98%" alt="The Screen settings tab in Tessera: Brightness with Dark mode and standby, Night with its hours and brightness, and Screen with back to Home, swiping, the page buttons and the rotation">
 </p>
 <p align="center"><sub>Screen settings apply at once, and a change made on the screen or by an automation shows up here too.</sub></p>
 <p align="center">
@@ -237,17 +270,17 @@ home fits on one page.
 ## In your language
 
 <p align="center">
-  <img src="docs/images/guition-german.png" width="31%" alt="A Guition in German: Dienstag 15 Sept. beside the analog clock, Teilweise bewölkt with the days Di Mi Do Fr Sa, the table lamp at 75 %">
-  <img src="docs/images/guition-french.png" width="31%" alt="The same screen in French: mardi 15 sept., Éclaircies with the days ma me je ve sa, and Sam is Maison">
-  <img src="docs/images/guition-polish.png" width="31%" alt="The same screen in Polish: wtorek 15 wrz, częściowe zachmurzenie with the days wt śr cz pt sb, and Sam is w domu">
+  <img src="docs/images/guition-german.png" width="31%" alt="A Guition in German: Wohnzimmer at the top with 16,8 °C, Dienstag, 15. September beside the analog clock, the days Di Mi Do, the Tischlampe at 75 % and Sam Zuhause">
+  <img src="docs/images/guition-french.png" width="31%" alt="The same screen in French: Salon, mardi 15 septembre beside the clock, Éclaircies with the days ma me je, the Lampe de table at 75 % and Sam Maison">
+  <img src="docs/images/guition-polish.png" width="31%" alt="The same screen in Polish: Salon, wtorek, 15 września beside the clock, the days wt śr cz, the Lampa stołowa at 75% and Sam w domu">
 </p>
-<p align="center"><sub>The same home in German, French and Polish. The screens follow your Home Assistant: its language, its words for a light or a robot, and how your country writes a date, a time and a number: 75 % in German and French, 75% in Polish and English.</sub></p>
+<p align="center"><sub>The same home in German, French and Polish, its rooms and tiles named in each. The screens follow your Home Assistant: its language, its words for a light or a robot, and how your country writes a date, a time and a number: 75 % in German and French, 75% in Polish and English.</sub></p>
 
 The screens, the editor and its messages speak **English (US and UK), Nederlands, Deutsch, Français, Italiano,
 Español, Português, Polski and Magyar**. Nothing to set up: ESP Screens takes the language of your Home Assistant.
 
 <p align="center">
-  <img src="docs/images/editor-language.png" width="36%" alt="Language and region in ESP Screens: the screen language set to Home Assistant's language, the time format and the number format, each following the language">
+  <img src="docs/images/editor-language.png" width="36%" alt="Language and region in Tessera: the screen language set to Home Assistant's language, the time format on 24 hour and the number format following the language">
 </p>
 <p align="center"><sub>Settings → Language & region, when you want something else than Home Assistant's own.</sub></p>
 
@@ -271,7 +304,7 @@ while it keeps your country's clock and numbers.
 <p align="center"><sub>Someone at the door? One event in an automation wakes every screen and shows it. Add the doorbell camera and a Guition shows who is there; tap the picture, or a camera tile, for the camera full screen, refreshed every few seconds. <a href="docs/CAMERA.md">Camera images</a>.</sub></p>
 <p align="center">
   <img src="docs/images/guition-alert-choice-colors.png" width="41%" alt="An alert on the Guition asking to open the garage, with a red Decline and a green Accept button side by side">
-  <img src="docs/images/editor-alerts.png" width="53%" alt="The Alerts cheatsheet in ESP Screens: the action name of every screen, ready to copy">
+  <img src="docs/images/editor-alerts.png" width="53%" alt="The Alerts cheatsheet in Tessera: a preview of the alert, a form to try one, and the action name of every screen, ready to copy">
 </p>
 <p align="center"><sub>Any alert, on one screen or all of them, in a pastel color of your choice, with one button or two to choose from, each in a color of its own and with its own action. <a href="README_EXTENDED.md#alert-from-an-automation">How alerts work</a>. An automation can also put a page in front, such as the page with the full-page player when the music starts: <a href="README_EXTENDED.md#open-a-page-from-an-automation">Open a page from an automation</a>.</sub></p>
 
@@ -364,16 +397,17 @@ For Home Assistant OS with Apps/Add-ons on **aarch64 or amd64**:
 2. Install **ESP Screen Manager**, start the app, and open **ESP Screens**.
    ESPHome Device Builder is optional: the ESPHome CLI is already in this app.
 3. Connect the screen with a USB data cable to the **Home Assistant machine**
-   and click **+** beside Screens in the sidebar: pick your board, name it and choose which way it hangs, then
-   **Install** over USB. If Wi-Fi is missing from the ESPHome `secrets.yaml`, the window
+   and click **+** beside Screens in the sidebar. New screen takes three steps: **Screen** (pick your board),
+   **Set up** (name it and choose which way it hangs) and **Install** (choose **USB on Home Assistant** and click
+   **Install**). If Wi-Fi is missing from the ESPHome `secrets.yaml`, Set up
    asks for it once and ESP Screens only adds the missing lines. The profile
    with unique API and OTA keys goes into the ESPHome folder; the build
    and flash run in the same window (a first build takes a few minutes on a
    Raspberry Pi). Each screen gets its own profile.
    Is Home Assistant on a server or in a virtual machine, out of reach of the screen?
-   Plug the screen into your own computer and choose **This computer** under **Install via**:
+   Plug the screen into your own computer and choose **From this computer** in the Install step:
    ESP Screens builds the firmware and the page puts it on the screen, in Chrome or Edge with
-   Home Assistant opened over https. Or choose **Download** and put it on the screen with
+   Home Assistant opened over https. Or choose **Download the file** and put it on the screen with
    [ESPHome Web](https://web.esphome.io). After that, updates go over Wi-Fi as usual.
 4. **CYD:** go through the calibration on the screen. **Guition:** uses GT911
    without resistive calibration. Then pair the discovered ESPHome device in
@@ -384,10 +418,10 @@ For Home Assistant OS with Apps/Add-ons on **aarch64 or amd64**:
    **Save & send**. Then test the physical controls.
 
 <p align="center">
-  <img src="docs/images/editor-new-screen.png" width="37%" alt="New screen in ESP Screens: choose the board, give it a name, pick the USB port and install">
-  <img src="docs/images/editor-tiles.png" width="59%" alt="Choosing tiles: the pages of the screen side by side, next to the library with its search and filters">
+  <img src="docs/images/editor-new-screen.png" width="37%" alt="New screen in Tessera: the first of three steps, every supported board with its size, resolution and touch chip, the 4-inch Guition chosen">
+  <img src="docs/images/editor-tiles.png" width="59%" alt="Choosing tiles: the pages of the screen side by side, and the library searched for lamp">
 </p>
-<p align="center"><sub>New screen (step 3) and choosing your tiles (step 5).</sub></p>
+<p align="center"><sub>New screen, its first step (step 3 above), and choosing your tiles (step 5).</sub></p>
 
 New firmware goes on over Wi-Fi with the **Update** button of a screen in ESP Screens, or by itself
 every night if you turn that on under **Settings**; **Firmware & USB → Wi-Fi / OTA** in the sidebar
@@ -417,4 +451,5 @@ mounts for the CYD.
 The front door in the camera pictures is a photo by
 [Virginia Marinova](https://unsplash.com/photos/the-door-welcomes-with-plants-on-both-sides-80uwJgdeqWg) on Unsplash.
 
-Tessera (formerly ESP Screens) is MIT licensed, see [LICENSE](LICENSE).
+Tessera (formerly ESP Screens) is licensed under the GNU Affero General Public License v3.0, see [LICENSE](LICENSE)
+and [NOTICE](NOTICE). Releases up to and including 0.4.38 were MIT licensed and stay so.

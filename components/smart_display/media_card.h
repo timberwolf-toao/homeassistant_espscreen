@@ -64,7 +64,11 @@ struct Layout {
   bool wide = false;    // the art at the left, everything else beside it
   bool times = false;   // the elapsed and total time at the ends of the bar
   bool artist = true;   // the artist line (a tile over a CYD page has no room for it)
+  bool sides = false;   // shuffle and repeat at the ends of the keys' row (firmware 0.24.0+), where it has room
   Rect art, title, artist_line, bar, elapsed, total, prev, play, next, mute, volume, percent;
+  Rect shuffle, repeat;
+  // Where a finger takes the bar to seek (firmware 0.24.0+): the bar's length, and a finger's height round its line.
+  Rect seek;
   int art_radius = 0;   // the corner the art is rounded with (baked into the picture by the app)
 };
 
@@ -103,11 +107,22 @@ inline Layout layout(const Metrics &m, int width, int height) {
     return row_h;
   };
   auto keys = [&](int x, int w, int y) {
-    const int gap = std::clamp((w - 2 * m.key_h() - m.play_h()) / 2, m.min_gap(), m.key_gap());
+    // Shuffle and repeat (firmware 0.24.0+) stand at the ends of the row as bare keys, the size of the mute key, and
+    // only where the row has room for them beside its three keys at their own gaps: on the CYD the three keep it.
+    const int side = m.mute_h(), with_sides = 2 * m.key_h() + m.play_h() + 2 * m.key_gap() + 2 * (side + m.key_gap());
+    l.sides = w >= with_sides;
+    const int inner = l.sides ? w - 2 * (side + m.key_gap()) : w;
+    const int gap = std::clamp((inner - 2 * m.key_h() - m.play_h()) / 2, m.min_gap(), m.key_gap());
     const int row_w = 2 * m.key_h() + m.play_h() + 2 * gap, row_x = x + (w - row_w) / 2;
     l.prev = {row_x, y + (m.play_h() - m.key_h()) / 2, m.key_h(), m.key_h()};
     l.play = {row_x + m.key_h() + gap, y, m.play_h(), m.play_h()};
     l.next = {l.play.right() + gap, l.prev.y, m.key_h(), m.key_h()};
+    if (l.sides) {
+      l.shuffle = {l.prev.x - m.key_gap() - side, l.play.cy() - side / 2, side, side};
+      l.repeat = {l.next.right() + m.key_gap(), l.shuffle.y, side, side};
+    } else {
+      l.shuffle = l.repeat = Rect{};
+    }
   };
   if (!l.wide) {
     // Tall: the art on top, the texts, the bar and the keys under it, all centred.
@@ -147,7 +162,58 @@ inline Layout layout(const Metrics &m, int width, int height) {
     keys(x, w, y + h);
   }
   l.art_radius = radius_for(l.art.w);
+  // The bar takes a finger as tall as a key, round its own line; the keys and the words over it keep theirs.
+  const int reach = std::max(m.bar_h(), ui::px(m.large ? 32 : 22));
+  l.seek = {l.bar.x, l.bar.cy() - reach / 2, l.bar.w, reach};
   return l;
+}
+
+// ---- Seeking (firmware 0.24.0+) ----
+// The seconds a place on the bar stands for: `x` from the bar's left end, the bar `width` long.
+inline uint32_t seek_seconds(int x, int width, uint32_t duration) {
+  if (width <= 0 || !duration) return 0;
+  return static_cast<uint32_t>(static_cast<uint64_t>(std::clamp(x, 0, width)) * duration / width);
+}
+// A seek sent stands on the bar until Home Assistant reports the player near it, the track changes, or this long has
+// passed: Spotify answers a seek with a state of before it, and the knob jumped back and forth.
+constexpr uint32_t SEEK_HOLD_MS = 6000;
+constexpr uint32_t SEEK_NEAR_S = 3;
+struct Seek {
+  bool held = false;
+  uint32_t seconds = 0, since = 0;   // where it was sent to, and when (millis)
+  uint32_t epoch = 0;                // that moment on Home Assistant's clock, for the bar to run on from
+  std::string track;                 // the title it was sent for
+  void send(uint32_t to, uint32_t now_ms, uint32_t now_epoch, const std::string &title) { held = true; seconds = to; since = now_ms; epoch = now_epoch; track = title; }
+  // Home Assistant's word on the player: whether the seek still holds.
+  bool holds(uint32_t reported, uint32_t reported_at, uint32_t now_ms, uint32_t now_epoch, bool playing, const std::string &title) {
+    if (!held) return false;
+    const uint32_t here = playing && now_epoch > reported_at && reported_at ? reported + (now_epoch - reported_at) : reported;
+    const uint32_t wanted = playing && now_epoch > epoch ? seconds + (now_epoch - epoch) : seconds;
+    const uint32_t off = here > wanted ? here - wanted : wanted - here;
+    if (title != track || now_ms - since >= SEEK_HOLD_MS || off <= SEEK_NEAR_S) held = false;
+    return held;
+  }
+};
+
+// ---- The card's ground (firmware 0.24.0+) ----
+// The two colours the app read from the cover, "RRGGBB,RRGGBB" (top, bottom); false without them, and the card keeps
+// its neutral ground (theme::MEDIA_TOP, theme::MEDIA_BOTTOM).
+inline bool ground(const std::string &text, uint32_t &top, uint32_t &bottom) {
+  if (text.size() != 13 || text[6] != ',') return false;
+  for (size_t i = 0; i < text.size(); ++i) {
+    if (i == 6) continue;
+    const char c = text[i];
+    if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'))) return false;
+  }
+  top = static_cast<uint32_t>(std::stoul(text.substr(0, 6), nullptr, 16));
+  bottom = static_cast<uint32_t>(std::stoul(text.substr(7, 6), nullptr, 16));
+  return true;
+}
+// The repeat key's next step, as Spotify's and Home Assistant's own player cycle it: off, all, one.
+inline const char *next_repeat(const std::string &repeat) {
+  if (repeat == "off") return "all";
+  if (repeat == "all") return "one";
+  return "off";
 }
 
 // Home Assistant reports where the track was (media_position) and when it said so (media_position_updated_at);

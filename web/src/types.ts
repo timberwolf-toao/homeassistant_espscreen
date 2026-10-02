@@ -11,6 +11,9 @@ export type TileOptions = {
   action?: { action: string; data?: Record<string, unknown> };
   [key: string]: unknown;
 };
+// What a favourite plays (app 0.4.42), as Home Assistant's library names it: its content id and type, the title and the
+// picture the library gave, and the class of thing it is.
+export type FavoritePlay = { id: string; type: string; title: string; thumb?: string; class?: string };
 // A key as the page document keeps it: a tile without a place of its own.
 export type ChildTile = {
   id: string;
@@ -33,7 +36,7 @@ export type PageTile = {
   appearance: { label: string; presentation?: "single" | "wide" | "tall" | "square" | "full" | `${number}x${number}`; display?: string; icon?: string; background?: string; historyHours?: number; refresh?: number; subtitle?: string; fit?: string; overlay?: string;
     mapEntities?: string[]; mapFraming?: string; mapDistance?: string; mapFollow?: string; mapMarkers?: string; mapNames?: string;
     mapZones?: string; mapStreets?: string; mapLook?: string };
-  interaction: { tap?: string; inline?: string; controls?: string; action?: TileOptions["action"]; guard?: string };
+  interaction: { tap?: string; inline?: string; controls?: string; action?: TileOptions["action"]; guard?: string; play?: FavoritePlay; speaker?: string };
   children?: ChildTile[];
 };
 export type Page = {
@@ -136,7 +139,7 @@ export type Screen = {
   // What the screen looks like (app 0.2.94): the glass it draws on, the cells of one page, its density and its look,
   // from the screen itself (firmware 0.2.80) or from the board it was built for (core.shape_of); the editor draws it.
   shape?: { width: number; height: number; columns: number; rows: number; dpi?: number; look?: string; catalog?: BoardCatalog;
-    fonts?: { watch_value?: number; sublabel_big?: number; sublabel?: number; icon_mini?: number }; spacing?: { margin: number; gap: number; tile_pad: number } } | null;
+    fonts?: { watch_value?: number; sublabel_big?: number; sublabel?: number; icon_mini?: number; label?: number; headline?: number; icon_home?: number }; spacing?: { margin: number; gap: number; tile_pad: number } } | null;
   // Which way it was built to hang (app 0.2.107): a screen standing up has another canvas and another grid, and
   // while it is offline only the YAML of its own profile says so.
   orientation?: Orientation;
@@ -198,5 +201,5 @@ export type Inventory = {
 export type Capability = { toggle: boolean; inline: boolean; controls: string[]; displays: string[] };
 export type EntityAction = {
   action: string; name: string; description: string;
-  fields: { key: string; name: string; required?: boolean; description?: string; example?: unknown; selector?: Record<string, any>; options?: string[] }[];
+  fields: { key: string; name: string; required?: boolean; description?: string; example?: unknown; selector?: Record<string, any>; options?: string[]; suggestions?: string[] }[];
 };

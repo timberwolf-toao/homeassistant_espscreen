@@ -1,0 +1,119 @@
+# Home Assistant's own facts the tile catalogue is built on (docs/CATALOGUE.md, "When Home Assistant changes"):
+# catalogue/_ha.json (each type's feature flags and actions, tools/read_ha_source.py) and catalogue/_remote_commands.json
+# (a remote's commands per integration, tools/read_remote_commands.py) are read from a home-assistant/core checkout.
+# tools/check.sh compares them only when HA_CORE names one, which CI never has. Once a week this checks them against the
+# newest Home Assistant release (not its dev branch: that is what people run), from a sparse clone of only the files the
+# two readers open, and fails when Home Assistant changed something the catalogue depends on. Our snapshot is often a
+# dev build ahead of that release: then what only the snapshot knows is listed in the summary, and only what the release
+# has that the snapshot lacks or contradicts fails (--release, tools/ha_release.py). A remote's commands are compared
+# without the library versions they were read from (--ignore-pins): a screen sends the command, never the version.
+name: Home Assistant source
+
+on:
+  schedule:
+    - cron: "17 5 * * 1"     # Mondays: Home Assistant releases on the first Wednesday of the month, patches in between
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "A home-assistant/core tag or branch instead of the latest release (such as dev)"
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ha-source
+  cancel-in-progress: true
+
+jobs:
+  ha-source:
+    name: ha-source
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      # Home Assistant's code is written in Python 3.14, so its parser has to be the one that reads it (tools/check.sh
+      # runs read_ha_source.py under 3.14 too). Both readers use the standard library only.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: The Home Assistant release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WANTED: ${{ inputs.ref }}
+        run: |
+          ref=${WANTED:-$(gh api repos/home-assistant/core/releases/latest --jq .tag_name)}
+          [ -n "$ref" ] || { echo "::error::No Home Assistant release found"; exit 1; }
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "Home Assistant $ref"
+      # Only the files the readers open: pyproject.toml (the version), homeassistant/const.py, the folder of every
+      # catalogue type and every remote integration with a rule (read_remote_commands.RULES), and the folders those
+      # import constants from (input_select reads select's action names). A blobless clone fetches just those files.
+      - name: Sparse clone of home-assistant/core
+        env:
+          REF: ${{ steps.release.outputs.ref }}
+        run: |
+          core="$RUNNER_TEMP/ha-core"
+          git clone --quiet --depth 1 --branch "$REF" --filter=blob:none --sparse https://github.com/home-assistant/core.git "$core"
+          paths() {
+            python - "$core" <<'EOF'
+          import ast, sys
+          from pathlib import Path
+          sys.path.insert(0, 'tools')
+          import read_ha_source, read_remote_commands
+          core = Path(sys.argv[1])
+          domains = {p.stem for p in Path('catalogue').glob('*.yaml') if not p.name.startswith('_') and p.stem != 'screen'}
+          domains |= set(read_remote_commands.RULES) | set(read_ha_source.PLAYING)
+          for folder in sorted(domains):
+              for path in (core / 'homeassistant/components' / folder).glob('*.py'):
+                  for node in ast.walk(ast.parse(path.read_text())):
+                      if isinstance(node, ast.ImportFrom) and (node.module or '').startswith('homeassistant.components.'):
+                          domains.add(node.module.split('.')[2])
+          print('/pyproject.toml\n/homeassistant/const.py')
+          print('\n'.join(f'/homeassistant/components/{d}/' for d in sorted(domains)))
+          EOF
+          }
+          # Twice: the second pass adds the folders the first one's files import from.
+          for pass in 1 2; do paths | git -C "$core" sparse-checkout set --no-cone --stdin; done
+          git -C "$core" log -1 --format='%h %cs %s'
+          echo "HA_CORE=$core" >> "$GITHUB_ENV"
+      - name: Feature flags and actions (catalogue/_ha.json)
+        id: ha
+        continue-on-error: true
+        run: python tools/read_ha_source.py "$HA_CORE" --check --release 2>&1 | tee "$RUNNER_TEMP/ha.txt"
+      - name: A remote's commands (catalogue/_remote_commands.json)
+        id: remotes
+        continue-on-error: true
+        run: python tools/read_remote_commands.py "$HA_CORE" --check --release --ignore-pins 2>&1 | tee "$RUNNER_TEMP/remotes.txt"
+      # What changed, for whoever picks it up: the readers write the files here, and the diff goes in the run's summary.
+      - name: Verdict
+        env:
+          REF: ${{ steps.release.outputs.ref }}
+          HA: ${{ steps.ha.outcome }}
+          REMOTES: ${{ steps.remotes.outcome }}
+        run: |
+          {
+            echo "## Home Assistant $REF against the catalogue"
+            echo "Pinned now: $(python -c "import json; print(json.load(open('catalogue/_ha.json'))['source'])")"
+            echo
+            echo "- catalogue/_ha.json: $HA"
+            echo "- catalogue/_remote_commands.json: $REMOTES"
+            for name in ha remotes; do
+              if [ -s "$RUNNER_TEMP/$name.txt" ]; then echo; echo '```'; head -n 200 "$RUNNER_TEMP/$name.txt"; echo '```'; fi
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          failed=0
+          if [ "$HA" != success ]; then
+            python tools/read_ha_source.py "$HA_CORE" > /dev/null || true
+            { echo; echo '```diff'; git diff -- catalogue/_ha.json | head -n 400; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::HA changed: run tools/read_ha_source.py and review catalogue/_ha.json (Home Assistant $REF, docs/CATALOGUE.md)"
+            failed=1
+          fi
+          if [ "$REMOTES" != success ]; then
+            python tools/read_remote_commands.py "$HA_CORE" > /dev/null || true
+            { echo; echo '```diff'; git diff -- catalogue/_remote_commands.json | head -n 400; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::HA changed: run tools/read_remote_commands.py and review catalogue/_remote_commands.json (Home Assistant $REF, docs/CATALOGUE.md)"
+            failed=1
+          fi
+          exit $failed

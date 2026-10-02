@@ -500,6 +500,10 @@ button.insp-sec-head:hover h3 { color: var(--ink); }
 .map-remove { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font-size: 13px; color: var(--muted); }
 .map-remove:hover { background: var(--line); color: var(--ink); }
 .map-with .map-add { flex: 1 1 140px; min-width: 0; }
+/* A favourite (app 0.4.42): what it plays, and the key that opens the player's library under it. */
+.favorite-chosen { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; }
+.favorite-title { flex: 1; min-width: 0; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.favorite-chosen .help { flex: 1; }
 .gesture-note { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; color: var(--muted); line-height: 1.4; padding-left: 138px; }
 .gesture-note .ui-icon { font-size: 14px; margin-top: 1px; flex: none; }
 /* A longer list of choices: the current one in a field, the list under it. */
@@ -896,6 +900,10 @@ td code { white-space: nowrap; }
 .ui-menu-item { display: flex; align-items: center; gap: 10px; padding: 7px 9px; border-radius: 6px; cursor: default; outline: none; user-select: none; color: var(--ink); line-height: 1.3; }
 .ui-menu-item[data-highlighted] { background: var(--seg); }
 .ui-menu-item[data-disabled] { opacity: 0.45; }
+/* A text field with its usual values under it (UiSuggest, GitHub #117): in the panel, as the library's results are. */
+.ui-suggest { display: grid; gap: 4px; min-width: 0; }
+.ui-suggest-list { max-height: 216px; overflow: auto; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.ui-suggest-list .ui-menu-item { padding: 5px 8px; font: 12.5px/1.3 var(--mono); }
 .ui-menu-item[data-state="open"] { background: var(--seg); }
 .ui-menu-icon { font-size: 17px; color: var(--muted); width: 18px; text-align: center; }
 .ui-menu-item[data-highlighted] .ui-menu-icon { color: var(--ink-2); }
@@ -1142,3 +1150,144 @@ section.advanced code { font-size: 11.5px; }
 .arrive-form .btn { height: 36px; }
 .wifi-state .btn.link { margin-left: auto; }
 @media (max-width: 860px) { .arrive-form { grid-template-columns: 1fr; } }
+
+/* ---- The phone (app 0.4.40) ----
+   A page as narrow as a phone, unless it asked for the full editor, carries the class `phone` on .app (store.phone):
+   the screen itself, one button to add a tile, sheets from the bottom for adding, a tile and the pages, and the rest
+   under the screen's menu. Every rule here hangs on that class or on an element only a phone draws, so a wider page
+   keeps every pixel it had. Text fields stay at 16px: a smaller one makes iOS zoom the page on focus. */
+.app.phone { grid-template-columns: minmax(0, 1fr); height: auto; min-height: 100vh; background: var(--ground); }
+.app.phone input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), .app.phone textarea, .app.phone select { font-size: 16px; }
+.app.phone .main-head { position: static; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "back more" "title title"; gap: 2px 8px; min-height: 0;
+  padding: 6px 12px 6px 8px; border-bottom: 0; background: transparent; }
+.app.phone .phone-back { grid-area: back; justify-self: start; display: inline-flex; align-items: center; height: 36px; padding-right: 6px; color: var(--accent); font-size: 15.5px; }
+.app.phone .phone-back .ui-icon { font-size: 24px; }
+.app.phone .head-right { grid-area: more; }
+.app.phone #more { width: 34px; height: 34px; border-radius: 50%; background: var(--seg); color: var(--ink); }
+.app.phone .head-title { grid-area: title; display: grid; gap: 3px; padding: 0 6px; }
+.app.phone .main-head h1 { font-size: 27px; font-weight: 700; letter-spacing: -0.02em; white-space: normal; line-height: 1.15; }
+.phone-status { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 13.5px; }
+.phone-status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); flex: none; }
+.phone-status .dot.off { background: var(--line-strong); }
+.phone-status .dot.update { background: var(--led-update); }
+.phone-status.dirty { color: var(--warn); }
+.app.phone .body { display: block; overflow: visible; }
+.app.phone .canvas { padding: 10px 16px calc(112px + env(safe-area-inset-bottom)); overflow: visible; }
+.app.phone #layout-preview { display: flex; flex-direction: column; align-items: center; gap: 0; overflow: visible; padding: 0; margin: 0; touch-action: pan-y; }
+.app.phone .page-head { display: none; }
+.app.phone .tile.just-added, .app.phone .round-tile.just-added { outline: 2.5px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 16%, transparent);
+  transition: outline-color 0.4s, box-shadow 0.4s; }
+.phone-pager { display: grid; justify-items: center; gap: 10px; margin-top: 16px; width: 100%; }
+.phone-page-name { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px 0 14px; border-radius: 999px; background: var(--seg); color: var(--ink);
+  font-size: 15px; font-weight: 600; max-width: 100%; }
+.phone-page-name small { font-size: 13px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.phone-page-name .ui-icon { font-size: 18px; color: var(--muted); }
+.phone-dots { display: flex; gap: 7px; }
+.phone-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line-strong); }
+.phone-dots i.on { background: var(--ink); }
+.phone-hint { max-width: 300px; color: var(--muted); font-size: 13px; line-height: 1.45; text-align: center; }
+.phone-dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; display: flex; gap: 10px; padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--ground) 0%, transparent), var(--ground) 34%); }
+.phone-dock .btn { flex: 1; height: 50px; border-radius: 14px; font-size: 16px; font-weight: 600; gap: 8px; }
+.phone-dock .btn .ui-icon { font-size: 21px; margin: 0; }
+.phone-dock .btn.soft { background: var(--seg); color: var(--ink); }
+.phone-dock .btn.square { flex: 0 0 50px; padding: 0; }
+.phone-dock .btn:disabled { opacity: 0.5; }
+.app.phone .toast { left: 16px; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom)); transform: none; max-width: none; justify-content: space-between; border-radius: 14px;
+  padding: 13px 16px; font-size: 14.5px; }
+/* With a sheet open the word goes to the top, clear of the sheet's buttons. */
+.app.phone:has(.drawer, .library.open, .phone-sheet) .toast { top: calc(12px + env(safe-area-inset-top)); bottom: auto; z-index: 60; }
+
+/* Sheets: from the bottom, over a dimmed page; a tap on the dim closes them. */
+.sheet-dim { position: fixed; inset: 0; z-index: 40; background: rgba(10, 12, 18, 0.32); }
+.dim-enter-active, .dim-leave-active { transition: opacity 0.22s; }
+.dim-enter-from, .dim-leave-to { opacity: 0; }
+@keyframes sheet-up { from { transform: translateY(100%); } }
+.sheet-grab { display: block; width: 38px; height: 5px; border-radius: 3px; background: var(--line-strong); margin: 7px auto 0; flex: none; }
+.sheet-head { display: flex; align-items: center; gap: 12px; padding: 14px 14px 6px 18px; flex: none; }
+.sheet-title { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.sheet-title b { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; color: var(--ink); }
+.sheet-title small { font-size: 13px; color: var(--muted); }
+.sheet-close { width: 30px; height: 30px; border-radius: 50%; background: var(--seg); }
+.app.phone .library { position: fixed; left: 0; right: 0; bottom: 0; top: 48px; z-index: 41; border-top: 0; border-radius: 18px 18px 0 0; background: var(--ground);
+  box-shadow: 0 -10px 40px rgba(10, 12, 18, 0.16); transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s; }
+.app.phone .library::before { content: ""; position: absolute; top: 7px; left: 50%; width: 38px; height: 5px; margin-left: -19px; border-radius: 3px; background: var(--line-strong); }
+.app.phone .library:not(.open) { transform: translateY(102%); visibility: hidden; box-shadow: none; transition: transform 0.24s ease-in, visibility 0s 0.24s; }
+.app.phone .lib-head { height: auto; padding: 6px 16px 0; }
+.app.phone .lib-search { max-width: none; }
+.app.phone .lib-search > .ui-icon { left: 12px; font-size: 19px; }
+.app.phone .lib-search input { height: 42px; padding-left: 38px; border-radius: 12px; background: var(--seg); }
+.app.phone .lib-search kbd, .app.phone .lib-count { display: none; }
+.app.phone .lib-body { display: flex; flex-direction: column; border-top: 0; }
+.app.phone .lib-rail { flex: none; flex-direction: row; overflow-x: auto; border-right: 0; padding: 12px 16px 4px; scrollbar-width: none; }
+.app.phone .lib-rooms, .app.phone .lib-hide { display: none; }
+.app.phone .lib-domains:not(.lib-rooms) { display: flex; gap: 8px; }
+.app.phone .lib-domains button { flex: none; height: 34px; padding: 0 13px; border-radius: 17px; background: var(--surface); border: 1px solid var(--line); font-size: 14px; font-weight: 500; color: var(--ink); }
+.app.phone .lib-domains button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.app.phone .lib-domains button[aria-pressed="true"] small { color: inherit; opacity: 0.7; }
+.app.phone .lib-domains .dn { overflow: visible; }
+.app.phone .lib-domains .domain-icon.all { display: none; }
+.app.phone .lib-list { padding: 0 16px calc(24px + env(safe-area-inset-bottom)); }
+.app.phone .lib-group-title { background: var(--ground); font-size: 13px; color: var(--muted); padding: 16px 4px 7px; }
+.app.phone .lib-grid { grid-template-columns: minmax(0, 1fr); gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.app.phone .lib-list > .lib-group:only-child .lib-grid, .app.phone .lib-list > .lib-group:first-child:not(:has(.lib-group-title)) .lib-grid { margin-top: 12px; padding-top: 0; }
+.app.phone .ent { height: auto; min-height: 58px; padding: 9px 14px; gap: 12px; border: 0; border-radius: 0; background: transparent; cursor: default; }
+.app.phone .ent + .ent { box-shadow: inset 60px 1px 0 var(--surface), inset 0 1px 0 var(--line); }
+.app.phone .ent .av { width: 34px; height: 34px; border-radius: 10px; font-size: 19px; }
+.app.phone .ent .tx b { font-size: 15.5px; font-weight: 500; }
+.app.phone .ent .tx small { font-size: 13px; }
+.app.phone .ent .add { opacity: 1; width: 30px; height: 30px; border-radius: 50%; color: var(--accent); background: var(--accent-soft); font-size: 19px; font-weight: 500; }
+.app.phone .ent .add.done { width: auto; color: var(--muted); background: transparent; font-size: 14px; }
+.app.phone .ent:active:not(:disabled) { background: var(--surface-2); }
+.app.phone .ent:disabled { opacity: 0.55; }
+
+/* A tile's settings: a sheet that leaves the page above it in sight, taller once More settings is open. */
+.app.phone .drawer { position: fixed; inset: auto 0 0 0; width: auto; max-height: 66vh; z-index: 41; border-left: 0; border-radius: 18px 18px 0 0; box-shadow: 0 -10px 40px rgba(10, 12, 18, 0.16); }
+.app.phone .drawer:not(:has(.phone-more)) { max-height: 88vh; }
+.app.phone .drawer-inner { width: 100%; max-width: none; }
+.app.phone .drawer-enter-from, .app.phone .drawer-leave-to { width: auto; opacity: 1; transform: translateY(100%); }
+.app.phone .drawer-enter-active, .app.phone .drawer-leave-active { transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.app.phone .dr-head { padding: 14px 12px 14px 16px; }
+.app.phone .dr-body { display: flex; flex-direction: column; padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+.app.phone .dr-body .style-section { order: -1; border-top: 0; }
+.phone-more { display: flex; align-items: center; gap: 10px; margin: 6px 16px 0; padding: 12px 12px 12px 14px; border-radius: 12px; background: var(--surface-2); text-align: left; color: var(--muted); }
+.phone-more span { flex: 1; display: grid; gap: 2px; }
+.phone-more b { color: var(--accent); font-size: 15px; font-weight: 550; }
+.phone-more small { font-size: 12.5px; }
+.phone-tile-actions { display: flex; gap: 10px; padding: 14px 16px 4px; }
+.phone-tile-actions .btn { flex: 1; height: 46px; border-radius: 12px; font-size: 15px; background: var(--surface-2); color: var(--ink); }
+.phone-tile-actions .btn .ui-icon { font-size: 19px; }
+.phone-tile-actions .btn.danger-soft { color: var(--danger); background: var(--danger-soft); }
+
+/* The pages of a screen. */
+.phone-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; max-height: 84vh; display: flex; flex-direction: column; background: var(--ground);
+  border-radius: 18px 18px 0 0; box-shadow: 0 -10px 40px rgba(10, 12, 18, 0.16); padding-bottom: calc(16px + env(safe-area-inset-bottom)); animation: sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.sheet-list { list-style: none; margin: 8px 16px 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: auto; }
+.sheet-list li { position: relative; display: flex; align-items: center; gap: 2px; padding-right: 6px; background: var(--surface); transition: transform 0.15s; }
+.sheet-list li.carried { transition: none; }
+.sheet-list li + li { border-top: 1px solid var(--line); }
+.sheet-row { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 9px 4px 9px 14px; text-align: left; }
+.sheet-row .num { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: var(--seg); color: var(--ink-2); font-size: 13px; font-weight: 600; flex: none; }
+.sheet-list li.on .num { background: var(--ink); color: var(--surface); }
+.sheet-row .tx { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.sheet-row .tx b { font-size: 15.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sheet-row .tx small { font-size: 13px; color: var(--muted); }
+.sheet-row .home-tag { margin-left: 7px; padding: 1px 6px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 500; }
+.sheet-list .handle { touch-action: none; color: var(--muted); }
+.sheet-add { display: flex; align-items: center; gap: 10px; margin: 12px 16px 0; height: 50px; padding: 0 14px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line);
+  color: var(--accent); font-size: 15.5px; font-weight: 500; flex: none; }
+.sheet-add .ui-icon { font-size: 20px; }
+.sheet-add:disabled { opacity: 0.5; }
+
+/* The phone's menu: preview, undo and redo side by side above the rest. */
+.phone-menu-row { display: grid; grid-template-columns: repeat(3, 1fr); margin: -2px -2px 4px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+.phone-menu-row button { display: grid; justify-items: center; gap: 4px; padding: 9px 2px 7px; border-radius: 8px; font-size: 12px; color: var(--ink); }
+.phone-menu-row button .ui-icon { font-size: 20px; }
+.phone-menu-row button:disabled { opacity: 0.4; }
+.phone-menu-row button:active:not(:disabled) { background: var(--seg); }
+
+/* The overview of the screens. */
+.app.phone .home-head { position: relative; padding-right: 44px; }
+.app.phone .home-head h1 { font-size: 27px; font-weight: 700; letter-spacing: -0.02em; }
+.app.phone .home-more { position: absolute; top: 0; right: 0; width: 34px; height: 34px; border-radius: 50%; background: var(--seg); color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .app.phone .library, .phone-sheet, .app.phone .drawer-enter-active, .app.phone .drawer-leave-active { transition: none; animation: none; } }

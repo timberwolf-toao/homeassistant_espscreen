@@ -24,7 +24,7 @@ measure it again. ESPHome 2026.6.2, LVGL 9.5, bench boards on USB.
   every `ms`; `"back": 150` swipes straight back, `"cards": 3` changes the fill step). It runs
   inside `lv_timer_handler` instead of the touch loop; both land in the same loop iteration.
 
-Layout on the bench Guition (the owner's): 10 tiles on 2 pages. Page 1: climate, analog clock
+Layout on a bench Guition: 10 tiles on 2 pages. Page 1: climate, analog clock
 without background, two scripts, wide light with a mini slider. Page 2: script, vacuum, two
 scripts, wide light with brightness controls.
 

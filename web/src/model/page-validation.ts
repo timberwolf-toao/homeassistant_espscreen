@@ -116,6 +116,10 @@ export function validateCardOptions(tile: PageTile, entityId: string, size: stri
     [a.mapMarkers, map?.markers ?? []], [a.mapNames, map?.names ?? []], [a.mapZones, map?.zones ?? []], [a.mapStreets, map?.streets ?? []],
     [a.mapLook, map?.look ?? []]] as [string | undefined, string[]][])
     if (value !== undefined && (a.display !== 'map' || !choices.includes(value) || value === choices[0])) fail('normalization');
+  // A favourite (app 0.4.42): what it plays and its speaker, with the favourite alone.
+  if ((i.play !== undefined || i.speaker !== undefined) && a.display !== 'favorite') fail('normalization');
+  if (i.play !== undefined && (typeof i.play !== 'object' || !i.play || typeof i.play.id !== 'string' || typeof i.play.type !== 'string' || typeof i.play.title !== 'string')) fail();
+  if (i.speaker !== undefined && (typeof i.speaker !== 'string' || !i.speaker.trim() || bytes(i.speaker) > 48)) fail();
   // The map tile (app 0.4.36) is a map, follows everyone or whom it lists, and alone has the choice.
   const mapTile = entityId === 'screen.map';
   if (mapTile && a.display !== 'map') fail('normalization');

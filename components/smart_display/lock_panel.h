@@ -25,12 +25,12 @@
 #include <cstdint>
 #include <string>
 #include "theme.h"
+#include "tile_catalogue.h"
 
 namespace lock_panel {
 
-namespace feature {
-constexpr uint32_t OPEN = 1;
-}
+// LockEntityFeature by its names, from Home Assistant's source through the tile catalogue (tile_catalogue.h).
+namespace feature = tile_catalogue::lock;
 
 // Home Assistant's lock icons (icons.json of lock), all in the tile icon fonts (tile_icons.HA_DEFAULTS), and the
 // door of its open action.

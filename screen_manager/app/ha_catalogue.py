@@ -12,6 +12,7 @@ on a light is `light.turn_on` with a brightness, so it only fits a light for whi
 import re
 
 import catalogue
+from catalogue import remote_commands
 import core
 from core import attribute_word, state_word
 import header_bar
@@ -163,9 +164,10 @@ def answers_only(description):
     return ((description or {}).get('response') or {}).get('optional') is False
 
 
-def field_choice(base, key, field, attributes, names):
+def field_choice(base, key, field, attributes, names, commands=None):
     """One field for the editor: Home Assistant's name, description and selector, and for a `state` selector the values
-    this entity has for that attribute."""
+    this entity has for that attribute. `commands`: what a remote's integration takes in Send command's `command`, offered
+    as suggestions while anything typed still goes (a learned code, a hub's own name)."""
     selector = field.get('selector') or {}
     found = {'key': key, 'name': names.get(f'{base}.fields.{key}.name') or field.get('name') or key,
              'description': names.get(f'{base}.fields.{key}.description') or field.get('description') or '',
@@ -176,6 +178,8 @@ def field_choice(base, key, field, attributes, names):
     options = attribute_options(attributes, attribute) if attribute else None
     if options:
         found['options'] = options
+    if commands:
+        found['suggestions'] = list(commands)
     return found
 
 
@@ -197,7 +201,9 @@ def action_choices(entity_id, actions, state, services, names, platform=None):
             'action': action,
             'name': names.get(f'{base}.name') or description.get('name') or action,
             'description': names.get(f'{base}.description') or description.get('description') or '',
-            'fields': [field_choice(base, key, field, attributes, names) for key, field in fields_for(description, attributes)],
+            'fields': [field_choice(base, key, field, attributes, names,
+                                    remote_commands(platform) if action == 'remote.send_command' and key == 'command' else None)
+                       for key, field in fields_for(description, attributes)],
         })
     order = lambda item: (0 if item['action'].startswith(domain + '.') else 1 if platform and item['action'].startswith(platform + '.') else 2,
                           item['name'].casefold())

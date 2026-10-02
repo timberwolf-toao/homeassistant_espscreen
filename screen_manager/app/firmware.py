@@ -98,7 +98,7 @@ class Firmware:
     # under build/ with ESPHome's native ESP-IDF toolchain.
     FACTORY_IMAGES = ('*/.pioenvs/*/firmware.factory.bin', '*/build/firmware.factory.bin')
     # The compiler cache's limit (app 0.2.89+); past it ccache drops the oldest entries. Some seventeen full builds of
-    # both boards took 0.6 GB on a Mac (docs/TEST_RESULTS_0289.md).
+    # both boards took 0.6 GB on a Mac.
     CCACHE_SIZE = '1G'
 
     def __init__(self, root, data):

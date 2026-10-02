@@ -166,7 +166,11 @@ def shapes():
                                                                    ('sublabel', 'FONT_SUBLABEL_SIZE'),
                                                                    ('icon_mini', 'FONT_ICON_MINI_SIZE'),
                                                                    # A tile's name: the map card draws it (app 0.4.33).
-                                                                   ('label', 'FONT_LABEL_SIZE'))},
+                                                                   ('label', 'FONT_LABEL_SIZE'),
+                                                                   # The top bar's page title and home key, which the
+                                                                   # mockup's bar takes as the board has them (topbar.ts).
+                                                                   ('headline', 'FONT_HEADLINE_SIZE'),
+                                                                   ('icon_home', 'FONT_ICON_HOME_SIZE'))},
                  # The glass's grid in its own pixels (the look's GRID_MARGIN, GRID_GAP_X and TILE_PAD): the editor's
                  # mockup works out a card's width from them as runtime_tiles::cell_content_width does (app 0.4.32).
                  'spacing': {name: int(values[key]) for name, key in (('margin', 'GRID_MARGIN'), ('gap', 'GRID_GAP_X'),

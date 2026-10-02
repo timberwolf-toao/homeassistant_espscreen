@@ -297,6 +297,7 @@ runtime_tiles::header_home_mark = tessera_mark_bar;
 runtime_tiles::header_back_font = materialdesign_icons_back;
 runtime_tiles::setpoint_font = setpoint_digits;
 screen_input::touch_guard.configure(57, 60);
+screen_input::edge_swipe.configure(27, 34);
 screen_input::edge_snap_band = 20;
 lv_obj_remove_flag(lv_screen_active(), LV_OBJ_FLAG_CLICKABLE);
 lv_obj_remove_flag(tile_scroll, LV_OBJ_FLAG_CLICKABLE);

@@ -3,7 +3,7 @@
 // covers the pages or the library. Its content follows what is selected. It glides open and shut (app 0.4.32): the
 // column grows while its content keeps its own width, so the pages beside it make room once instead of reflowing.
 import { computed } from "vue";
-import { currentTile, state } from "../store";
+import { closeInspector, currentTile, phone, state } from "../store";
 import TileInspector from "./TileInspector.vue";
 import TopbarInspector from "./TopbarInspector.vue";
 import TopbarAdd from "./TopbarAdd.vue";
@@ -14,6 +14,8 @@ const open = computed(() => Boolean(state.inspector && (state.inspector.kind !==
 </script>
 
 <template>
+  <!-- On a phone (app 0.4.40) the inspector is a sheet from the bottom over a dimmed page; a tap beside it closes it. -->
+  <Transition name="dim"><div v-if="open && phone" class="sheet-dim" @click="closeInspector"></div></Transition>
   <Transition name="drawer">
   <aside v-if="open" class="drawer open" id="tile-sheet" @click.stop>
     <div v-if="state.inspector" class="drawer-inner">

@@ -399,6 +399,25 @@ int main() {
     assert(idle_off.active());
     idle_off.running = false; assert(!idle_off.active());
   }
+  // A remote (firmware 0.22.0, GitHub #117): a tap opens its card, as Home Assistant's tile card opens its dialog; the
+  // tap option "toggle" switches it. Amber while on, grey while off (state_color.ts: --state-active-color).
+  {
+    Tile remote = make("remote.living_room", "on");
+    assert(runtime_tiles::valid_entity("remote.living_room"));
+    Tap tap = tap_route(remote, false), held = tap_route(remote, true);
+    assert(tap.route == TapRoute::CARD && held.route == TapRoute::CARD);
+    remote.tap = "toggle";
+    assert(tap_route(remote, false).route == TapRoute::ACTION && tap_route(remote, false).service == "remote.toggle");
+    assert(tap_route(remote, true).route == TapRoute::CARD);
+    remote.tap = "action";
+    remote.edit_extra().action = "remote.send_command";
+    assert(tap_route(remote, false).route == TapRoute::CUSTOM && tap_route(remote, false).service == "remote.send_command");
+    Tile on = make("remote.a", "on"), off = make("remote.a", "off");
+    assert(key_action(on, TOGGLE).service == "remote.turn_off" && key_action(off, TOGGLE).service == "remote.turn_on");
+    on.controls = "toggle"; assert(panel_available(on));
+    assert(on.active() && !off.active() && !make("remote.a", "unavailable").active());
+    assert(accent(on) == theme::ha::AMBER);
+  }
   assert(runtime_tiles::valid_action("cover.toggle") && runtime_tiles::valid_action("sonos.snapshot") && runtime_tiles::valid_action("homeassistant.turn_on"));
   assert(!runtime_tiles::valid_action("cover") && !runtime_tiles::valid_action("Cover.toggle") && !runtime_tiles::valid_action("a.b.c") &&
          !runtime_tiles::valid_action(".toggle") && !runtime_tiles::valid_action("cover.") && !runtime_tiles::valid_action("cover.to ggle"));

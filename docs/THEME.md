@@ -80,6 +80,6 @@ you set), and a palette pass that overwrote a colour the sun path had chosen its
 - `tests/test_theme.py`: no colour outside `theme.h` (the light's colour picker and the value card's
   colour wheel keep their hues), every paint defined, filled once and used, and the look applied at
   boot, after a change and in the redraw.
-- Renders of the host build in both looks (see `docs/RELEASING.md`, Compatibility 0.2.63): the light
+- Renders of the host build in both looks (`tools/render/run.py`, docs/TESTING.md): the light
   look pixel for pixel against the previous firmware, a screen that boots dark against one that
   switched, and every card opened in light and switched while open against the same card opened in dark.

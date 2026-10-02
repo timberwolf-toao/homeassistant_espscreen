@@ -2,11 +2,16 @@
 
     python tools/read_ha_source.py <home-assistant/core checkout>            writes catalogue/_ha.json
     python tools/read_ha_source.py <checkout> --check                        fails when catalogue/_ha.json differs
+    python tools/read_ha_source.py <checkout> --check --release              against a release: a newer snapshot may know
+                                                                             more, only what the release adds fails
 
 For every entity type the catalogue has (catalogue/*.yaml), it reads with Python's own parser, never by hand:
 
 - the type's feature flags: the `*EntityFeature(IntFlag)` class in homeassistant/components/<type>/const.py (or its
   __init__.py), name and bit;
+- for a media player, what an integration reports while it plays where it reports less while it plays nowhere
+  (`playing`): Spotify reports SELECT_SOURCE alone at rest and its SUPPORT_SPOTIFY while it plays (GitHub #88); the
+  integration's own constant, its flags by name;
 - the actions Home Assistant registers for its entities and the flags it asks of an entity for each: every
   `async_register_entity_service(SERVICE, schema, func, [flags])` and `async_register_platform_entity_service(...,
   required_features=[flags])` call in the type's own files, the SERVICE constant resolved to its name. A flag list reads
@@ -25,6 +30,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / 'catalogue/_ha.json'
 REGISTER = {'async_register_entity_service', 'async_register_platform_entity_service'}
+# Media players whose integration reports less while it plays nowhere, and the constant of its media_player.py that
+# holds what it reports while it plays (the screen fades the keys of the rest, the editor offers them).
+PLAYING = {'spotify': 'SUPPORT_SPOTIFY'}
 
 
 def constants(tree):
@@ -120,6 +128,19 @@ def registered_actions(folder, known, components):
     return actions
 
 
+def playing(components):
+    """{integration: [flag, ...]} of PLAYING: the flags of each constant, as its source joins them with `|`."""
+    found = {}
+    for integration, name in sorted(PLAYING.items()):
+        tree = ast.parse((components / integration / 'media_player.py').read_text())
+        value = next((node.value for node in tree.body if isinstance(node, ast.Assign)
+                      and any(isinstance(t, ast.Name) and t.id == name for t in node.targets)), None)
+        if value is None:
+            raise SystemExit(f'{integration}/media_player.py has no {name}: read it again (tools/read_ha_source.py PLAYING)')
+        found[integration] = sorted(flag_names(value))
+    return found
+
+
 def read(core):
     """{domain: {'enum': ..., 'features': {...}, 'actions': {...}}} for every type of the catalogue."""
     components = core / 'homeassistant/components'
@@ -134,6 +155,8 @@ def read(core):
                 own.update(constants(ast.parse((folder / name).read_text())))
         enum, bits = feature_enum(folder)
         facts[domain] = {'enum': enum, 'features': bits, 'actions': dict(sorted(registered_actions(folder, {**shared, **own}, components).items()))}
+        if domain == 'media_player':
+            facts[domain]['playing'] = playing(components)
     return facts
 
 
@@ -149,7 +172,14 @@ if __name__ == '__main__':
         sys.exit(__doc__)
     text = output(Path(sys.argv[1]).resolve())
     if '--check' in sys.argv:
-        if not OUTPUT.exists() or json.loads(OUTPUT.read_text())['domains'] != json.loads(text)['domains']:
+        # --release (.github/workflows/ha-source.yml): held against a release older than the snapshot, only what the
+        # release has and the snapshot lacks or contradicts fails (tools/ha_release.py).
+        import ha_release
+        kept = json.loads(OUTPUT.read_text()) if OUTPUT.exists() else {'source': '', 'domains': None}
+        found = json.loads(text)
+        ok, lines = ha_release.check(kept['domains'], found['domains'], kept['source'], found['source'], '--release' in sys.argv)
+        print('\n'.join(lines))
+        if not ok:
             sys.exit('catalogue/_ha.json differs from this Home Assistant: run tools/read_ha_source.py without --check and read the change.')
     else:
         OUTPUT.write_text(text)
