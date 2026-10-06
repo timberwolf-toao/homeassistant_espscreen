@@ -143,3 +143,9 @@ waveshare5:
   name: Waveshare
   model: ESP32-S3-Touch-LCD-5
   status: new
+
+waveshare5-dim:
+  file: waveshare5-dim.yaml
+  name: Waveshare
+  model: WAVESHARE5-DIM
+  status: experimental

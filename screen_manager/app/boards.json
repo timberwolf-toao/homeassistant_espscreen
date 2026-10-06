@@ -1400,6 +1400,105 @@
   "wide_slots": false,
   "width": 480
  },
+ "checkout/waveshare5-dim.yaml": {
+  "alert": {
+   "line": 34,
+   "title_line": 45
+  },
+  "battery": false,
+  "board": "waveshare5-dim",
+  "camera": {
+   "full": [
+    1024,
+    600
+   ],
+   "thumb": [
+    525,
+    295
+   ]
+  },
+  "can_standby": true,
+  "catalog": {
+   "calibrate": false,
+   "choices": {},
+   "inch": 5.0,
+   "model": "WAVESHARE5-DIM",
+   "name": "Waveshare",
+   "order": 18,
+   "status": "experimental",
+   "touch": "GT911"
+  },
+  "chip": "ESP32-S3",
+  "columns": 4,
+  "dimmable": true,
+  "dpi": 237,
+  "firmware": "0.51.0",
+  "fonts": {
+   "headline": 38,
+   "icon_home": 47,
+   "icon_mini": 36,
+   "label": 25,
+   "setpoint": 89,
+   "sublabel": 22,
+   "sublabel_big": 29,
+   "watch_icon": 25,
+   "watch_value": 53
+  },
+  "height": 600,
+  "hotspot": true,
+  "look": "standard",
+  "max_bar_items": 6,
+  "max_pages": 8,
+  "max_tiles": 64,
+  "orientations": {
+   "landscape": {
+    "camera": {
+     "full": [
+      1024,
+      600
+     ],
+     "thumb": [
+      525,
+      295
+     ]
+    },
+    "columns": 4,
+    "height": 600,
+    "rotation": 0,
+    "rows": 3,
+    "width": 1024
+   },
+   "portrait": {
+    "camera": {
+     "full": [
+      600,
+      1024
+     ],
+     "thumb": [
+      498,
+      280
+     ]
+    },
+    "columns": 2,
+    "height": 1024,
+    "rotation": 90,
+    "rows": 5,
+    "width": 600
+   }
+  },
+  "rows": 3,
+  "spacing": {
+   "circle": 75,
+   "gap": 12,
+   "gap_y": 12,
+   "margin": 16,
+   "page_bar": 65,
+   "tile_pad": 17,
+   "top": 68
+  },
+  "wide_slots": false,
+  "width": 1024
+ },
  "checkout/waveshare5.yaml": {
   "alert": {
    "line": 27,
@@ -4029,6 +4128,105 @@
   "wide_slots": false,
   "width": 480
  },
+ "packages/waveshare5-dim.yaml": {
+  "alert": {
+   "line": 34,
+   "title_line": 45
+  },
+  "battery": false,
+  "board": "waveshare5-dim",
+  "camera": {
+   "full": [
+    1024,
+    600
+   ],
+   "thumb": [
+    525,
+    295
+   ]
+  },
+  "can_standby": true,
+  "catalog": {
+   "calibrate": false,
+   "choices": {},
+   "inch": 5.0,
+   "model": "WAVESHARE5-DIM",
+   "name": "Waveshare",
+   "order": 18,
+   "status": "experimental",
+   "touch": "GT911"
+  },
+  "chip": "ESP32-S3",
+  "columns": 4,
+  "dimmable": true,
+  "dpi": 237,
+  "firmware": "0.51.0",
+  "fonts": {
+   "headline": 38,
+   "icon_home": 47,
+   "icon_mini": 36,
+   "label": 25,
+   "setpoint": 89,
+   "sublabel": 22,
+   "sublabel_big": 29,
+   "watch_icon": 25,
+   "watch_value": 53
+  },
+  "height": 600,
+  "hotspot": true,
+  "look": "standard",
+  "max_bar_items": 6,
+  "max_pages": 8,
+  "max_tiles": 64,
+  "orientations": {
+   "landscape": {
+    "camera": {
+     "full": [
+      1024,
+      600
+     ],
+     "thumb": [
+      525,
+      295
+     ]
+    },
+    "columns": 4,
+    "height": 600,
+    "rotation": 0,
+    "rows": 3,
+    "width": 1024
+   },
+   "portrait": {
+    "camera": {
+     "full": [
+      600,
+      1024
+     ],
+     "thumb": [
+      498,
+      280
+     ]
+    },
+    "columns": 2,
+    "height": 1024,
+    "rotation": 90,
+    "rows": 5,
+    "width": 600
+   }
+  },
+  "rows": 3,
+  "spacing": {
+   "circle": 75,
+   "gap": 12,
+   "gap_y": 12,
+   "margin": 16,
+   "page_bar": 65,
+   "tile_pad": 17,
+   "top": 68
+  },
+  "wide_slots": false,
+  "width": 1024
+ },
  "packages/waveshare5.yaml": {
   "alert": {
    "line": 27,
@@ -4894,6 +5092,105 @@
   },
   "wide_slots": false,
   "width": 800
+ },
+ "waveshare5-dim": {
+  "alert": {
+   "line": 34,
+   "title_line": 45
+  },
+  "battery": false,
+  "board": "waveshare5-dim",
+  "camera": {
+   "full": [
+    1024,
+    600
+   ],
+   "thumb": [
+    525,
+    295
+   ]
+  },
+  "can_standby": true,
+  "catalog": {
+   "calibrate": false,
+   "choices": {},
+   "inch": 5.0,
+   "model": "WAVESHARE5-DIM",
+   "name": "Waveshare",
+   "order": 18,
+   "status": "experimental",
+   "touch": "GT911"
+  },
+  "chip": "ESP32-S3",
+  "columns": 4,
+  "dimmable": true,
+  "dpi": 237,
+  "firmware": "0.51.0",
+  "fonts": {
+   "headline": 38,
+   "icon_home": 47,
+   "icon_mini": 36,
+   "label": 25,
+   "setpoint": 89,
+   "sublabel": 22,
+   "sublabel_big": 29,
+   "watch_icon": 25,
+   "watch_value": 53
+  },
+  "height": 600,
+  "hotspot": true,
+  "look": "standard",
+  "max_bar_items": 6,
+  "max_pages": 8,
+  "max_tiles": 64,
+  "orientations": {
+   "landscape": {
+    "camera": {
+     "full": [
+      1024,
+      600
+     ],
+     "thumb": [
+      525,
+      295
+     ]
+    },
+    "columns": 4,
+    "height": 600,
+    "rotation": 0,
+    "rows": 3,
+    "width": 1024
+   },
+   "portrait": {
+    "camera": {
+     "full": [
+      600,
+      1024
+     ],
+     "thumb": [
+      498,
+      280
+     ]
+    },
+    "columns": 2,
+    "height": 1024,
+    "rotation": 90,
+    "rows": 5,
+    "width": 600
+   }
+  },
+  "rows": 3,
+  "spacing": {
+   "circle": 75,
+   "gap": 12,
+   "gap_y": 12,
+   "margin": 16,
+   "page_bar": 65,
+   "tile_pad": 17,
+   "top": 68
+  },
+  "wide_slots": false,
+  "width": 1024
  },
  "waveshare7": {
   "alert": {
